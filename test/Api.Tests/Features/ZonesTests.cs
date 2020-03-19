@@ -38,7 +38,7 @@ namespace Api.Tests.Features
             var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Zone>();
 
             // Then
-            Assert.Equal(1, result.ProjectId);
+            Assert.Equal(SeedData.TestProject.Id, result.ProjectId);
             Assert.Equal(command.name, result.Name);
             var route = Assert.Single(result.Routes);
             Assert.Equal(command.routes[0].Alias, route.Alias);

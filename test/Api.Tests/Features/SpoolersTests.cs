@@ -22,17 +22,18 @@ namespace Api.Tests.Features
         public async Task CanCreate()
         {
             // Given
+            var firstZone = SeedData.GetZones().First();
             var command = new
             {
                 Name = "New spooler"
             };
 
             // When
-            var response = await _client.PostAsJsonAsync("/Zones/1/Spoolers", command);
+            var response = await _client.PostAsJsonAsync($"/Zones/{firstZone.Id}/Spoolers", command);
             var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Spooler>();
 
             // Then
-            Assert.Equal(1, result.ProjectId);
+            Assert.Equal(SeedData.TestProject.Id, result.ProjectId);
             Assert.Equal(command.Name, result.Name);
         }
 

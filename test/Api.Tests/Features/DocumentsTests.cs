@@ -9,11 +9,11 @@ using Xunit;
 
 namespace Api.Tests.Features
 {
-    public class DocumentsTests : IClassFixture<CustomWebApplicationFactory>
+    public class DocumentsTestsBase : IClassFixture<CustomWebApplicationFactory>
     {
         private readonly HttpClient _client;
 
-        public DocumentsTests(CustomWebApplicationFactory factory)
+        public DocumentsTestsBase(CustomWebApplicationFactory factory)
         {
             _client = factory.WithPopulatedSeedData().CreateClient();
             _client.DefaultRequestHeaders.Add(HeaderNames.Authorization, $"Bearer project:{SeedData.TestProjectKey}");
@@ -33,7 +33,7 @@ namespace Api.Tests.Features
             var contentString = await contentResponse.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
             // Then
-            Assert.Equal(1, result.ProjectId);
+            Assert.Equal(SeedData.TestProject.Id, result.ProjectId);
             Assert.Equal("text/plain; charset=utf-8", result.ContentType);
             Assert.Equal("Test Document", contentString);
         }
@@ -55,13 +55,14 @@ namespace Api.Tests.Features
         public async Task CanGenerate()
         {
             // Given
+            var firstZone = SeedData.GetZones().First();
             var model = new
             {
                 name = "Rasmus"
             };
 
             // When
-            var response = await _client.PostAsJsonAsync("/Zones/1/Documents/Generate?format=slip", model);
+            var response = await _client.PostAsJsonAsync($"/Zones/{firstZone.Id}/Documents/Generate?format=slip", model);
             var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Document>();
 
             var contentResponse = await _client.GetAsync(result.ContentUrl);
