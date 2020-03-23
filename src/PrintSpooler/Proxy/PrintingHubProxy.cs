@@ -20,7 +20,7 @@ namespace PrintSpooler.Proxy
             var spoolerKey = options.Value.SpoolerKey;
 
             _hub = new HubConnectionBuilder()
-                .WithUrl("https://localhost:51332/Printing", options => options.Headers.Add(AuthorizationHeaderName, $"Bearer {spoolerKey}"))
+                .WithUrl("https://localhost:51332/Printing", options => options.Headers.Add(AuthorizationHeaderName, $"Bearer spooler:{spoolerKey}"))
                 .WithAutomaticReconnect()
                 .Build();
 

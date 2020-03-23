@@ -1,7 +1,5 @@
 ﻿using Api.Generators.ECMAScript6;
 using Microsoft.Extensions.DependencyInjection;
-using NiL.JS.Core;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -149,26 +147,26 @@ export default class Builder {
             Assert.Equal(255, result[6]);
         }
 
-//        [Fact]
-//        public async Task CanDynamicImportJsonResource()
-//        {
-//            var script = @"
-//export default class Builder {
-//    async build(model) {
-//        let obj = await get('asd');
-//        return obj;
-//    }
-//}";
+        [Fact(Skip = "Not yet supported in Nil.JS, see https://github.com/nilproject/NiL.JS/issues/213")]
+        public async Task CanDynamicImportJsonResource()
+        {
+            var script = @"
+export default class Builder {
+    async build(model) {
+        let obj = await get('resources/alias.jsob');
+        return obj;
+    }
+}";
 
-//            var resources = new Dictionary<string, byte[]>()
-//            {
-//                ["alias"] = JsonSerializer.SerializeToUtf8Bytes(new { name = "Rasmus" })
-//            };
+            var resources = new DictionaryResourceManager()
+            {
+                ["alias"] = JsonSerializer.SerializeToUtf8Bytes(new { name = "Rasmus" })
+            };
 
-//            var result = await _generator.GenerateDocumentAsync(script, null, resources);
+            var (result, _) = await _generator.GenerateDocumentAsync(script, null, resources);
 
-//            Assert.Equal("Rasmus", Encoding.UTF8.GetString(result));
-//        }
+            Assert.Equal("Rasmus", Encoding.UTF8.GetString(result));
+        }
 
         [Fact]
         public void ReturnsErrorOnInvalidTemplate()

@@ -1,4 +1,5 @@
 ﻿using Api.Client;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Dispatcher
 {
+    [Authorize]
     public class PrintingHub : Hub
     {
         private readonly IApiClient _api;

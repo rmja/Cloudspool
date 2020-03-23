@@ -1,5 +1,6 @@
 ﻿using Api.Client.Models;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -27,6 +28,7 @@ namespace Api.Features.Projects.Queries
                 _mapper = mapper;
             }
 
+            [AllowAnonymous]
             [HttpGet("/Projects/{Key:guid}")]
             public override async Task<ActionResult<Project>> HandleAsync(Query request, CancellationToken cancellationToken)
             {

@@ -1,18 +1,24 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Api.Tests.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Respawn;
+using Microsoft.Extensions.Hosting;
 using System.Linq;
 using System.Threading;
 
 namespace Api.Tests
 {
-    public class CustomWebApplicationFactory : WebApplicationFactory<Startup>
+    public class CustomWebApplicationFactory : WebApplicationFactory<TestStartup>
     {
         private static int _dbCounter = 0;
         private int? _assignedDbNumber;
+
+        protected override IHostBuilder CreateHostBuilder()
+        {
+            return Host.CreateDefaultBuilder().ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<TestStartup>());
+        }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {

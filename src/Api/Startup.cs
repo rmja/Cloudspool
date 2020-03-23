@@ -4,6 +4,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,12 +30,15 @@ namespace Api
             var redisConfiguration = ConfigurationOptions.Parse("redis");
 
             services.AddSingleton(sp => ConnectionMultiplexer.Connect(redisConfiguration));
-            services.AddControllers(options => options.InputFormatters.Insert(0, GetJsonPatchInputFormatter()))
+            services.AddControllers(options =>
+            {
+                options.InputFormatters.Insert(0, GetJsonPatchInputFormatter());
+                options.Filters.Add(new AuthorizeFilter());
+            })
                 .ConfigureApplicationPartManager(options => options.FeatureProviders.Add(new ScanNestedControllersFeatureProvider(typeof(Startup).Assembly)))
                 .ConfigureApiBehaviorOptions(options => options.SuppressInferBindingSourcesForParameters = true);
 
             services.AddDbContext<CloudspoolContext>(options => options.UseNpgsql("Host=localhost;Database=cloudspool;Username=cloudspool;Password=cloudspool"));
-            //services.AddDbContext<CloudspoolContext>(options => options.UseInMemoryDatabase("Cloudspool"));
 
             services.AddAutoMapper(typeof(Startup).Assembly);
             services.AddMemoryCache();
@@ -61,6 +65,15 @@ namespace Api
             {
                 endpoints.MapControllers();
             });
+
+            Migrate(app);
+        }
+
+        public virtual void Migrate(IApplicationBuilder app)
+        {
+            using var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<CloudspoolContext>();
+            db.Database.Migrate();
         }
 
         private static NewtonsoftJsonPatchInputFormatter GetJsonPatchInputFormatter()

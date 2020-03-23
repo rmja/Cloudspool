@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace PrintSpooler.Printing.Ghostscript
 {
@@ -12,64 +11,43 @@ namespace PrintSpooler.Printing.Ghostscript
         public static readonly int ARG_ENCODING_UTF8 = 1;
         public static readonly int ARG_ENCODING_UTF16LE = 2;
 
-        public static int gsapi_new_instance(out IntPtr pinstance, IntPtr caller_handle)
+        const string DllName = "gs";
+
+        static GsWrapper()
         {
-            if (Environment.Is64BitProcess)
-            {
-                return Gs64Wrapper.gsapi_new_instance(out pinstance, caller_handle);
-            }
-            else
-            {
-                return Gs32Wrapper.gsapi_new_instance(out pinstance, caller_handle);
-            }
+            var directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var path = Path.Combine(directoryPath, GetNativeLibraryRelativePath());
+            
+            NativeLibrary.Load(path);
         }
 
-        public static int gsapi_init_with_args(IntPtr instance, int argc, string[] argv)
+        static string GetNativeLibraryRelativePath()
         {
-            if (Environment.Is64BitProcess)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && RuntimeInformation.ProcessArchitecture == Architecture.X86)
             {
-                return Gs64Wrapper.gsapi_init_with_args(instance, argc, argv);
+                return Path.Combine("Native", "win32", "gs.dll");
             }
-            else
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && RuntimeInformation.ProcessArchitecture == Architecture.X64)
             {
-                return Gs32Wrapper.gsapi_init_with_args(instance, argc, argv);
+                return Path.Combine("Native", "win64", "gs.dll");
             }
+
+            throw new NotSupportedException("Unsupported platform");
         }
 
-        public static int gsapi_exit(IntPtr instance)
-        {
-            if (Environment.Is64BitProcess)
-            {
-                return Gs64Wrapper.gsapi_exit(instance);
-            }
-            else
-            {
-                return Gs32Wrapper.gsapi_exit(instance);
-            }
-        }
+        [DllImport(DllName)]
+        public static extern int gsapi_new_instance(out IntPtr pinstance, IntPtr caller_handle);
 
-        public static void gsapi_delete_instance(IntPtr instance)
-        {
-            if (Environment.Is64BitProcess)
-            {
-                Gs64Wrapper.gsapi_delete_instance(instance);
-            }
-            else
-            {
-                Gs32Wrapper.gsapi_delete_instance(instance);
-            }
-        }
+        [DllImport(DllName)]
+        public static extern int gsapi_init_with_args(IntPtr instance, int argc, string[] argv);
 
-        public static int gsapi_set_arg_encoding(IntPtr instance, int encoding)
-        {
-            if (Environment.Is64BitProcess)
-            {
-                return Gs64Wrapper.gsapi_set_arg_encoding(instance, encoding);
-            }
-            else
-            {
-                return Gs32Wrapper.gsapi_set_arg_encoding(instance, encoding);
-            }
-        }
+        [DllImport(DllName)]
+        public static extern int gsapi_exit(IntPtr instance);
+
+        [DllImport(DllName)]
+        public static extern void gsapi_delete_instance(IntPtr instance);
+
+        [DllImport(DllName)]
+        public static extern int gsapi_set_arg_encoding(IntPtr instance, int encoding);
     }
 }

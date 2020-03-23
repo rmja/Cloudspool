@@ -9,11 +9,11 @@ using Xunit;
 
 namespace Api.Tests.Features
 {
-    public class DocumentsTestsBase : IClassFixture<CustomWebApplicationFactory>
+    public class DocumentsTests : IClassFixture<CustomWebApplicationFactory>
     {
         private readonly HttpClient _client;
 
-        public DocumentsTestsBase(CustomWebApplicationFactory factory)
+        public DocumentsTests(CustomWebApplicationFactory factory)
         {
             _client = factory.WithPopulatedSeedData().CreateClient();
             _client.DefaultRequestHeaders.Add(HeaderNames.Authorization, $"Bearer project:{SeedData.TestProjectKey}");

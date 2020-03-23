@@ -1,5 +1,6 @@
 ﻿using Api.Client.Models;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -30,6 +31,7 @@ namespace Api.Features.Spoolers.Queries
                 _mapper = mapper;
             }
 
+            [AllowAnonymous]
             [HttpGet("/Spoolers/{key:guid}")]
             public override async Task<ActionResult<Spooler>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
