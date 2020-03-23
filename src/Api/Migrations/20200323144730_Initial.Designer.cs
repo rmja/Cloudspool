@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Api.Migrations
 {
     [DbContext(typeof(CloudspoolContext))]
-    [Migration("20200319151803_Initial")]
+    [Migration("20200323144730_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,10 +43,6 @@ namespace Api.Migrations
                         .HasColumnName("created")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime?>("Deleted")
-                        .HasColumnName("deleted")
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<int>("ProjectId")
                         .HasColumnName("project_id")
                         .HasColumnType("integer");
@@ -56,9 +52,9 @@ namespace Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id")
-                        .HasName("pk_documents");
+                        .HasName("pk_document");
 
-                    b.ToTable("documents");
+                    b.ToTable("document");
                 });
 
             modelBuilder.Entity("Api.DataModels.Format", b =>
@@ -88,16 +84,16 @@ namespace Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id")
-                        .HasName("pk_formats");
+                        .HasName("pk_format");
 
                     b.HasIndex("TemplateId")
-                        .HasName("ix_formats_template_id");
+                        .HasName("ix_format_template_id");
 
                     b.HasIndex("ZoneId", "Alias")
                         .IsUnique()
-                        .HasName("ix_formats_zone_id_alias");
+                        .HasName("ix_format_zone_id_alias");
 
-                    b.ToTable("formats");
+                    b.ToTable("format");
                 });
 
             modelBuilder.Entity("Api.DataModels.Project", b =>
@@ -123,13 +119,13 @@ namespace Api.Migrations
                         .HasMaxLength(100);
 
                     b.HasKey("Id")
-                        .HasName("pk_projects");
+                        .HasName("pk_project");
 
                     b.HasIndex("Key")
                         .IsUnique()
-                        .HasName("ix_projects_key");
+                        .HasName("ix_project_key");
 
-                    b.ToTable("projects");
+                    b.ToTable("project");
                 });
 
             modelBuilder.Entity("Api.DataModels.Resource", b =>
@@ -165,13 +161,13 @@ namespace Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id")
-                        .HasName("pk_resources");
+                        .HasName("pk_resource");
 
                     b.HasIndex("ProjectId", "Alias")
                         .IsUnique()
-                        .HasName("ix_resources_project_id_alias");
+                        .HasName("ix_resource_project_id_alias");
 
-                    b.ToTable("resources");
+                    b.ToTable("resource");
                 });
 
             modelBuilder.Entity("Api.DataModels.Spooler", b =>
@@ -201,16 +197,16 @@ namespace Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id")
-                        .HasName("pk_spoolers");
+                        .HasName("pk_spooler");
 
                     b.HasIndex("Key")
                         .IsUnique()
-                        .HasName("ix_spoolers_key");
+                        .HasName("ix_spooler_key");
 
                     b.HasIndex("ZoneId")
-                        .HasName("ix_spoolers_zone_id");
+                        .HasName("ix_spooler_zone_id");
 
-                    b.ToTable("spoolers");
+                    b.ToTable("spooler");
                 });
 
             modelBuilder.Entity("Api.DataModels.Template", b =>
@@ -247,12 +243,12 @@ namespace Api.Migrations
                         .HasMaxLength(100);
 
                     b.HasKey("Id")
-                        .HasName("pk_templates");
+                        .HasName("pk_template");
 
                     b.HasIndex("ProjectId")
-                        .HasName("ix_templates_project_id");
+                        .HasName("ix_template_project_id");
 
-                    b.ToTable("templates");
+                    b.ToTable("template");
                 });
 
             modelBuilder.Entity("Api.DataModels.Terminal", b =>
@@ -282,16 +278,16 @@ namespace Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id")
-                        .HasName("pk_terminals");
+                        .HasName("pk_terminal");
 
                     b.HasIndex("Key")
                         .IsUnique()
-                        .HasName("ix_terminals_key");
+                        .HasName("ix_terminal_key");
 
                     b.HasIndex("ZoneId")
-                        .HasName("ix_terminals_zone_id");
+                        .HasName("ix_terminal_zone_id");
 
-                    b.ToTable("terminals");
+                    b.ToTable("terminal");
                 });
 
             modelBuilder.Entity("Api.DataModels.TerminalRoute", b =>
@@ -363,12 +359,12 @@ namespace Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id")
-                        .HasName("pk_zones");
+                        .HasName("pk_zone");
 
                     b.HasIndex("ProjectId")
-                        .HasName("ix_zones_project_id");
+                        .HasName("ix_zone_project_id");
 
-                    b.ToTable("zones");
+                    b.ToTable("zone");
                 });
 
             modelBuilder.Entity("Api.DataModels.ZoneRoute", b =>
@@ -422,14 +418,14 @@ namespace Api.Migrations
                     b.HasOne("Api.DataModels.Template", "Template")
                         .WithMany()
                         .HasForeignKey("TemplateId")
-                        .HasConstraintName("fk_formats_templates_template_id")
+                        .HasConstraintName("fk_format_template_template_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Api.DataModels.Zone", "Zone")
                         .WithMany("Formats")
                         .HasForeignKey("ZoneId")
-                        .HasConstraintName("fk_formats_zones_zone_id")
+                        .HasConstraintName("fk_format_zone_zone_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -439,7 +435,7 @@ namespace Api.Migrations
                     b.HasOne("Api.DataModels.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId")
-                        .HasConstraintName("fk_resources_projects_project_id")
+                        .HasConstraintName("fk_resource_project_project_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -449,7 +445,7 @@ namespace Api.Migrations
                     b.HasOne("Api.DataModels.Zone", "Zone")
                         .WithMany("Spoolers")
                         .HasForeignKey("ZoneId")
-                        .HasConstraintName("fk_spoolers_zones_zone_id")
+                        .HasConstraintName("fk_spooler_zone_zone_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -459,7 +455,7 @@ namespace Api.Migrations
                     b.HasOne("Api.DataModels.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId")
-                        .HasConstraintName("fk_templates_projects_project_id")
+                        .HasConstraintName("fk_template_project_project_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -469,7 +465,7 @@ namespace Api.Migrations
                     b.HasOne("Api.DataModels.Zone", "Zone")
                         .WithMany("Terminals")
                         .HasForeignKey("ZoneId")
-                        .HasConstraintName("fk_terminals_zones_zone_id")
+                        .HasConstraintName("fk_terminal_zone_zone_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -479,14 +475,14 @@ namespace Api.Migrations
                     b.HasOne("Api.DataModels.Spooler", "Spooler")
                         .WithMany()
                         .HasForeignKey("SpoolerId")
-                        .HasConstraintName("fk_terminal_route_spoolers_spooler_id")
+                        .HasConstraintName("fk_terminal_route_spooler_spooler_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Api.DataModels.Terminal", "Terminal")
                         .WithMany("Routes")
                         .HasForeignKey("TerminalId")
-                        .HasConstraintName("fk_terminal_route_terminals_terminal_id")
+                        .HasConstraintName("fk_terminal_route_terminal_terminal_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -496,7 +492,7 @@ namespace Api.Migrations
                     b.HasOne("Api.DataModels.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId")
-                        .HasConstraintName("fk_zones_projects_project_id")
+                        .HasConstraintName("fk_zone_project_project_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -506,14 +502,14 @@ namespace Api.Migrations
                     b.HasOne("Api.DataModels.Spooler", "Spooler")
                         .WithMany()
                         .HasForeignKey("SpoolerId")
-                        .HasConstraintName("fk_zone_route_spoolers_spooler_id")
+                        .HasConstraintName("fk_zone_route_spooler_spooler_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Api.DataModels.Zone", "Zone")
                         .WithMany("Routes")
                         .HasForeignKey("ZoneId")
-                        .HasConstraintName("fk_zone_route_zones_zone_id")
+                        .HasConstraintName("fk_zone_route_zone_zone_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

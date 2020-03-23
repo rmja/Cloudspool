@@ -32,7 +32,7 @@ namespace Api.Features.Terminals.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Terminals
+                var query = _db.Terminal
                     .Where(x => x.Zone.ProjectId == projectId && x.ZoneId == request.ZoneId);
                 var result = await _mapper.ProjectTo<Terminal>(query).ToListAsync();
 

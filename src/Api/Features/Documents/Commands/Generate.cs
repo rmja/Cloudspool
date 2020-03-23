@@ -35,7 +35,7 @@ namespace Api.Features.Documents.Commands
             [HttpPost("/Zones/{ZoneId:int}/Documents/Generate")]
             public override async Task<ActionResult> HandleAsync(Command request, CancellationToken cancellationToken)
             {
-                var format = await _db.Formats
+                var format = await _db.Format
                     .Where(x => x.ZoneId == request.ZoneId)
                     .Select(x => new
                     {
@@ -54,7 +54,7 @@ namespace Api.Features.Documents.Commands
                 var (content, contentType) = await _ecmaScript6Generator.GenerateDocumentAsync(format.Script, request.Model, resources);
 
                 var document = new Document(User.GetProjectId(), format.TemplateId, content, contentType);
-                _db.Documents.Add(document);
+                _db.Document.Add(document);
                 await _db.SaveChangesAsync();
 
                 return RedirectToRoute(RouteNames.GetDocumentById, new GetById.Query() { Id = document.Id });
@@ -74,7 +74,7 @@ namespace Api.Features.Documents.Commands
 
             public byte[] GetResource(string alias)
             {
-                return _db.Resources
+                return _db.Resource
                     .Where(x => x.ProjectId == _projectId && x.Alias == alias)
                     .Select(x => x.Content)
                     .SingleOrDefault();
@@ -82,7 +82,7 @@ namespace Api.Features.Documents.Commands
 
             public Task<byte[]> GetResourceAsync(string alias, CancellationToken cancellationToken)
             {
-                return _db.Resources
+                return _db.Resource
                     .Where(x => x.ProjectId == _projectId && x.Alias == alias)
                     .Select(x => x.Content)
                     .SingleOrDefaultAsync();

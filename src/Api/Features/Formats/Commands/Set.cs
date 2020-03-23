@@ -37,7 +37,7 @@ namespace Api.Features.Formats.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var zone = await _db.Zones.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.ZoneId);
+                var zone = await _db.Zone.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.ZoneId);
 
                 if (zone is null)
                 {
@@ -45,7 +45,7 @@ namespace Api.Features.Formats.Commands
                 }
 
                 var format = new Format(zone.Id, request.Alias, request.Body.TemplateId);
-                _db.Formats.Add(format);
+                _db.Format.Add(format);
                 await _db.SaveChangesAsync();
 
                 return Ok();

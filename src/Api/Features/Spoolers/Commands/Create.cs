@@ -35,7 +35,7 @@ namespace Api.Features.Spoolers.Commands
             public override async Task<ActionResult> HandleAsync(Command request, CancellationToken cancellationToken)
             {
                 var spooler = new Spooler(request.ZoneId, request.Body.Name);
-                _db.Spoolers.Add(spooler);
+                _db.Spooler.Add(spooler);
                 await _db.SaveChangesAsync();
 
                 return RedirectToRoute(RouteNames.GetSpoolerById, new GetById.Query() { Id = spooler.Id});

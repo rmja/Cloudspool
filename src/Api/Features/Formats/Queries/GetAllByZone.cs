@@ -32,7 +32,7 @@ namespace Api.Features.Formats.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Formats
+                var query = _db.Format
                     .Where(x => x.Zone.ProjectId == projectId && x.ZoneId == request.ZoneId);
                 var result = await _mapper.ProjectTo<Format>(query).ToListAsync();
 

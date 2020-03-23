@@ -9,7 +9,7 @@ namespace Api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "documents",
+                name: "document",
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
@@ -18,16 +18,15 @@ namespace Api.Migrations
                     template_id = table.Column<int>(nullable: true),
                     content = table.Column<byte[]>(nullable: true),
                     content_type = table.Column<string>(maxLength: 100, nullable: false),
-                    created = table.Column<DateTime>(nullable: false),
-                    deleted = table.Column<DateTime>(nullable: true)
+                    created = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_documents", x => x.id);
+                    table.PrimaryKey("pk_document", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "projects",
+                name: "project",
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
@@ -38,11 +37,11 @@ namespace Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_projects", x => x.id);
+                    table.PrimaryKey("pk_project", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "resources",
+                name: "resource",
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
@@ -55,17 +54,17 @@ namespace Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_resources", x => x.id);
+                    table.PrimaryKey("pk_resource", x => x.id);
                     table.ForeignKey(
-                        name: "fk_resources_projects_project_id",
+                        name: "fk_resource_project_project_id",
                         column: x => x.project_id,
-                        principalTable: "projects",
+                        principalTable: "project",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "templates",
+                name: "template",
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
@@ -78,17 +77,17 @@ namespace Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_templates", x => x.id);
+                    table.PrimaryKey("pk_template", x => x.id);
                     table.ForeignKey(
-                        name: "fk_templates_projects_project_id",
+                        name: "fk_template_project_project_id",
                         column: x => x.project_id,
-                        principalTable: "projects",
+                        principalTable: "project",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "zones",
+                name: "zone",
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
@@ -99,17 +98,17 @@ namespace Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_zones", x => x.id);
+                    table.PrimaryKey("pk_zone", x => x.id);
                     table.ForeignKey(
-                        name: "fk_zones_projects_project_id",
+                        name: "fk_zone_project_project_id",
                         column: x => x.project_id,
-                        principalTable: "projects",
+                        principalTable: "project",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "formats",
+                name: "format",
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
@@ -121,23 +120,23 @@ namespace Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_formats", x => x.id);
+                    table.PrimaryKey("pk_format", x => x.id);
                     table.ForeignKey(
-                        name: "fk_formats_templates_template_id",
+                        name: "fk_format_template_template_id",
                         column: x => x.template_id,
-                        principalTable: "templates",
+                        principalTable: "template",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_formats_zones_zone_id",
+                        name: "fk_format_zone_zone_id",
                         column: x => x.zone_id,
-                        principalTable: "zones",
+                        principalTable: "zone",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "spoolers",
+                name: "spooler",
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
@@ -149,17 +148,17 @@ namespace Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_spoolers", x => x.id);
+                    table.PrimaryKey("pk_spooler", x => x.id);
                     table.ForeignKey(
-                        name: "fk_spoolers_zones_zone_id",
+                        name: "fk_spooler_zone_zone_id",
                         column: x => x.zone_id,
-                        principalTable: "zones",
+                        principalTable: "zone",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "terminals",
+                name: "terminal",
                 columns: table => new
                 {
                     id = table.Column<int>(nullable: false)
@@ -171,11 +170,11 @@ namespace Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_terminals", x => x.id);
+                    table.PrimaryKey("pk_terminal", x => x.id);
                     table.ForeignKey(
-                        name: "fk_terminals_zones_zone_id",
+                        name: "fk_terminal_zone_zone_id",
                         column: x => x.zone_id,
-                        principalTable: "zones",
+                        principalTable: "zone",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -197,15 +196,15 @@ namespace Api.Migrations
                 {
                     table.PrimaryKey("pk_zone_route", x => x.id);
                     table.ForeignKey(
-                        name: "fk_zone_route_spoolers_spooler_id",
+                        name: "fk_zone_route_spooler_spooler_id",
                         column: x => x.spooler_id,
-                        principalTable: "spoolers",
+                        principalTable: "spooler",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_zone_route_zones_zone_id",
+                        name: "fk_zone_route_zone_zone_id",
                         column: x => x.zone_id,
-                        principalTable: "zones",
+                        principalTable: "zone",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -227,57 +226,68 @@ namespace Api.Migrations
                 {
                     table.PrimaryKey("pk_terminal_route", x => x.id);
                     table.ForeignKey(
-                        name: "fk_terminal_route_spoolers_spooler_id",
+                        name: "fk_terminal_route_spooler_spooler_id",
                         column: x => x.spooler_id,
-                        principalTable: "spoolers",
+                        principalTable: "spooler",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_terminal_route_terminals_terminal_id",
+                        name: "fk_terminal_route_terminal_terminal_id",
                         column: x => x.terminal_id,
-                        principalTable: "terminals",
+                        principalTable: "terminal",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_formats_template_id",
-                table: "formats",
+                name: "ix_format_template_id",
+                table: "format",
                 column: "template_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_formats_zone_id_alias",
-                table: "formats",
+                name: "ix_format_zone_id_alias",
+                table: "format",
                 columns: new[] { "zone_id", "alias" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_projects_key",
-                table: "projects",
+                name: "ix_project_key",
+                table: "project",
                 column: "key",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_resources_project_id_alias",
-                table: "resources",
+                name: "ix_resource_project_id_alias",
+                table: "resource",
                 columns: new[] { "project_id", "alias" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_spoolers_key",
-                table: "spoolers",
+                name: "ix_spooler_key",
+                table: "spooler",
                 column: "key",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_spoolers_zone_id",
-                table: "spoolers",
+                name: "ix_spooler_zone_id",
+                table: "spooler",
                 column: "zone_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_templates_project_id",
-                table: "templates",
+                name: "ix_template_project_id",
+                table: "template",
                 column: "project_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_terminal_key",
+                table: "terminal",
+                column: "key",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_terminal_zone_id",
+                table: "terminal",
+                column: "zone_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_terminal_route_spooler_id",
@@ -290,15 +300,9 @@ namespace Api.Migrations
                 column: "terminal_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_terminals_key",
-                table: "terminals",
-                column: "key",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "ix_terminals_zone_id",
-                table: "terminals",
-                column: "zone_id");
+                name: "ix_zone_project_id",
+                table: "zone",
+                column: "project_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_zone_route_spooler_id",
@@ -309,23 +313,18 @@ namespace Api.Migrations
                 name: "ix_zone_route_zone_id",
                 table: "zone_route",
                 column: "zone_id");
-
-            migrationBuilder.CreateIndex(
-                name: "ix_zones_project_id",
-                table: "zones",
-                column: "project_id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "documents");
+                name: "document");
 
             migrationBuilder.DropTable(
-                name: "formats");
+                name: "format");
 
             migrationBuilder.DropTable(
-                name: "resources");
+                name: "resource");
 
             migrationBuilder.DropTable(
                 name: "terminal_route");
@@ -334,19 +333,19 @@ namespace Api.Migrations
                 name: "zone_route");
 
             migrationBuilder.DropTable(
-                name: "templates");
+                name: "template");
 
             migrationBuilder.DropTable(
-                name: "terminals");
+                name: "terminal");
 
             migrationBuilder.DropTable(
-                name: "spoolers");
+                name: "spooler");
 
             migrationBuilder.DropTable(
-                name: "zones");
+                name: "zone");
 
             migrationBuilder.DropTable(
-                name: "projects");
+                name: "project");
         }
     }
 }

@@ -59,7 +59,7 @@ namespace Api.Features.Zones.Commands
                     return BadRequest();
                 }
 
-                _db.Zones.Add(zone);
+                _db.Zone.Add(zone);
                 await _db.SaveChangesAsync();
 
                 return RedirectToRoute(RouteNames.GetZoneById, new GetById.Query() { Id = zone.Id });

@@ -35,7 +35,7 @@ namespace Api.Features.Spoolers.Queries
             [HttpGet("/Spoolers/{key:guid}")]
             public override async Task<ActionResult<Spooler>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
-                var query = _db.Spoolers.Where(x => x.Key == request.Key);
+                var query = _db.Spooler.Where(x => x.Key == request.Key);
                 var spooler = await _mapper.ProjectTo<Spooler>(query).SingleOrDefaultAsync();
 
                 if (spooler is null)

@@ -12,7 +12,7 @@ namespace Api.Features.Zones.Commands
         {
             var ids = new HashSet<int>(zone.Routes.Select(x => x.SpoolerId));
 
-            return await db.Spoolers.Where(x => x.Zone.ProjectId == projectId).CountAsync(x => ids.Contains(x.Id)) == ids.Count;
+            return await db.Spooler.Where(x => x.Zone.ProjectId == projectId).CountAsync(x => ids.Contains(x.Id)) == ids.Count;
         }
     }
 }

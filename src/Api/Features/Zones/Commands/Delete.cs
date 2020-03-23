@@ -26,14 +26,14 @@ namespace Api.Features.Zones.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var zone = await _db.Zones.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
+                var zone = await _db.Zone.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
 
                 if (zone is null)
                 {
                     return NotFound();
                 }
 
-                _db.Zones.Remove(zone);
+                _db.Zone.Remove(zone);
                 await _db.SaveChangesAsync();
 
                 return Ok();

@@ -27,14 +27,14 @@ namespace Api.Features.Formats.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var format = await _db.Formats.SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Alias == request.Alias);
+                var format = await _db.Format.SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Alias == request.Alias);
 
                 if (format is null)
                 {
                     return NotFound();
                 }
 
-                _db.Formats.Remove(format);
+                _db.Format.Remove(format);
                 await _db.SaveChangesAsync();
 
                 return Ok();

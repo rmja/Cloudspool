@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Api.Client.Models
+﻿namespace Api.Client.Models
 {
     public class Document
     {
@@ -10,7 +8,5 @@ namespace Api.Client.Models
         public int? TemplateId { get; set; }
         public string ContentType { get; set; }
         public string ContentUrl { get; set; }
-        public DateTime Created { get; set; }
-        public DateTime? Deleted { get; set; }
 	}
 }

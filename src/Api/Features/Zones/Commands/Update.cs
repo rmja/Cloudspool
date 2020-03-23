@@ -34,7 +34,7 @@ namespace Api.Features.Zones.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var zone = await _db.Zones.Include(x => x.Routes).SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
+                var zone = await _db.Zone.Include(x => x.Routes).SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
                 
                 if (zone is null)
                 {

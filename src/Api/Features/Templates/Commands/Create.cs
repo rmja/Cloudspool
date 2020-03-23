@@ -46,7 +46,7 @@ namespace Api.Features.Templates.Commands
                 }
 
                 var template = new Template(projectId, request.Name, script, Request.ContentType);
-                _db.Templates.Add(template);
+                _db.Template.Add(template);
                 await _db.SaveChangesAsync();
 
                 return RedirectToRoute(RouteNames.GetTemplateById, new GetById.Query() { Id = template.Id});

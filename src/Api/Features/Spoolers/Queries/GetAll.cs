@@ -35,7 +35,7 @@ namespace Api.Features.Spoolers.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Spoolers.Where(x => x.Zone.ProjectId == projectId);
+                var query = _db.Spooler.Where(x => x.Zone.ProjectId == projectId);
                 var spoolers = await _mapper.ProjectTo<Spooler>(query).ToListAsync();
 
                 if (spoolers is null)

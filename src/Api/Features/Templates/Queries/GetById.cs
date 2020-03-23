@@ -33,7 +33,7 @@ namespace Api.Features.Templates.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Templates
+                var query = _db.Template
                     .Where(x => x.ProjectId == projectId && x.Id == request.Id);
                 var result = await _mapper.ProjectTo<Template>(query).SingleOrDefaultAsync();
 

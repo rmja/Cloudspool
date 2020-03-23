@@ -50,7 +50,7 @@ namespace Api.Features.Terminals.Commands
             {
                 var projectId = User.GetProjectId();
 
-                if (!await _db.Zones.AnyAsync(x => x.ProjectId == projectId && x.Id == request.ZoneId))
+                if (!await _db.Zone.AnyAsync(x => x.ProjectId == projectId && x.Id == request.ZoneId))
                 {
                     return NotFound();
                 }
@@ -67,7 +67,7 @@ namespace Api.Features.Terminals.Commands
                     return BadRequest();
                 }
 
-                _db.Terminals.Add(terminal);
+                _db.Terminal.Add(terminal);
                 await _db.SaveChangesAsync();
 
                 return RedirectToRoute(RouteNames.GetTerminalById, new GetById.Query() { Id = terminal.Id });

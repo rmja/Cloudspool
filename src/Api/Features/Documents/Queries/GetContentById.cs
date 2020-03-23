@@ -27,7 +27,7 @@ namespace Api.Features.Documents.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Documents
+                var query = _db.Document
                     .Where(x => x.ProjectId == projectId && x.Id == request.Id)
                     .Select(x => new { x.Content, x.ContentType });
                 var result = await query.SingleOrDefaultAsync();

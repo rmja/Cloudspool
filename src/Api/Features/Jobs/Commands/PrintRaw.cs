@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,8 +14,8 @@ namespace Api.Features.Jobs.Commands
         public class Command
         {
             public int SpoolerId { get; set; }
+            [Required]
             public string PrinterName { get; set; }
-            public byte[] Content { get; set; }
         }
 
         public class Handler : ApiEndpoint<Command>
@@ -28,12 +29,12 @@ namespace Api.Features.Jobs.Commands
                 _redis = connection;
             }
 
-            [HttpPost("/Spoolers/{SpoolerId:int}/Printers/{PrinterName}/Jobs")]
+            [HttpPost("/Spoolers/{SpoolerId:int}/Print")]
             public override async Task<ActionResult> HandleAsync(Command request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
 
-                if (!await _db.Spoolers.AnyAsync(x => x.Zone.ProjectId == projectId && x.Id == request.SpoolerId))
+                if (!await _db.Spooler.AnyAsync(x => x.Zone.ProjectId == projectId && x.Id == request.SpoolerId))
                 {
                     return NotFound();
                 }

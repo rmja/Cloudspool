@@ -31,7 +31,7 @@ namespace Api.Features.Zones.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Zones
+                var query = _db.Zone
                     .Where(x => x.ProjectId == projectId && x.Id == request.Id);
                 var result = await _mapper.ProjectTo<Zone>(query).SingleOrDefaultAsync();
 
