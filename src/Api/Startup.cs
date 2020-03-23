@@ -43,7 +43,13 @@ namespace Api
             services.AddAutoMapper(typeof(Startup).Assembly);
             services.AddMemoryCache();
             services.AddSingleton<ECMAScript6Generator>();
-            services.AddTransient<ProjectKeyAuthorizationMiddleware>();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = ApiKeyDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = ApiKeyDefaults.AuthenticationScheme;
+            })
+                .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyDefaults.AuthenticationScheme, options => { });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -53,18 +59,15 @@ namespace Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
-
-            app.UseMiddleware<ProjectKeyAuthorizationMiddleware>();
-
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app
+                .UseHttpsRedirection()
+                .UseRouting()
+                .UseAuthentication()
+                .UseAuthorization()
+                .UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                });
 
             Migrate(app);
         }

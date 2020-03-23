@@ -75,13 +75,13 @@ export default class Builder {
 
         public static void Populate(CloudspoolContext db)
         {
-            db.Projects.AddRange(GetProjects());
-            db.Templates.AddRange(GetTemplates());
-            db.Documents.AddRange(GetDocuments());
-            db.Spoolers.AddRange(GetSpoolers());
-            db.Zones.AddRange(GetZones());
-            db.Terminals.AddRange(GetTerminals());
-            db.Formats.AddRange(GetFormats());
+            db.Project.AddRange(GetProjects());
+            db.Template.AddRange(GetTemplates());
+            db.Document.AddRange(GetDocuments());
+            db.Spooler.AddRange(GetSpoolers());
+            db.Zone.AddRange(GetZones());
+            db.Terminal.AddRange(GetTerminals());
+            db.Format.AddRange(GetFormats());
 
             db.SaveChanges();
         }

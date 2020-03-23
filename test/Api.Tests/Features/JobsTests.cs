@@ -37,7 +37,7 @@ namespace Api.Tests.Features
             var content = new StringContent("This is Epson", Encoding.UTF8, "application/escpos");
 
             // When
-            var response = await _client.PostAsync($"/Spoolers/{firstSpooler.Id}/Printers/SlipPrinter/Jobs", content);
+            var response = await _client.PostAsync($"/Spoolers/{firstSpooler.Id}/Print?PrinterName=SlipPrinter", content);
             response.EnsureSuccessStatusCode();
 
             // Then
