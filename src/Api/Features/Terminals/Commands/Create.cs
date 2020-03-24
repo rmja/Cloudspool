@@ -70,7 +70,7 @@ namespace Api.Features.Terminals.Commands
                 _db.Terminal.Add(terminal);
                 await _db.SaveChangesAsync();
 
-                return RedirectToRoute(RouteNames.GetTerminalById, new GetById.Query() { Id = terminal.Id });
+                return RedirectToEndpoint(new GetById.Query() { Id = terminal.Id });
             }
         }
     }

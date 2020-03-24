@@ -57,7 +57,7 @@ namespace Api.Features.Terminals.Commands
 
                 await _db.SaveChangesAsync();
 
-                return RedirectToRoute(RouteNames.GetTerminalById, new GetById.Query() { Id = terminal.Id });
+                return SeeOtherEndpoint(new GetById.Query() { Id = terminal.Id });
             }
         }
     }

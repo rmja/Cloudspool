@@ -2,8 +2,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +10,8 @@ namespace Api.Features.Templates.Queries
 {
     public class GetById
     {
+        public const string RouteName = "GetTemplateById";
+
         public class Query
         {
             public int Id { get; set; }
@@ -28,7 +28,7 @@ namespace Api.Features.Templates.Queries
                 _mapper = mapper;
             }
 
-            [HttpGet("/Templates/{Id:int}", Name = RouteNames.GetTemplateById)]
+            [HttpGet("/Templates/{Id:int}", Name = RouteName)]
             public override async Task<ActionResult<Template>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
@@ -42,7 +42,7 @@ namespace Api.Features.Templates.Queries
                     return NotFound();
                 }
 
-                result.ScriptUrl = Url.RouteUrl(RouteNames.GetTemplateScriptById, new GetScriptById.Query() { Id = result.Id });
+                result.ScriptUrl = Url.RouteUrl(GetScriptById.RouteName, new GetScriptById.Query() { Id = result.Id });
 
                 return result;
             }

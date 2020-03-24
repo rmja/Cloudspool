@@ -57,7 +57,7 @@ namespace Api.Features.Documents.Commands
                 _db.Document.Add(document);
                 await _db.SaveChangesAsync();
 
-                return RedirectToRoute(RouteNames.GetDocumentById, new GetById.Query() { Id = document.Id });
+                return RedirectToEndpoint(new GetById.Query() { Id = document.Id });
             }
         }
 

@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.JsonPatch.Operations;
+﻿using Microsoft.AspNetCore.JsonPatch.Operations;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -10,7 +9,7 @@ namespace Api.Tests
 {
     public static class HttpClientExtensions
     {
-        public static Task<HttpResponseMessage> PatchAsJsonAsync(this HttpClient client, string requestUri, IEnumerable<Operation> operations)
+        public static async Task<HttpResponseMessage> PatchAsJsonAsync(this HttpClient client, string requestUri, IEnumerable<Operation> operations)
         {
             var content = new PushStreamContent(async (stream, content, context) =>
             {
@@ -21,7 +20,14 @@ namespace Api.Tests
                 }
             }, "application/json-patch+json");
 
-            return client.PatchAsync(requestUri, content);
+            var response = await client.PatchAsync(requestUri, content);
+
+            if (response.StatusCode == HttpStatusCode.SeeOther)
+            {
+                response = await client.GetAsync(response.Headers.Location);
+            }
+
+            return response;
         }
     }
 }

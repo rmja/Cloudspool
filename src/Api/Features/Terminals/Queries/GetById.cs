@@ -10,6 +10,8 @@ namespace Api.Features.Terminals.Queries
 {
     public class GetById
     {
+        public const string RouteName = "GetTerminalById";
+
         public class Query
         {
             public int Id { get; set; }
@@ -26,7 +28,7 @@ namespace Api.Features.Terminals.Queries
                 _mapper = mapper;
             }
 
-            [HttpGet("/Terminals/{Id:int}", Name = RouteNames.GetTerminalById)]
+            [HttpGet("/Terminals/{Id:int}", Name = RouteName)]
             public override async Task<ActionResult<Terminal>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();

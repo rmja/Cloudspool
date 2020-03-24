@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,6 +49,19 @@ export default class Builder {
             Assert.Equal(script, scriptResult);
             Assert.Equal(scriptContentType, scriptResponse.Content.Headers.ContentType.ToString());
             Assert.Equal(scriptContentType, result.ScriptContentType);
+        }
+
+        [Fact]
+        public async Task CanDelete()
+        {
+            // Given
+            var firstTemplate = SeedData.GetTemplates().First();
+
+            // When
+            var response = await _client.DeleteAsync($"/Templates/{firstTemplate.Id}");
+            response.EnsureSuccessStatusCode();
+
+            // Then
         }
 
         [Fact]

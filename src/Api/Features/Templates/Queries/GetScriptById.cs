@@ -8,6 +8,8 @@ namespace Api.Features.Templates.Queries
 {
     public class GetScriptById
     {
+        public const string RouteName = "GetTemplateScriptById";
+
         public class Query
         {
             public int Id { get; set; }
@@ -22,7 +24,7 @@ namespace Api.Features.Templates.Queries
                 _db = db;
             }
 
-            [HttpGet("/Templates/{Id:int}/Script", Name = RouteNames.GetTemplateScriptById)]
+            [HttpGet("/Templates/{Id:int}/Script", Name = RouteName)]
             public override async Task<ActionResult> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();

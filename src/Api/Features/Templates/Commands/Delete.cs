@@ -1,51 +1,45 @@
-﻿using Api.Client.Models;
-using Api.Features.Templates.Queries;
-using AutoMapper;
-using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Api.Features.Templates.Commands
 {
-    public class Update
+    public class Delete
     {
         public class Command
         {
             public int Id { get; set; }
-            [FromBody]
-            public JsonPatchDocument<Template> Patch { get; set; }
         }
 
         public class Handler : ApiEndpoint<Command>
         {
             private readonly CloudspoolContext _db;
-            private readonly IMapper _mapper;
 
-            public Handler(CloudspoolContext db, IMapper mapper)
+            public Handler(CloudspoolContext db)
             {
                 _db = db;
-                _mapper = mapper;
             }
 
-            [HttpPatch("/Templates/{Id:int}")]
+            [HttpDelete("/Templates/{Id:int}")]
             public override async Task<ActionResult> HandleAsync(Command request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
 
                 var template = await _db.Template.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
-                
+
                 if (template is null)
                 {
                     return NotFound();
                 }
 
-                var patched = _mapper.Patch(template, request.Patch);
-                template.Name = patched.Name;
+                _db.Template.Remove(template);
                 await _db.SaveChangesAsync();
 
-                return SeeOtherEndpoint(new GetById.Query() { Id = template.Id });
+                return Ok();
             }
         }
     }

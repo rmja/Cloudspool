@@ -10,6 +10,8 @@ namespace Api.Features.Zones.Queries
 {
     public class GetById
     {
+        public const string RouteName = "GetZoneById";
+
         public class Query
         {
             public int Id { get; set; }
@@ -26,7 +28,7 @@ namespace Api.Features.Zones.Queries
                 _mapper = mapper;
             }
 
-            [HttpGet("/Zones/{Id:int}", Name = RouteNames.GetZoneById)]
+            [HttpGet("/Zones/{Id:int}", Name = RouteName)]
             public override async Task<ActionResult<Zone>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();

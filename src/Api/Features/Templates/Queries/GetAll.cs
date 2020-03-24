@@ -37,7 +37,7 @@ namespace Api.Features.Templates.Queries
 
                 foreach (var template in templates)
                 {
-                    template.ScriptUrl = Url.RouteUrl(RouteNames.GetTemplateScriptById, new GetScriptById.Query() { Id = template.Id });
+                    template.ScriptUrl = Url.RouteUrl(GetScriptById.RouteName, new GetScriptById.Query() { Id = template.Id });
                 }
 
                 return templates;

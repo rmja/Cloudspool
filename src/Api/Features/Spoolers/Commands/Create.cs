@@ -38,7 +38,7 @@ namespace Api.Features.Spoolers.Commands
                 _db.Spooler.Add(spooler);
                 await _db.SaveChangesAsync();
 
-                return RedirectToRoute(RouteNames.GetSpoolerById, new GetById.Query() { Id = spooler.Id});
+                return RedirectToEndpoint(new GetById.Query() { Id = spooler.Id});
             }
         }
     }

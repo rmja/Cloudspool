@@ -27,7 +27,7 @@ namespace Api.Features.Formats.Queries
                 _mapper = mapper;
             }
 
-            [HttpGet("/Zones/{ZoneId:int}/Formats/{Alias}", Name = RouteNames.GetFormatByAlias)]
+            [HttpGet("/Zones/{ZoneId:int}/Formats/{Alias}")]
             public override async Task<ActionResult<Format>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();

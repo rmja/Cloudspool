@@ -57,7 +57,7 @@ namespace Api.Features.Zones.Commands
 
                 await _db.SaveChangesAsync();
 
-                return RedirectToRoute(RouteNames.GetZoneById, new GetById.Query() { Id = zone.Id });
+                return SeeOtherEndpoint(new GetById.Query() { Id = zone.Id });
             }
         }
     }
