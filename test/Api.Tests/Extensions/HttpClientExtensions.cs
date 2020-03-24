@@ -9,7 +9,7 @@ namespace Api.Tests
 {
     public static class HttpClientExtensions
     {
-        public static async Task<HttpResponseMessage> PatchAsJsonAsync(this HttpClient client, string requestUri, IEnumerable<Operation> operations)
+        public static Task<HttpResponseMessage> PatchAsJsonAsync(this HttpClient client, string requestUri, IEnumerable<Operation> operations)
         {
             var content = new PushStreamContent(async (stream, content, context) =>
             {
@@ -20,8 +20,11 @@ namespace Api.Tests
                 }
             }, "application/json-patch+json");
 
-            var response = await client.PatchAsync(requestUri, content);
+            return client.PatchAsync(requestUri, content);
+        }
 
+        public static async Task<HttpResponseMessage> FollowRedirectAsync(this HttpClient client, HttpResponseMessage response)
+        {
             if (response.StatusCode == HttpStatusCode.SeeOther)
             {
                 response = await client.GetAsync(response.Headers.Location);

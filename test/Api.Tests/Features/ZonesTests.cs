@@ -70,8 +70,9 @@ namespace Api.Tests.Features
                 .Add(x => x.Routes, new Zone.Route() { Alias = "UpdatedAlias", SpoolerId = firstSpooler.Id, PrinterName = "Updated Printer" });
 
             // When
-            var response = await _client.PatchAsJsonAsync($"/Zones/{firstZone.Id}", patch.Operations);
-            var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Zone>();
+            var patchResponse = await _client.PatchAsJsonAsync($"/Zones/{firstZone.Id}", patch.Operations);
+            var getResponse = await _client.FollowRedirectAsync(patchResponse);
+            var result = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Zone>();
 
             // Then
             Assert.Equal("Updated Name", result.Name);

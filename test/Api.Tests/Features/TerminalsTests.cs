@@ -72,8 +72,9 @@ namespace Api.Tests.Features
                 .Add(x => x.Routes, new Terminal.Route() { Alias = "UpdatedAlias", SpoolerId = firstSpooler.Id, PrinterName = "Updated Printer" });
 
             // When
-            var response = await _client.PatchAsJsonAsync($"/Terminals/{firstTerminal.Id}", patch.Operations);
-            var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Terminal>();
+            var patchResponse = await _client.PatchAsJsonAsync($"/Terminals/{firstTerminal.Id}", patch.Operations);
+            var getResponse = await _client.FollowRedirectAsync(patchResponse);
+            var result = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Terminal>();
 
             // Then
             Assert.Equal("Updated Name", result.Name);

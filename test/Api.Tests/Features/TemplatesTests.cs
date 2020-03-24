@@ -83,17 +83,15 @@ export default class Builder {
 
             // When
             var response = await _client.PutAsync($"/Templates/{firstTemplate.Id}/Script", scriptContent);
-            var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Template>();
+            response.EnsureSuccessStatusCode();
 
             // When
-            var scriptResponse = await _client.GetAsync(result.ScriptUrl);
+            var scriptResponse = await _client.GetAsync($"/Templates/{firstTemplate.Id}/Script");
             var scriptResult = await scriptResponse.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
             // Then
-            Assert.Equal(firstTemplate.Name, result.Name);
             Assert.Equal(script, scriptResult);
             Assert.Equal(scriptContentType, scriptResponse.Content.Headers.ContentType.ToString());
-            Assert.Equal(scriptContentType, result.ScriptContentType);
         }
 
         [Fact]
@@ -105,8 +103,9 @@ export default class Builder {
                 .Replace(x => x.Name, "Updated name");
 
             // When
-            var response = await _client.PatchAsJsonAsync($"/Templates/{firstTemplate.Id}", patch.Operations);
-            var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Template>();
+            var patchResponse = await _client.PatchAsJsonAsync($"/Templates/{firstTemplate.Id}", patch.Operations);
+            var getResponse = await _client.FollowRedirectAsync(patchResponse);
+            var result = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Template>();
 
             // Then
             Assert.Equal("Updated name", result.Name);

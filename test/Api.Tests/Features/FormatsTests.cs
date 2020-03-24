@@ -43,9 +43,8 @@ namespace Api.Tests.Features
             };
 
             // When
-            var response = await _client.PutAsJsonAsync($"/Zones/{firstZone.Id}/Formats/TheAlias", command);
-            response.EnsureSuccessStatusCode();
-            var getResponse = await _client.GetAsync($"/Zones/{firstZone.Id}/Formats/TheAlias");
+            var putResponse = await _client.PutAsJsonAsync($"/Zones/{firstZone.Id}/Formats/TheAlias", command);
+            var getResponse = await _client.FollowRedirectAsync(putResponse);
             var result = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Format>();
 
             // Then

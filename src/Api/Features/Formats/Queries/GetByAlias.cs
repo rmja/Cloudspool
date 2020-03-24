@@ -10,6 +10,8 @@ namespace Api.Features.Formats.Queries
 {
     public class GetByAlias
     {
+        public const string RouteName = "GetFormatByAlias";
+
         public class Query
         {
             public int ZoneId { get; set; }
@@ -27,7 +29,7 @@ namespace Api.Features.Formats.Queries
                 _mapper = mapper;
             }
 
-            [HttpGet("/Zones/{ZoneId:int}/Formats/{Alias}")]
+            [HttpGet("/Zones/{ZoneId:int}/Formats/{Alias}", Name = RouteName)]
             public override async Task<ActionResult<Format>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();

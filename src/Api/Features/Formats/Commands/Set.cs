@@ -1,4 +1,5 @@
 ﻿using Api.DataModels;
+using Api.Features.Formats.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
@@ -48,7 +49,7 @@ namespace Api.Features.Formats.Commands
                 _db.Format.Add(format);
                 await _db.SaveChangesAsync();
 
-                return Ok();
+                return SeeOtherEndpoint(new GetByAlias.Query() { ZoneId = request.ZoneId, Alias = request.Alias });
             }
         }
     }

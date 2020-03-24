@@ -52,7 +52,7 @@ namespace Api.Features.Templates.Commands
                 template.ScriptContentType = Request.ContentType;
                 await _db.SaveChangesAsync();
 
-                return RedirectToEndpoint(new GetById.Query() { Id = template.Id });
+                return Ok();
             }
         }
     }
