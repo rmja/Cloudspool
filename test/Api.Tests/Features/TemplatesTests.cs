@@ -136,6 +136,7 @@ export default class Builder {
 
             // Then
             Assert.Equal(firstTemplate.Id, result.Id);
+            Assert.Equal($"/Templates/{firstTemplate.Id}/Script", result.ScriptUrl);
             Assert.Equal(firstTemplate.ScriptContentType, result.ScriptContentType);
         }
 

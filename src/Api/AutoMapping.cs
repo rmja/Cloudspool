@@ -9,6 +9,7 @@ namespace Api
             CreateMap<DataModels.Document, Client.Models.Document>();
             CreateMap<DataModels.Format, Client.Models.Format>();
             CreateMap<DataModels.Project, Client.Models.Project>();
+            CreateMap<DataModels.Resource, Client.Models.Resource>();
             CreateMap<DataModels.Spooler, Client.Models.Spooler>()
                 .ForMember(dest => dest.ProjectId, opts => opts.MapFrom(src => src.Zone.ProjectId));
             CreateMap<DataModels.Template, Client.Models.Template>();

@@ -38,6 +38,13 @@ export default class Builder {
 }", "application/javascript") { Id = id-- };
         }
 
+        public static IEnumerable<Resource> GetResources()
+        {
+            var id = -1;
+
+            yield return new Resource(projectId: -1, alias: "my-resource", Encoding.UTF8.GetBytes("\"a string\""), "application/json") { Id = id-- };
+        }
+
         public static IEnumerable<Document> GetDocuments()
         {
             var id = -1;
@@ -77,6 +84,7 @@ export default class Builder {
         {
             db.Project.AddRange(GetProjects());
             db.Template.AddRange(GetTemplates());
+            db.Resource.AddRange(GetResources());
             db.Document.AddRange(GetDocuments());
             db.Spooler.AddRange(GetSpoolers());
             db.Zone.AddRange(GetZones());
