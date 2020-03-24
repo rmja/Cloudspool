@@ -1,6 +1,7 @@
 ﻿using Api.Client.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Net.Http.Headers;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -95,6 +96,19 @@ export default class Builder {
 
             // Then
             Assert.Equal("Updated name", result.Name);
+        }
+
+        [Fact]
+        public async Task CanGetAll()
+        {
+            // Given
+
+            // When
+            var response = await _client.GetAsync("/Templates");
+            var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<List<Template>>();
+
+            // Then
+            Assert.Equal(SeedData.GetTemplates().Count(), result.Count);
         }
 
         [Fact]
