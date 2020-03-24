@@ -22,7 +22,7 @@ namespace Api.Features.Resources.Queries
                 _db = db;
             }
 
-            [HttpGet("/Resources/{Alias}/Content", Name = "GetResourceContentByAlias")]
+            [HttpGet("/Resources/{Alias}", Name = "GetResourceContentByAlias")]
             public override async Task<ActionResult> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();

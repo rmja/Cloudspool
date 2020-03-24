@@ -1,15 +1,14 @@
 import { Http } from "ur-http";
-import { Operation } from "ur-jsonpatch";
 
 export interface Resource {
     id: number;
+    alias: string;
+    contentUrl: string;
+    contentType: string;
 }
 
-// export const create = (command: { name: string, script: string, scriptContentType: string }) => Http.post("/Templates", { name: command.name }).with(command.script, command.scriptContentType).expectJson<Template>();
-// export const destroy = (id: number) => Http.delete(`/Templates/${id}`);
-// export const setScript = (id: number, script: string, scriptContentType: string) => Http.put(`/Templates/${id}/Script`).with(script, scriptContentType);
-// export const update = (id: number, patch: Operation[]) => Http.patch(`/Templates/${id}`).withJsonPatch(patch).expectJson<Template>();
+export const destroy = (alias: string) => Http.delete(`/Resources/${alias}`);
+export const set = (alias: string, content: File, contentType: string) => Http.put(`/Resources/${alias}`).with(content, contentType);
 
 export const getAll = () => Http.get("/Resources").expectJson<Resource[]>();
-// export const getById = (id: number) => Http.get(`/Templates/${id}`).expectJson<Template>();
-// export const getScriptById = (id: number) => Http.get(`/Templates/${id}/Script`).expectString();
+export const getByAlias = (alias: string) => Http.get(`/Resources/${alias}`);
