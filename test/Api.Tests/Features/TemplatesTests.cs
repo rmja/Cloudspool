@@ -50,6 +50,38 @@ export default class Builder {
         }
 
         [Fact]
+        public async Task CanSetScript()
+        {
+            // Given
+            var script = @"
+export default class Builder {
+    constructor() {
+        this.contentType = 'application/escpos';
+    }
+    build(model) {
+        return 'This is the updated script'
+    }
+}";
+            var firstTemplate = SeedData.GetTemplates().First();
+            var scriptContent = new StringContent(script, Encoding.UTF8, "application/javascript");
+            var scriptContentType = scriptContent.Headers.ContentType.ToString();
+
+            // When
+            var response = await _client.PutAsync($"/Templates/{firstTemplate.Id}/Script", scriptContent);
+            var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Template>();
+
+            // When
+            var scriptResponse = await _client.GetAsync(result.ScriptUrl);
+            var scriptResult = await scriptResponse.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+
+            // Then
+            Assert.Equal(firstTemplate.Name, result.Name);
+            Assert.Equal(script, scriptResult);
+            Assert.Equal(scriptContentType, scriptResponse.Content.Headers.ContentType.ToString());
+            Assert.Equal(scriptContentType, result.ScriptContentType);
+        }
+
+        [Fact]
         public async Task CanUpdate()
         {
             // Given

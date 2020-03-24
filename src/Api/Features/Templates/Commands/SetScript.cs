@@ -1,20 +1,18 @@
-﻿using Api.DataModels;
-using Api.Features.Templates.Queries;
+﻿using Api.Features.Templates.Queries;
 using Api.Generators.ECMAScript6;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Api.Features.Templates.Commands
 {
-    public class Create
+    public class SetScript
     {
         public class Command
         {
-            [Required]
-            public string Name { get; set; }
+            public int Id { get; set; }
         }
 
         public class Handler : ApiEndpoint<Command>
@@ -28,11 +26,17 @@ namespace Api.Features.Templates.Commands
                 _ecmaScript6Generator = ecmaScript6Generator;
             }
 
-            [HttpPost("/Templates")]
-            [Consumes("application/javascript")]
+            [HttpPut("/Templates/{Id:int}/Script")]
             public override async Task<ActionResult> HandleAsync(Command request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
+
+                var template = await _db.Template.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
+                
+                if (template is null)
+                {
+                    return NotFound();
+                }
 
                 using var reader = new StreamReader(Request.Body);
                 var script = await reader.ReadToEndAsync();
@@ -44,11 +48,11 @@ namespace Api.Features.Templates.Commands
                     return BadRequest(errors);
                 }
 
-                var template = new Template(projectId, request.Name, script, Request.ContentType);
-                _db.Template.Add(template);
+                template.Script = script;
+                template.ScriptContentType = Request.ContentType;
                 await _db.SaveChangesAsync();
 
-                return RedirectToRoute(RouteNames.GetTemplateById, new GetById.Query() { Id = template.Id});
+                return RedirectToRoute(RouteNames.GetTemplateById, new GetById.Query() { Id = template.Id });
             }
         }
     }

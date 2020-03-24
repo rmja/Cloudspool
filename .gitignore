@@ -1,5 +1,8 @@
 .vs
 *.csproj.user
+**/bower_components
+**/node_modules
+**/wwwroot/lib
 src/*/bin
 src/*/obj
 test/*/bin
