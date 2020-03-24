@@ -8,8 +8,6 @@ namespace Api.Features.Documents.Queries
 {
     public class GetContentById
     {
-        public const string RouteName = "GetDocumentContentById";
-
         public class Query
         {
             public int Id { get; set; }
@@ -24,7 +22,7 @@ namespace Api.Features.Documents.Queries
                 _db = db;
             }
 
-            [HttpGet("/Documents/{Id:int}/Content", Name = RouteName)]
+            [HttpGet("/Documents/{Id:int}/Content", Name = "GetDocumentContentById")]
             public override async Task<ActionResult> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();

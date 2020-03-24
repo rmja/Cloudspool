@@ -10,8 +10,6 @@ namespace Api.Features.Documents.Queries
 {
     public class GetById
     {
-        public const string RouteName = "GetDocumentById";
-
         public class Query
         {
             public int Id { get; set; }
@@ -28,7 +26,7 @@ namespace Api.Features.Documents.Queries
                 _mapper = mapper;
             }
 
-            [HttpGet("/Documents/{Id:int}", Name = RouteName)]
+            [HttpGet("/Documents/{Id:int}", Name = "GetDocumentById")]
             public override async Task<ActionResult<Document>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
@@ -42,7 +40,7 @@ namespace Api.Features.Documents.Queries
                     return NotFound();
                 }
 
-                result.ContentUrl = Url.RouteUrl(GetContentById.RouteName, new GetContentById.Query() { Id = result.Id });
+                result.ContentUrl = Url.EndpointUrl(new GetContentById.Query() { Id = result.Id });
 
                 return result;
             }

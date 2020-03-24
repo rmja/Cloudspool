@@ -10,8 +10,6 @@ namespace Api.Features.Templates.Queries
 {
     public class GetById
     {
-        public const string RouteName = "GetTemplateById";
-
         public class Query
         {
             public int Id { get; set; }
@@ -28,7 +26,7 @@ namespace Api.Features.Templates.Queries
                 _mapper = mapper;
             }
 
-            [HttpGet("/Templates/{Id:int}", Name = RouteName)]
+            [HttpGet("/Templates/{Id:int}", Name = "GetTemplateById")]
             public override async Task<ActionResult<Template>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
@@ -42,7 +40,7 @@ namespace Api.Features.Templates.Queries
                     return NotFound();
                 }
 
-                result.ScriptUrl = Url.RouteUrl(GetScriptById.RouteName, new GetScriptById.Query() { Id = result.Id });
+                result.ScriptUrl = Url.EndpointUrl(new GetScriptById.Query() { Id = result.Id });
 
                 return result;
             }

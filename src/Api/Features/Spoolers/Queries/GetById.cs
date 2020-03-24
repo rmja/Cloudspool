@@ -11,8 +11,6 @@ namespace Api.Features.Spoolers.Queries
 {
     public class GetById
     {
-        public const string RouteName = "GetSpoolerById";
-
         public class Query
         {
             public int Id { get; set; }
@@ -31,7 +29,7 @@ namespace Api.Features.Spoolers.Queries
                 _mapper = mapper;
             }
 
-            [HttpGet("/Spoolers/{Id:int}", Name = RouteName)]
+            [HttpGet("/Spoolers/{Id:int}", Name = "GetSpoolerById")]
             public override async Task<ActionResult<Spooler>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
