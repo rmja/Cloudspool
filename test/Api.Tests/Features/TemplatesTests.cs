@@ -34,7 +34,6 @@ export default class Builder {
     }
 }";
             var scriptContent = new StringContent(script, Encoding.UTF8, "application/javascript");
-            var scriptContentType = scriptContent.Headers.ContentType.ToString();
 
             // When
             var response = await _client.PostAsync("/Templates?name=Test Template", scriptContent);
@@ -47,8 +46,8 @@ export default class Builder {
             // Then
             Assert.Equal("Test Template", result.Name);
             Assert.Equal(script, scriptResult);
-            Assert.Equal(scriptContentType, scriptResponse.Content.Headers.ContentType.ToString());
-            Assert.Equal(scriptContentType, result.ScriptContentType);
+            Assert.Equal("application/javascript", scriptResponse.Content.Headers.ContentType.ToString());
+            Assert.Equal("application/javascript", result.ScriptMediaType);
         }
 
         [Fact]
@@ -137,7 +136,7 @@ export default class Builder {
             // Then
             Assert.Equal(firstTemplate.Id, result.Id);
             Assert.Equal($"/Templates/{firstTemplate.Id}/Script", result.ScriptUrl);
-            Assert.Equal(firstTemplate.ScriptContentType, result.ScriptContentType);
+            Assert.Equal(firstTemplate.ScriptMediaType, result.ScriptMediaType);
         }
 
         [Fact]
@@ -151,7 +150,7 @@ export default class Builder {
             var result = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
             // Then
-            Assert.Equal(firstTemplate.ScriptContentType, response.Content.Headers.ContentType.MediaType);
+            Assert.Equal(firstTemplate.ScriptMediaType, response.Content.Headers.ContentType.MediaType);
             Assert.Equal(firstTemplate.Script, result);
         }
     }

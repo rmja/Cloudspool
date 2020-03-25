@@ -9,7 +9,7 @@ namespace Api.EntityTypeConfigurations
         public void Configure(EntityTypeBuilder<Template> builder)
         {
             builder.Property(x => x.Name).HasMaxLength(100).IsRequired();
-            builder.Property(x => x.ScriptContentType).HasMaxLength(100).IsRequired();
+            builder.Property(x => x.ScriptMediaType).HasMaxLength(100).IsRequired();
             builder.Property(x => x.Script).IsRequired();
         }
     }

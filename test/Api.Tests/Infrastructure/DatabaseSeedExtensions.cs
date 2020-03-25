@@ -11,7 +11,8 @@ namespace Api.Tests
         private static readonly Checkpoint _postgresCheckpoint = new Checkpoint
         {
             SchemasToInclude = new[] { "public" },
-            DbAdapter = DbAdapter.Postgres
+            DbAdapter = DbAdapter.Postgres,
+            TablesToIgnore = new [] { "__EFMigrationsHistory" }
         };
 
         public static WebApplicationFactory<TStartup> WithPopulatedSeedData<TStartup>(this WebApplicationFactory<TStartup> factory) where TStartup : class =>

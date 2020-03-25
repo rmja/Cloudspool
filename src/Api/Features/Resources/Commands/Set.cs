@@ -1,4 +1,5 @@
 ﻿using Api.Features.Resources.Queries;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
@@ -23,7 +24,7 @@ namespace Api.Features.Resources.Commands
                 _db = db;
             }
 
-            [HttpPut("/Resources/{Alias}")]
+            [HttpPut("/Resources/{Alias}/Content")]
             public override async Task<ActionResult> HandleAsync(Command request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
@@ -33,14 +34,15 @@ namespace Api.Features.Resources.Commands
 
                 var resource = await _db.Resource.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Alias == request.Alias);
 
+                var mediaType = Request.GetTypedHeaders().ContentType.MediaType.Value;
                 if (resource is object)
                 {
                     resource.Content = content.ToArray();
-                    resource.ContentType = Request.ContentType;
+                    resource.MediaType = mediaType;
                 }
                 else
                 {
-                    resource = new DataModels.Resource(projectId, request.Alias, content.ToArray(), Request.ContentType);
+                    resource = new DataModels.Resource(projectId, request.Alias, content.ToArray(), mediaType);
                     _db.Resource.Add(resource);
                 }
 

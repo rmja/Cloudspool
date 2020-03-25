@@ -9,19 +9,19 @@ namespace Api.DataModels
         public Project Project { get; set; }
         public string Name { get; set; }
         public string Script { get; set; }
-        public string ScriptContentType { get; set; }
+        public string ScriptMediaType { get; set; }
         public DateTime Created { get; set; }
 
         private Template()
         {
         }
 
-        public Template(int projectId, string name, string script, string scriptContentType)
+        public Template(int projectId, string name, string script, string scriptMediaType)
         {
             ProjectId = projectId;
             Name = name;
             Script = script;
-            ScriptContentType = scriptContentType;
+            ScriptMediaType = scriptMediaType;
             Created = DateTime.UtcNow;
         }
     }

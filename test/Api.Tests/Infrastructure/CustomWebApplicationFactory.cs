@@ -75,7 +75,7 @@ namespace Api.Tests
             using (var scope = serviceProvider.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<CloudspoolContext>();
-                db.Database.EnsureCreated();
+                db.Database.Migrate();
             }
         }
     }

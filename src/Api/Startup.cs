@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using StackExchange.Redis;
 using System.Linq;
 
@@ -62,6 +63,14 @@ namespace Api
             }
 
             app
+                .Use((context, next) =>
+                {
+                    if (context.Request.Query.TryGetValue("project_key", out var key))
+                    {
+                        context.Request.Headers[HeaderNames.Authorization] = $"Bearer project:{key}";
+                    }
+                    return next();
+                })
                 .UseHttpsRedirection()
                 .UseRouting()
                 .UseAuthentication()

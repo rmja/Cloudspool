@@ -29,7 +29,7 @@ namespace Api.Features.Templates.Queries
 
                 var query = _db.Template
                     .Where(x => x.ProjectId == projectId && x.Id == request.Id)
-                    .Select(x => new { x.Script, x.ScriptContentType });
+                    .Select(x => new { x.Script, x.ScriptMediaType });
                 var result = await query.SingleOrDefaultAsync();
 
                 if (result is null)
@@ -37,7 +37,7 @@ namespace Api.Features.Templates.Queries
                     return NotFound();
                 }
 
-                return Content(result.Script, result.ScriptContentType);
+                return Content(result.Script, result.ScriptMediaType);
             }
         }
     }

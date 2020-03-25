@@ -49,7 +49,7 @@ namespace Api.Features.Templates.Commands
                 }
 
                 template.Script = script;
-                template.ScriptContentType = Request.ContentType;
+                template.ScriptMediaType = Request.ContentType;
                 await _db.SaveChangesAsync();
 
                 return Ok();

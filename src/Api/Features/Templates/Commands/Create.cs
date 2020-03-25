@@ -1,6 +1,7 @@
 ﻿using Api.DataModels;
 using Api.Features.Templates.Queries;
 using Api.Generators.ECMAScript6;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -44,7 +45,8 @@ namespace Api.Features.Templates.Commands
                     return BadRequest(errors);
                 }
 
-                var template = new Template(projectId, request.Name, script, Request.ContentType);
+                var mediaType = Request.GetTypedHeaders().ContentType.MediaType.Value;
+                var template = new Template(projectId, request.Name, script, mediaType);
                 _db.Template.Add(template);
                 await _db.SaveChangesAsync();
 

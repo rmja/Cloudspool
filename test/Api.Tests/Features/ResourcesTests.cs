@@ -37,10 +37,9 @@ namespace Api.Tests.Features
         {
             // Given
             var resourceContent = new StringContent("\"the new resource\"", Encoding.UTF8, "application/json");
-            var resourceContentType = resourceContent.Headers.ContentType.ToString();
 
             // When
-            var putResponse = await _client.PutAsync("/Resources/the-new-alias", resourceContent);
+            var putResponse = await _client.PutAsync("/Resources/the-new-alias/Content", resourceContent);
             var getResponse = await _client.FollowRedirectAsync(putResponse);
             var resource = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Resource>();
 
@@ -52,7 +51,7 @@ namespace Api.Tests.Features
 
             // Then
             Assert.Equal("the-new-alias", resource.Alias);
-            Assert.Equal(resourceContentType, contentResponse.Content.Headers.ContentType.ToString());
+            Assert.Equal("application/json", contentResponse.Content.Headers.ContentType.ToString());
             Assert.Equal("the new resource", content);
             Assert.Equal(SeedData.GetResources().Count() + 1, resources.Count);
             Assert.Contains("the-new-alias", resources.Select(x => x.Alias));
@@ -64,10 +63,9 @@ namespace Api.Tests.Features
             // Given
             var firstResource = SeedData.GetResources().First();
             var resourceContent = new StringContent("\"the updated resource\"", Encoding.UTF8, "application/json");
-            var resourceContentType = resourceContent.Headers.ContentType.ToString();
             
             // When
-            var putResponse = await _client.PutAsync($"/Resources/{firstResource.Alias}", resourceContent);
+            var putResponse = await _client.PutAsync($"/Resources/{firstResource.Alias}/Content", resourceContent);
             var getResponse = await _client.FollowRedirectAsync(putResponse);
             var resource = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Resource>();
 
@@ -79,7 +77,7 @@ namespace Api.Tests.Features
 
             // Then
             Assert.Equal(firstResource.Alias, resource.Alias);
-            Assert.Equal(resourceContentType, contentResponse.Content.Headers.ContentType.ToString());
+            Assert.Equal("application/json", contentResponse.Content.Headers.ContentType.ToString());
             Assert.Equal("the updated resource", content);
             Assert.Equal(SeedData.GetResources().Count(), resources.Count);
             Assert.Contains(firstResource.Alias, resources.Select(x => x.Alias));
@@ -123,7 +121,8 @@ namespace Api.Tests.Features
             var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<string>();
 
             // Then
-            Assert.Equal(firstResource.ContentType, response.Content.Headers.ContentType.MediaType);
+            Assert.Equal($"{firstResource.Alias}.json", response.Content.Headers.ContentDisposition.FileName);
+            Assert.Equal(firstResource.MediaType, response.Content.Headers.ContentType.MediaType);
             Assert.Equal("a string", result);
         }
     }

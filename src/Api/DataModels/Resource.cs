@@ -9,19 +9,19 @@ namespace Api.DataModels
         public Project Project { get; set; }
         public string Alias { get; set; }
         public byte[] Content { get; set; }
-        public string ContentType { get; set; }
+        public string MediaType { get; set; }
         public DateTime Created { get; set; }
 
         private Resource()
         {
         }
 
-        public Resource(int projectId, string alias, byte[] content, string contentType)
+        public Resource(int projectId, string alias, byte[] content, string mediaType)
         {
             ProjectId = projectId;
             Alias = alias;
             Content = content;
-            ContentType = contentType;
+            MediaType = mediaType;
             Created = DateTime.UtcNow;
         }
     }
