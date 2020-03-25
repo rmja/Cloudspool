@@ -41,17 +41,19 @@ namespace Api.Tests.Features
 
             // When
             var putResponse = await _client.PutAsync("/Resources/the-new-alias", resourceContent);
-            putResponse.EnsureSuccessStatusCode();
+            var getResponse = await _client.FollowRedirectAsync(putResponse);
+            var resource = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Resource>();
 
-            var getResponse = await _client.GetAsync("/Resources/the-new-alias");
-            var resource = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<string>();
+            var contentResponse = await _client.GetAsync("/Resources/the-new-alias/Content");
+            var content = await contentResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<string>();
 
             var resourcesResponse = await _client.GetAsync("/Resources");
             var resources = await resourcesResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<List<Resource>>();
 
             // Then
-            Assert.Equal(resourceContentType, getResponse.Content.Headers.ContentType.ToString());
-            Assert.Equal("the new resource", resource);
+            Assert.Equal("the-new-alias", resource.Alias);
+            Assert.Equal(resourceContentType, contentResponse.Content.Headers.ContentType.ToString());
+            Assert.Equal("the new resource", content);
             Assert.Equal(SeedData.GetResources().Count() + 1, resources.Count);
             Assert.Contains("the-new-alias", resources.Select(x => x.Alias));
         }
@@ -65,18 +67,20 @@ namespace Api.Tests.Features
             var resourceContentType = resourceContent.Headers.ContentType.ToString();
             
             // When
-            var response = await _client.PutAsync($"/Resources/{firstResource.Alias}", resourceContent);
-            response.EnsureSuccessStatusCode();
+            var putResponse = await _client.PutAsync($"/Resources/{firstResource.Alias}", resourceContent);
+            var getResponse = await _client.FollowRedirectAsync(putResponse);
+            var resource = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Resource>();
 
-            var getResponse = await _client.GetAsync($"/Resources/{firstResource.Alias}");
-            var resource = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<string>();
+            var contentResponse = await _client.GetAsync($"/Resources/{firstResource.Alias}/Content");
+            var content = await contentResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<string>();
 
             var resourcesResponse = await _client.GetAsync("/Resources");
             var resources = await resourcesResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<List<Resource>>();
 
             // Then
-            Assert.Equal(resourceContentType, getResponse.Content.Headers.ContentType.ToString());
-            Assert.Equal("the updated resource", resource);
+            Assert.Equal(firstResource.Alias, resource.Alias);
+            Assert.Equal(resourceContentType, contentResponse.Content.Headers.ContentType.ToString());
+            Assert.Equal("the updated resource", content);
             Assert.Equal(SeedData.GetResources().Count(), resources.Count);
             Assert.Contains(firstResource.Alias, resources.Select(x => x.Alias));
         }
@@ -95,13 +99,27 @@ namespace Api.Tests.Features
         }
 
         [Fact]
-        public async Task CanGetContentByAlias()
+        public async Task CanGetByAlias()
         {
             // Given
             var firstResource = SeedData.GetResources().First();
 
             // When
             var response = await _client.GetAsync($"/Resources/{firstResource.Alias}");
+            var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Resource>();
+
+            // Then
+            Assert.Equal($"/Resources/{firstResource.Alias}/Content", result.ContentUrl);
+        }
+
+        [Fact]
+        public async Task CanGetContentByAlias()
+        {
+            // Given
+            var firstResource = SeedData.GetResources().First();
+
+            // When
+            var response = await _client.GetAsync($"/Resources/{firstResource.Alias}/Content");
             var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<string>();
 
             // Then

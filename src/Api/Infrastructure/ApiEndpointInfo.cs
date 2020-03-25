@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
+﻿using Microsoft.AspNetCore.Mvc.Routing;
 using System;
 using System.Linq;
 using System.Reflection;

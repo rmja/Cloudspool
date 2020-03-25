@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Api.Features.Resources.Queries;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
 using System.Threading;
@@ -45,7 +46,7 @@ namespace Api.Features.Resources.Commands
 
                 await _db.SaveChangesAsync();
 
-                return Ok();
+                return SeeOtherEndpoint(new GetByAlias.Query() { Alias = request.Alias });
             }
         }
     }

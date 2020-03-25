@@ -8,7 +8,8 @@ export interface Resource {
 }
 
 export const destroy = (alias: string) => Http.delete(`/Resources/${alias}`);
-export const set = (alias: string, content: File, contentType: string) => Http.put(`/Resources/${alias}`).with(content, contentType);
+export const set = (alias: string, content: Uint8Array | string, contentType: string) => Http.put(`/Resources/${alias}`).with(content, contentType);
 
 export const getAll = () => Http.get("/Resources").expectJson<Resource[]>();
-export const getByAlias = (alias: string) => Http.get(`/Resources/${alias}`);
+export const getByAlias = (alias: string) => Http.get(`/Resources/${alias}`).expectJson<Resource>();
+export const getContentByAlias = (alias: string) => Http.get(`/Resources/${alias}`);
