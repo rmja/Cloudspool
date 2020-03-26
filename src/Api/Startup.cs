@@ -29,7 +29,7 @@ namespace Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var redisConfiguration = ConfigurationOptions.Parse("redis");
+            var redisConfiguration = ConfigurationOptions.Parse(Configuration.GetConnectionString("Redis"));
 
             services.AddSingleton(sp => ConnectionMultiplexer.Connect(redisConfiguration));
             services.AddControllers(options =>
@@ -40,7 +40,7 @@ namespace Api
                 .ConfigureApplicationPartManager(options => options.FeatureProviders.Add(new ScanNestedControllersFeatureProvider(typeof(Startup).Assembly)))
                 .ConfigureApiBehaviorOptions(options => options.SuppressInferBindingSourcesForParameters = true);
 
-            services.AddDbContext<CloudspoolContext>(options => options.UseNpgsql("Host=localhost;Database=cloudspool;Username=cloudspool;Password=cloudspool"));
+            services.AddDbContext<CloudspoolContext>(options => options.UseNpgsql(Configuration.GetConnectionString("Postgres")));
 
             services.AddAutoMapper(typeof(Startup).Assembly);
             services.AddMemoryCache();
@@ -65,6 +65,7 @@ namespace Api
             }
 
             app
+                .UsePathBase(Configuration["PathBase"])
                 .Use((context, next) =>
                 {
                     if (context.Request.Query.TryGetValue("project_key", out var key))

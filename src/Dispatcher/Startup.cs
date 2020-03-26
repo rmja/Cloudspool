@@ -2,6 +2,7 @@ using Cloudspool.AspNetCore.Authentication.ApiKey;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -13,9 +14,16 @@ namespace Dispatcher
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            var redisConfiguration = ConfigurationOptions.Parse("redis");
+            var redisConfiguration = ConfigurationOptions.Parse(Configuration.GetConnectionString("Redis"));
 
             services.AddSingleton(sp => ConnectionMultiplexer.Connect(redisConfiguration));
             services.AddApiClient(options =>
@@ -32,7 +40,7 @@ namespace Dispatcher
 
                     return Task.FromResult<string>(null);
                 };
-            }).ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:51331"));
+            }).ConfigureHttpClient(client => client.BaseAddress = new Uri(Configuration["ApiBaseAddress"]));
             services.AddHttpContextAccessor();
             services.AddSignalR().AddStackExchangeRedis(options => options.Configuration = redisConfiguration);
             

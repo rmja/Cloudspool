@@ -13,7 +13,7 @@ import services from './services';
 // Underscore String Module.
 _.str = (<any>window).s;
 
-const apiBaseBath = window.location.hostname === "localhost" ? 'https://localhost:51331' : ('http://'+document.domain.replace('manager', 'api'));
+const apiBaseBath = window.location.hostname === "localhost" ? 'https://localhost:51331' : '/api';
 let resolvedProjectService: ProjectService;
 Http.defaults.fetch = (input, init) => {
     const projectKey = resolvedProjectService && resolvedProjectService.projectKey;

@@ -10,6 +10,9 @@
     },
     "Docker": {
       "commandName": "Docker",
+      "environmentVariables": {
+        "ConnectionStrings__Postgres": "Host=host.docker.internal;Database=cloudspool;Username=cloudspool;Password=cloudspool"
+      },
       "publishAllPorts": true,
       "useSSL": true
     }
