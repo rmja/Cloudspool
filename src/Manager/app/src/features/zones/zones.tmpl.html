@@ -1,0 +1,39 @@
+﻿<ol class="breadcrumb">
+	<li class="active">Zones</li>
+</ol>
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="thumbnail">
+			<h3>Create Zone</h3>
+			<form ng-controller="NewZoneController as newCtrl" ng-submit="newCtrl.submit()">
+				<div class="form-group">
+					<label>Zone Name</label>
+					<input type="text" class="form-control" ng-model="newCtrl.name" placeholder="Enter the name of the zone" />
+				</div>
+				<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> Create Zone</button>
+				<div class="clearfix"></div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Key</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr ng-repeat="zone in ctrl.zones">
+			<td><a href="#/zones/{{zone.id}}" editable-text="zone.name" e-form="nameForm" onaftersave="ctrl.saveZone(zone)">{{zone.name}}</a> <a href ng-click="nameForm.$show()" ng-hide="nameForm.$visible" ><i class="fa fa-edit"></i></a></td>
+			<td>{{zone.key}}</td>
+			<td>
+				<a href="#/zones/{{zone.id}}" class="btn btn-default"><i class="fa fa-gear"></i></a>
+				<button ng-click="ctrl.destroy(zone)" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+			</td>
+		</tr>
+	</tbody>
+</table>

@@ -1,0 +1,66 @@
+﻿<ol class="breadcrumb">
+	<li class="active">Resources</li>
+</ol>
+
+<div class="row">
+	<div class="col-md-6">
+		<div class="thumbnail">
+			<h3>Upload Resource</h3>
+			<form ng-controller="NewResourceUploadController as newCtrl" ng-submit="newCtrl.submit()">
+				<div class="alert alert-success" ng-show="newCtrl.showSuccess">
+					{{newCtrl.successMessage}}
+				</div>
+				<div class="alert alert-danger" ng-show="newCtrl.showError">
+					{{newCtrl.errorMessage}}
+				</div>
+				<div class="form-group">
+					<label>Alias</label>
+					<input type="text" class="form-control" placeholder="Enter a unique resource alias" ng-model="newCtrl.alias" required />
+				</div>
+				<div class="form-group">
+					<label>File</label>
+					<input type="file" bootstrap-fileinput="select" file-model="newCtrl.file" required />
+				</div>
+				<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-upload"></i> Upload Resource</button>
+				<div class="clearfix"></div>
+			</form>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="thumbnail">
+			<h3>Create Json Resource</h3>
+			<form ng-controller="NewResourceObjectController as newCtrl" ng-submit="newCtrl.submit()">
+				<div class="alert alert-danger" ng-show="newCtrl.showError">
+					{{newCtrl.errorMessage}}
+				</div>
+				<div class="form-group">
+					<input type="text" class="form-control" placeholder="Enter a unique resource alias" ng-model="newCtrl.alias" required />
+				</div>
+				<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> Create Object Resource</button>
+				<div class="clearfix"></div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>Alias</th>
+			<th>Content Type</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tr ng-repeat="resource in ctrl.resources | orderBy: 'alias'">
+		<td>{{resource.alias}}</td>
+		<td>{{resource.contentType}}</td>
+		<td>
+			<a ng-href="#/resources/{{resource.alias}}" class="btn btn-default" ng-disabled="!ctrl.isObjectResource(resource)"><i class="fa fa-pencil"></i></a>
+			<a ng-href="{{ctrl.contentUrl(resource)}}" class="btn btn-default"><i class="fa fa-download"></i></a>
+			<button ng-click="ctrl.destroy(resource)" class="btn btn-danger" ng-disabled="ctrl.formatCount(resource) > 0"><i class="fa fa-trash"></i></button>
+		</td>
+	</tr>
+</table>
+
+
+

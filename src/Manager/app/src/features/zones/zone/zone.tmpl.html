@@ -1,0 +1,272 @@
+﻿<ol class="breadcrumb">
+	<li><a ng-href="#/zones">Zones</a></li>
+	<li class="active">Zone: {{ctrl.zoneName}}</li>
+</ol>
+
+<style>
+	.tab-pane {
+		border-left: 1px solid #ddd;
+		border-right: 1px solid #ddd;
+		border-bottom: 1px solid #ddd;
+		padding: 10px;
+	}
+</style>
+
+<tabset>
+	<tab href heading="Formats" ng-controller="FormatsController as formatsCtrl">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="thumbnail">
+					<h3>Create Format</h3>
+					<form ng-controller="NewFormatController as newCtrl" ng-submit="newCtrl.submit()">
+						<div class="alert alert-danger" ng-show="newCtrl.showError">
+							{{newCtrl.errorMessage}}
+						</div>
+						<div class="form-group">
+							<label>Format Alias</label>
+							<input type="text" class="form-control" placeholder="Enter unique format alias" ng-model="newCtrl.alias" required />
+							<p class="help-block">The alias must be unique for the zone.</p>
+						</div>
+						<div class="form-group">
+							<label>Template</label>
+							<ui-select ng-model="newCtrl.selectedTemplate" required>
+								<ui-select-match placeholder="Template">
+									{{$select.selected.name}}
+								</ui-select-match>
+								<ui-select-choices repeat="template in newCtrl.templates | filter: {name: $select.search} track by template.id">
+									<div ng-bind-html="template.name | highlight: $select.search"></div>
+								</ui-select-choices>
+							</ui-select>
+						</div>
+						<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> Create Format</button>
+						<div class="clearfix"></div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Format Alias</th>
+					<th>Template</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="format in formatsCtrl.formats">
+					<td><a href editable-text="format.alias" onaftersave="formatsCtrl.saveFormat(format)">{{format.alias}} <i class="fa fa-edit"></i></a></td>
+					<td>{{formatsCtrl.getTemplateName(format)}}</td>
+					<td>
+						<button class="btn btn-danger" ng-click="formatsCtrl.destroy(format)"><i class="fa fa-trash"></i></button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</tab>
+
+	<tab heading="Terminals" ng-controller="TerminalsController as terminalsCtrl">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="thumbnail">
+					<h3>Create Terminal</h3>
+					<form ng-controller="NewTerminalController as newCtrl" ng-submit="newCtrl.submit()">
+						<div class="form-group">
+							<label>Terminal Name</label>
+							<input type="text" class="form-control" placeholder="Enter terminal name" ng-model="newCtrl.name" required />
+						</div>
+						<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> Create Terminal</button>
+						<div class="clearfix"></div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Key</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="terminal in terminalsCtrl.terminals">
+					<td><a href editable-text="terminal.name" onaftersave="terminalsCtrl.saveTerminal(terminal)">{{terminal.name}} <i class="fa fa-edit"></i></a></td>
+					<td>{{terminal.key}}</td>
+					<td>
+						<button class="btn btn-danger" ng-click="terminalsCtrl.destroy(terminal)"><i class="fa fa-trash"></i></button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</tab>
+
+	<tab heading="Spoolers" ng-controller="SpoolersController as spoolersCtrl">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="thumbnail">
+					<h3>Create Spooler</h3>
+					<form ng-controller="NewSpoolerController as newCtrl" ng-submit="newCtrl.submit()">
+						<div class="form-group">
+							<label>Spooler Name</label>
+							<input type="text" class="form-control" placeholder="Enter spooler name" ng-model="newCtrl.name" required />
+						</div>
+						<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> Create Spooler</button>
+						<div class="clearfix"></div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div class="row" ng-repeat="spooler in spoolersCtrl.spoolers">
+			<div class="col-md-12">
+				<div class="thumbnail">
+					<h4><a href editable-text="spooler.name" onaftersave="spoolersCtrl.saveSpooler(spooler)">{{spooler.name}} <i class="fa fa-edit"></i></a></h4>
+					<button class="btn btn-danger" ng-click="spoolersCtrl.destroy(spooler)"><i class="fa fa-trash"></i></button>
+					<h5>Spooler Key</h5>
+					<input type="text" class="form-control" disabled value="{{spooler.key}}" />
+
+					<h5>Printers <a href ng-click="spoolersCtrl.refreshPrinters(spooler)"><i class="fa fa-refresh"></i></a></h5>
+					<div ng-if="!spoolersCtrl.anyPrinters(spooler)" class="alert alert-warning">
+						There are currenly no printers registered on this spooler. Please start the Print Spooler application with the spooler key to register printers.
+					</div>
+					<table class="table table-condensed" ng-if="spoolersCtrl.anyPrinters(spooler)">
+						<thead>
+							<tr>
+								<th>Printer Name</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="printerName in spoolersCtrl.getPrinterNames(spooler)">
+								<td>{{printerName}}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</tab>
+
+	<tab heading="Routes" ng-controller="RoutesController as routesCtrl">
+		<div ng-if="routesCtrl.showWelcome">
+			There are no terminals or spoolers configured, or a spooler has not registered any printers.
+		</div>
+		<div ng-if="!routesCtrl.showWelcome">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="thumbnail">
+						<h3>Create Default Route</h3>
+						<form ng-controller="NewZoneRouteController as newCtrl" ng-submit="newCtrl.submit()">
+							<div class="alert alert-danger" ng-show="newCtrl.showError">
+								{{newCtrl.errorMessage}}
+							</div>
+							<div class="form-group">
+								<label>Route Alias</label>
+								<input type="text" class="form-control" placeholder="Enter route alias" ng-model="newCtrl.alias" required />
+							</div>
+							<div class="form-group">
+								<label>Printer</label>
+								<ui-select ng-model="newCtrl.selectedPrinter" required>
+									<ui-select-match placeholder="Template">
+										{{$select.selected.printerName}}
+									</ui-select-match>
+									<ui-select-choices repeat="printer in newCtrl.printers | filter: {printerName: $select.search} track by printer.spoolerId+printer.printerName" group-by="newCtrl.getSpoolerName">
+										<div ng-bind-html="printer.printerName | highlight: $select.search"></div>
+									</ui-select-choices>
+								</ui-select>
+							</div>
+							<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> Create Route</button>
+							<div class="clearfix"></div>
+						</form>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="thumbnail">
+						<h3>Create Terminal Route</h3>
+						<form ng-controller="NewTerminalRouteController as newCtrl" ng-submit="newCtrl.submit()">
+							<div class="alert alert-danger" ng-show="newCtrl.showError">
+								{{newCtrl.errorMessage}}
+							</div>
+							<div class="form-group">
+								<label>Route Alias</label>
+								<input type="text" class="form-control" placeholder="Enter route alias" ng-model="newCtrl.alias" required />
+							</div>
+							<div class="form-group">
+								<label>Terminal</label>
+								<ui-select ng-model="newCtrl.selectedTerminal" required>
+									<ui-select-match placeholder="Terminal">
+										{{$select.selected.name}}
+									</ui-select-match>
+									<ui-select-choices repeat="terminal in newCtrl.terminals | filter: {name: $select.search} track by terminal.id">
+										<div ng-bind-html="terminal.name | highlight: $select.search"></div>
+									</ui-select-choices>
+								</ui-select>
+							</div>
+							<div class="form-group">
+								<label>Printer</label>
+								<ui-select ng-model="newCtrl.selectedPrinter" required>
+									<ui-select-match placeholder="Template">
+										{{$select.selected.printerName}}
+									</ui-select-match>
+									<ui-select-choices repeat="printer in newCtrl.printers | filter: {printerName: $select.search} track by printer.spoolerId+printer.printerName" group-by="newCtrl.getSpoolerName">
+										<div ng-bind-html="printer.printerName | highlight: $select.search"></div>
+									</ui-select-choices>
+								</ui-select>
+							</div>
+							<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> Create Route</button>
+							<div class="clearfix"></div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<h4>Routes with Default Route</h4>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Alias</th>
+						<th>Terminal</th>
+						<th>Printer</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat-start="zoneRoute in routesCtrl.zoneRoutes | orderBy: 'alias'">
+						<td><a href editable-text="zoneRoute.alias" onaftersave="routesCtrl.saveRoute(zoneRoute)">{{zoneRoute.alias}} <i class="fa fa-edit"></i></a></td>
+						<td><strong>Default</strong></td>
+						<td>{{routesCtrl.getPrinterName(zoneRoute)}}<small>@{{routesCtrl.getSpoolerName(zoneRoute)}}</small></td>
+						<td>
+							<button class="btn btn-danger" ng-click="routesCtrl.destroyZoneRoute(zoneRoute)"><i class="fa fa-trash"></i></button>
+						</td>
+					</tr>
+					<tr ng-repeat-end ng-repeat="terminalRoute in routesCtrl.allTerminalRoutes | filter:{alias: zoneRoute.alias}:true">
+						<td><a href editable-text="terminalRoute.alias" onaftersave="routesCtrl.saveRoute(terminalRoute)">{{terminalRoute.alias}} <i class="fa fa-edit"></i></a></td>
+						<td>{{routesCtrl.getTerminalName(terminalRoute)}}</td>
+						<td>{{routesCtrl.getPrinterName(terminalRoute)}}<small>@{{routesCtrl.getSpoolerName(terminalRoute)}}</small></td>
+						<td>
+							<button class="btn btn-danger" ng-click="routesCtrl.destroyTerminalRoute(terminalRoute)"><i class="fa fa-trash"></i></button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>Routes without Default Route</h4>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Alias</th>
+						<th>Terminal</th>
+						<th>Printer</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="terminalRoute in routesCtrl.standaloneTerminalRoutes">
+						<td><a href editable-text="terminalRoute.alias" onaftersave="routesCtrl.saveRoute(terminalRoute)">{{terminalRoute.alias}} <i class="fa fa-edit"></i></a></td>
+						<td>{{routesCtrl.getTerminalName(terminalRoute)}}</td>
+						<td>{{routesCtrl.getPrinterName(terminalRoute)}}<small>@{{routesCtrl.getSpoolerName(terminalRoute)}}</small></td>
+						<td>
+							<button class="btn btn-danger" ng-click="routesCtrl.destroyTerminalRoute(terminalRoute)"><i class="fa fa-trash"></i></button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</tab>
+</tabset>

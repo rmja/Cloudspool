@@ -1,0 +1,17 @@
+﻿<ol class="breadcrumb">
+	<li><a ng-href="#/templates">Templates</a></li>
+	<li class="active">Template: {{ctrl.templateName}}</li>
+</ol>
+
+<div class="alert alert-success" ng-show="ctrl.showTemplateSuccess">
+	{{ctrl.templateSuccess}}
+</div>
+<div class="alert alert-danger" ng-show="ctrl.showTemplateError">
+	{{ctrl.templateError}}
+</div>
+
+<div class="btn-toolbar pull-right">
+	<button class="btn btn-primary" ng-click="ctrl.save()" ng-disabled="!ctrl.anyPendingChanges"><i class="fa fa-save"></i> Save</button>
+</div>
+
+<div ui-ace="ctrl.aceOptions" ng-model="ctrl.template.script" style="height: 400px"></div>

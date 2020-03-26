@@ -1,0 +1,17 @@
+﻿<ol class="breadcrumb">
+	<li><a ng-href="#/resources">Resources</a></li>
+	<li class="active">Resource: {{ctrl.resourceAlias}}</li>
+</ol>
+
+<div class="alert alert-success" ng-show="ctrl.showResourceSuccess">
+	{{ctrl.resourceSuccess}}
+</div>
+<div class="alert alert-danger" ng-show="ctrl.showResourceError">
+	{{ctrl.resourceError}}
+</div>
+
+<div class="btn-toolbar pull-right">
+	<button class="btn btn-primary" ng-click="ctrl.save()" ng-disabled="!ctrl.anyPendingChanges"><i class="fa fa-save"></i> Save</button>
+</div>
+
+<div ui-ace="ctrl.jsonAceOptions" ng-model="ctrl.resourceContent" style="height: 400px"></div>

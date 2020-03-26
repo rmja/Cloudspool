@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Cloudspool Manager</title>
+
+		<link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet" />
+		<link href="lib/font-awesome/css/font-awesome.css" rel="stylesheet" />
+		<link href="lib/angular-ui-select/select.css" rel="stylesheet" />
+		<link href="lib/bootstrap-fileinput/fileinput.min.css" rel="stylesheet" />
+		<link href="lib/angular-xeditable/xeditable.css" rel="stylesheet" />
+	</head>
+	<body ng-app="ManagerApplication">
+		<style>
+			[ng-cloak] {
+				display: none !important;
+			}
+		</style>
+		<div class="container" ng-controller="IndexController as indexCtrl" ng-cloak>
+
+			<div class="row" ng-if="indexCtrl.isLoggedIn">
+				<div class="col-md-2">
+					<h4>Cloudspool</h4>
+					<ul class="nav">
+						<li><a href="#/dashboard"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
+						<li><a href="#/zones"><i class="fa fa-fw fa-sitemap"></i> Zones</a></li>
+						<li><a href="#/templates"><i class="fa fa-fw fa-code"></i> Templates</a></li>
+						<li><a href="#/resources"><i class="fa fa-fw fa-archive"></i> Resources</a></li>
+					</ul>
+				</div>
+				<div class="col-md-10">
+					<div class="pull-right">{{indexCtrl.projectName}} <a href ng-click="indexCtrl.logOut()"><i class="fa fa-sign-out"></i> Log Out</a></div>
+					<div class="clearfix"></div>
+					<ng-view />
+				</div>
+			</div>
+			<div class="row" ng-if="!indexCtrl.isLoggedIn">
+				<div class="col-md-offset-4 col-md-4">
+					<div class="thumbnail">
+						<div class="alert alert-danger" ng-show="indexCtrl.showError">
+							Failed to login
+						</div>
+						<form ng-submit="indexCtrl.logIn()">
+							<div class="form-group">
+								<label>Project Key</label>
+								<input type="text" class="form-control" ng-model="indexCtrl.projectKey" />
+							</div>
+							<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-sign-in"></i> Log In</button>
+							<div class="clearfix"></div>
+						</form>
+					</div>
+				</div>				
+			</div>
+		</div>
+		
+		<script src="lib/jquery/jquery.js"></script>
+		<script src="lib/angular/angular.js"></script>
+		<script src="lib/angular-file-model/angular-file-model.js"></script>
+		<script src="lib/angular-route/angular-route.js"></script>
+		<script src="lib/angular-sanitize/angular-sanitize.js"></script>
+		<script src="lib/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+		<script src="lib/angular-ui-select/select.js"></script>
+		<script src="lib/angular-utils-pagination/dirpagination.js"></script>
+		<script src="lib/angular-xeditable/xeditable.js"></script>
+		<script src="lib/ace-builds/src-min-noconflict/ace.js" charset="utf-8"></script>
+		<script src="lib/angular-ui-ace/ui-ace.js"></script>
+		<script src="lib/bootstrap/bootstrap.js"></script>
+		<script src="lib/js-data/js-data.js"></script>
+		<script src="lib/js-data-angular/js-data-angular.js"></script>
+		<script src="lib/underscore/underscore.js"></script>
+		<script src="lib/underscore.string/underscore.string.js"></script>
+		<script src="lib/momentjs/moment.js"></script>
+		<script src="lib/bootstrap-fileinput/fileinput.min.js"></script>
+		<script src="app.js"></script>
+	</body>
+</html>

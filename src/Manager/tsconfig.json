@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "outDir": "app/dist"
+  },
+  "files": [
+    "app/src/app.ts",
+    "app/typings/tsd.d.ts",
+    "app/require.d.ts"
+  ]
+}

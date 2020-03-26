@@ -1,0 +1,35 @@
+{
+	"name": "cloudspool-manager",
+	"private": true,
+	"dependencies": {
+		"bootstrap": "3.3.2",
+		"bootstrap-fileinput": "4.1.7",
+		"font-awesome": "4.3.0",
+		"underscore": "1.8.2",
+		"underscore.string": "3.0.3",
+		"momentjs": "2.9.0",
+		"angular-sanitize": "1.3.14",
+		"angular-route": "1.3.5",
+		"angular-file-model": "0.3.0",
+		"angular-bootstrap": "0.12.1",
+		"angular-ui-select": "0.11.1",
+		"angular-ui-ace": "0.2.3",
+		"angular-utils-pagination": "0.5.1",
+		"js-data-angular": "2.2.3",
+		"js-data": "1.5.8",
+		"angular-xeditable": "0.1.8"
+	},
+	"exportsOverride": {
+		"font-awesome": {
+			"fonts": "fonts/*",
+			"css": "css/font-awesome.css"
+		},
+		"bootstrap": {
+			"css": [ "dist/css/bootstrap.css", "dist/css/bootstrap.css.map" ],
+			"": "dist/js/bootstrap.js"
+		}
+	},
+	"resolutions": {
+		"angular": "1.3.14"
+	}
+}
