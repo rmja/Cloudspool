@@ -13,9 +13,10 @@ namespace PrintSpooler.Proxy
         private const string AuthorizationHeaderName = "Authorization";
 
         private readonly HubConnection _hub;
-        private readonly IDisposable _onSpoolerJobSubscription;
+        private readonly IDisposable[] _subscriptions;
 
-        public event SpoolJobEventHandler OnSpoolJob;
+        public Func<Task> OnRequestInstalledPrintersAsync { get; set; }
+        public Func<SpoolerJob, Task> OnSpoolJobAsync { get; set; }
 
         public PrintingHubProxy(IHostEnvironment env, IOptions<PrintSpoolerOptions> options)
         {
@@ -42,21 +43,26 @@ namespace PrintSpooler.Proxy
                 .WithAutomaticReconnect()
                 .Build();
 
-            _onSpoolerJobSubscription = _hub.On("SpoolJob", (SpoolerJob job) => OnSpoolJob?.Invoke(job));
+            _subscriptions = new[]
+            {
+                _hub.On("RequestInstalledPrinters", () => OnRequestInstalledPrintersAsync?.Invoke() ?? Task.CompletedTask),
+                _hub.On("SpoolJob", (SpoolerJob job) => OnSpoolJobAsync?.Invoke(job) ?? Task.CompletedTask)
+            };
         }
 
         public Task StartAsync(CancellationToken cancellationToken = default) => _hub.StartAsync(cancellationToken);
 
-        public Task RegisterPrintersAsync(string[] printerNames, CancellationToken cancellationToken = default) => _hub.InvokeAsync("RegisterPrinters", printerNames, cancellationToken);
+        public Task SetInstalledPrintersAsync(string[] printerNames, CancellationToken cancellationToken = default) => _hub.InvokeAsync("SetInstalledPrinters", printerNames, cancellationToken);
 
         public Task SpoolPendingJobsAsync(CancellationToken cancellationToken = default) =>  _hub.InvokeAsync("SpoolPendingJobs", cancellationToken);
 
         public async ValueTask DisposeAsync()
         {
-            _onSpoolerJobSubscription.Dispose();
+            foreach (var subscription in _subscriptions)
+            {
+                subscription.Dispose();
+            }
             await _hub.DisposeAsync();
         }
     }
-
-    public delegate void SpoolJobEventHandler(SpoolerJob job);
 }

@@ -1,4 +1,4 @@
-﻿using Intercom.Models;
+﻿using Intercom;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -53,14 +53,15 @@ namespace Api.Features.Jobs.Commands
                     return BadRequest("Printer not found from route");
                 }
 
-                var job = new PrintJob()
+                var job = new PrintJobRequest()
                 {
+                    SpoolerId = route.SpoolerId,
                     PrinterName = route.PrinterName,
                     ContentType = document.ContentType,
                     Content = document.Content
                 };
 
-                await PrintHelpers.QueuePrintJobAsync(_redis, route.SpoolerId, job);
+                await PrintHelpers.QueuePrintJobAsync(_redis, job);
 
                 return Accepted();
             }

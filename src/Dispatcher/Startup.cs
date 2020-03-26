@@ -44,7 +44,7 @@ namespace Dispatcher
             services.AddHttpContextAccessor();
             services.AddSignalR().AddStackExchangeRedis(options => options.Configuration = redisConfiguration);
             
-            services.AddSingleton<PrintJobProcessor>().AddHostedService(x => x.GetRequiredService<PrintJobProcessor>());
+            services.AddSingleton<QueueProcessor>().AddHostedService(x => x.GetRequiredService<QueueProcessor>());
 
             services.AddAuthentication(options =>
             {
@@ -71,10 +71,6 @@ namespace Dispatcher
                 .UseEndpoints(endpoints =>
                 {
                     endpoints.MapHub<PrintingHub>("/Printing");
-                    endpoints.MapGet("/", async context =>
-                    {
-                        await context.Response.WriteAsync("Hello World!");
-                    });
                 });
         }
     }

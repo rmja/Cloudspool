@@ -25,14 +25,23 @@ namespace PrintSpooler
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _printingHubProxy.OnRequestInstalledPrintersAsync = async () =>
+            {
+                var printers = Printers.GetInstalledPrinters();
+                _logger.LogInformation("Reporting {PrinterCount} printers to dispatcher", printers.Length);
+                await _printingHubProxy.SetInstalledPrintersAsync(printers);
+            };
+            _printingHubProxy.OnSpoolJobAsync = job =>
+            {
+                _queue.Add(job);
+                return Task.CompletedTask;
+            };
+
             await _printingHubProxy.StartAsync(stoppingToken);
 
             var printers = Printers.GetInstalledPrinters();
-
             _logger.LogInformation("Reporting {PrinterCount} printers to dispatcher", printers.Length);
-            await _printingHubProxy.RegisterPrintersAsync(printers, stoppingToken);
-
-            _printingHubProxy.OnSpoolJob += _queue.Add;
+            await _printingHubProxy.SetInstalledPrintersAsync(printers);
 
             _logger.LogInformation("Starting job processing");
             foreach (var job in _queue.GetConsumingEnumerable(stoppingToken))

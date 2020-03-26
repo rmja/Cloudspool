@@ -12,12 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="lib\gsdll32.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="lib\gsdll64.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Native\win32\gs.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -31,8 +31,9 @@ namespace Api.Tests.Features
             var db = _redis.GetDatabase();
             var subscriber = _redis.GetSubscriber();
 
-            await db.KeyDeleteAsync($"spoolers:{firstSpooler.Id}:job-queue");
-            var jobCreatedQueue = await subscriber.SubscribeAsync("job-created");
+            var queue = RedisConstants.Queues.PrintJobQueue(firstSpooler.Id);
+            await db.KeyDeleteAsync(queue);
+            var jobCreatedQueue = await subscriber.SubscribeAsync(RedisConstants.Channels.JobCreated);
 
             var content = new StringContent("This is Epson", Encoding.UTF8, "application/escpos");
 
@@ -43,10 +44,10 @@ namespace Api.Tests.Features
             // Then
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
 
-            var jobQueue = await db.ListRangeAsync($"spoolers:{firstSpooler.Id}:job-queue");
+            var jobQueue = await db.ListRangeAsync(queue);
             Assert.Single(jobQueue);
             var message = await jobCreatedQueue.ReadAsync();
-            Assert.Equal(firstSpooler.Id, message.Message);
+            Assert.Equal(RedisConstants.Queues.PrintJobQueue(firstSpooler.Id), message.Message);
 
             jobCreatedQueue.Unsubscribe();
         }

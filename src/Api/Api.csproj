@@ -31,7 +31,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Cloudspool.Api.Client\Cloudspool.Api.Client.csproj" />
     <ProjectReference Include="..\Cloudspool.AspNetCore.Authentication.ApiKey\Cloudspool.AspNetCore.Authentication.ApiKey.csproj" />
-    <ProjectReference Include="..\Intercom\Intercom.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\*.cs" LinkBase="Shared\" />
   </ItemGroup>
 
 </Project>

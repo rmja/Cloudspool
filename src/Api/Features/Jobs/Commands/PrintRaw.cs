@@ -1,4 +1,4 @@
-﻿using Intercom.Models;
+﻿using Intercom;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -42,14 +42,15 @@ namespace Api.Features.Jobs.Commands
                 using var body = new MemoryStream();
                 await Request.Body.CopyToAsync(body);
 
-                var job = new PrintJob()
+                var job = new PrintJobRequest()
                 {
+                    SpoolerId = request.SpoolerId,
                     PrinterName = request.PrinterName,
                     ContentType = Request.ContentType,
                     Content = body.ToArray()
                 };
 
-                await PrintHelpers.QueuePrintJobAsync(_redis, request.SpoolerId, job);
+                await PrintHelpers.QueuePrintJobAsync(_redis, job);
 
                 return Accepted();
             }

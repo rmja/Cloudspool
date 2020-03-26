@@ -38,14 +38,13 @@ namespace Api.Features.Spoolers.Commands
                 }
 
                 var db = _redis.GetDatabase();
-
-                var printerNamesKey = $"spoolers:{request.SpoolerId}:printers";
-                var printerNames = request.PrinterNames.Select(x => (RedisValue)x).ToArray();
-
+                var subscriber = _redis.GetSubscriber();
+                var key = RedisConstants.InstalledPrinters(request.SpoolerId);
                 var multi = db.CreateTransaction();
-                _ = multi.KeyDeleteAsync(printerNamesKey, CommandFlags.FireAndForget);
-                _ = multi.SetAddAsync(printerNamesKey, printerNames, CommandFlags.FireAndForget);
+                _ = multi.KeyDeleteAsync(key, CommandFlags.FireAndForget);
+                _ = multi.SetAddAsync(key, request.PrinterNames.Select(x => (RedisValue)x).ToArray(), CommandFlags.FireAndForget);
                 await multi.ExecuteAsync();
+                await subscriber.PublishAsync(RedisConstants.Channels.InstalledPrintersRefreshed(request.SpoolerId), string.Empty);
 
                 return Ok();
             }

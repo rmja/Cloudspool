@@ -6,6 +6,10 @@ using StackExchange.Redis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using System.Text.Json;
+using Intercom;
+using System;
 
 namespace Api.Features.Spoolers.Queries
 {
@@ -43,6 +47,39 @@ namespace Api.Features.Spoolers.Queries
                 }
 
                 var db = _redis.GetDatabase();
+
+                if (Request.GetTypedHeaders().CacheControl?.NoCache == true)
+                {
+                    // Force update of installed printers
+                    var subscriber = _redis.GetSubscriber();
+
+                    var refreshedSubscription = await subscriber.SubscribeAsync(RedisConstants.Channels.InstalledPrintersRefreshed(spooler.Id));
+
+                    var queue = RedisConstants.Queues.GetInstalledPrintersQueue(spooler.Id);
+                    var queueRequest = new RequestInstalledPrintersRefreshRequest()
+                    {
+                        SpoolerId = spooler.Id
+                    };
+                    await db.ListRightPushAsync(queue, JsonSerializer.Serialize(queueRequest));
+                    await subscriber.PublishAsync(RedisConstants.Channels.JobCreated, queue);
+
+                    try
+                    {
+                        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                        cts.CancelAfter(5_000);
+
+                        await refreshedSubscription.ReadAsync(cts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return StatusCode(StatusCodes.Status504GatewayTimeout);
+                    }
+                    finally
+                    {
+                        await refreshedSubscription.UnsubscribeAsync();
+                    }
+                }
+                
                 await QueryHelpers.GetPrintersAsync(spooler, db);
 
                 return spooler;
