@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29827.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dispatcher", "src\Dispatcher\Dispatcher.csproj", "{DCC79C1F-B56E-46B7-9938-3A8C56F8BA44}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrintSpooler", "src\PrintSpooler\PrintSpooler.csproj", "{3FB0D6A5-0D56-4D75-9F62-FC42DBF0D3EF}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api", "src\Api\Api.csproj", "{E540F808-A745-422A-8484-17CC18E90751}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Tests", "test\Api.Tests\Api.Tests.csproj", "{7107B3CB-F971-44E6-92EC-273ECCF164F6}"
@@ -16,6 +14,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cloudspool.AspNetCore.Authentication.ApiKey", "src\Cloudspool.AspNetCore.Authentication.ApiKey\Cloudspool.AspNetCore.Authentication.ApiKey.csproj", "{73D563F1-EA83-4490-813C-B4A127839F68}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cloudspool.Api.Client", "src\Cloudspool.Api.Client\Cloudspool.Api.Client.csproj", "{E13EBBF9-F811-4899-9337-A49A61B934D4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cloudspool.PrintSpooler", "src\Cloudspool.PrintSpooler\Cloudspool.PrintSpooler.csproj", "{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,10 +27,6 @@ Global
 		{DCC79C1F-B56E-46B7-9938-3A8C56F8BA44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCC79C1F-B56E-46B7-9938-3A8C56F8BA44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCC79C1F-B56E-46B7-9938-3A8C56F8BA44}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3FB0D6A5-0D56-4D75-9F62-FC42DBF0D3EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3FB0D6A5-0D56-4D75-9F62-FC42DBF0D3EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3FB0D6A5-0D56-4D75-9F62-FC42DBF0D3EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3FB0D6A5-0D56-4D75-9F62-FC42DBF0D3EF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E540F808-A745-422A-8484-17CC18E90751}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E540F808-A745-422A-8484-17CC18E90751}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E540F808-A745-422A-8484-17CC18E90751}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,6 +47,10 @@ Global
 		{E13EBBF9-F811-4899-9337-A49A61B934D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E13EBBF9-F811-4899-9337-A49A61B934D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E13EBBF9-F811-4899-9337-A49A61B934D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

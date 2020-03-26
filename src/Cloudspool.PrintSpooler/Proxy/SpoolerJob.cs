@@ -1,4 +1,4 @@
-﻿namespace PrintSpooler.Proxy
+﻿namespace Cloudspool.PrintSpooler.Proxy
 {
     public class SpoolerJob
     {

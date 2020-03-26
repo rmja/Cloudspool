@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PrintSpooler.Proxy;
+using Cloudspool.PrintSpooler.Proxy;
 
-namespace PrintSpooler
+namespace Cloudspool.PrintSpooler
 {
     public class Program
     {

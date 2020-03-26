@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace PrintSpooler.Printing.Raw
+namespace Cloudspool.PrintSpooler.Printing.Raw
 {
     class RawPrinterHandle : IPrinterHandle
     {

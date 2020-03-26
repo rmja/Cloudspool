@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PrintSpooler
+namespace Cloudspool.PrintSpooler
 {
     public class PrintSpoolerOptions
     {

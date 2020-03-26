@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace PrintSpooler.Printing.Ghostscript
+namespace Cloudspool.PrintSpooler.Printing.Ghostscript
 {
     class GhostscriptPrinterHandle : IPrinterHandle
     {
