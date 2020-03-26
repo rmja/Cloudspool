@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ApiClientExtensions
     {
-        public static IHttpClientBuilder AddApiClient(this IServiceCollection services, Action<ApiClientOptions> configure)
+        public static IHttpClientBuilder AddCloudspoolApiClient(this IServiceCollection services, Action<ApiClientOptions> configure)
         {
             return services
                 .Configure(configure)

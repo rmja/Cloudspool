@@ -13,7 +13,7 @@ namespace Cloudspool.Api.Client
 
         [Post("/Documents/{documentId}/Print")]
         [Headers("Authorization: Bearer")]
-        Task JobsPrintDocumentAsync(int documentId);
+        Task JobsPrintDocumentAsync(int documentId, string route);
 
         [Get("/Spoolers/{spoolerKey}")]
         Task<Spooler> SpoolerGetByKeyAsync(Guid spoolerKey);

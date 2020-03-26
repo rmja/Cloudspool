@@ -26,7 +26,7 @@ namespace Dispatcher
             var redisConfiguration = ConfigurationOptions.Parse(Configuration.GetConnectionString("Redis"));
 
             services.AddSingleton(sp => ConnectionMultiplexer.Connect(redisConfiguration));
-            services.AddApiClient(options =>
+            services.AddCloudspoolApiClient(options =>
             {
                 options.GetApiKeyAsync = sp =>
                 {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Cloudspool.Api.Client
 {
-    class AuthorizationMessageHandler : DelegatingHandler
+    public class AuthorizationMessageHandler : DelegatingHandler
     {
         private readonly IServiceProvider _services;
         private readonly ApiClientOptions _options;
