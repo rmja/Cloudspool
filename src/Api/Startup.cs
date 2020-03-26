@@ -1,6 +1,7 @@
 using Api.Generators.ECMAScript6;
 using Api.Infrastructure;
 using AutoMapper;
+using Cloudspool.AspNetCore.Authentication.ApiKey;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +52,7 @@ namespace Api
                 options.DefaultChallengeScheme = ApiKeyDefaults.AuthenticationScheme;
             })
                 .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyDefaults.AuthenticationScheme, options => { });
+            services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

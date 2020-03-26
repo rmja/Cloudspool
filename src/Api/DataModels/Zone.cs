@@ -29,7 +29,7 @@ namespace Api.DataModels
 
 		public void AddRoute(string alias, int spoolerId, string printerName)
 		{
-			Routes.Add(new ZoneRoute(Routes.Count, alias, spoolerId, printerName));
+			Routes.Add(new ZoneRoute(alias, spoolerId, printerName));
 		}
 	}
 }

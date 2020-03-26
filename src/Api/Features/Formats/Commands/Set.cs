@@ -45,8 +45,18 @@ namespace Api.Features.Formats.Commands
                     return NotFound();
                 }
 
-                var format = new Format(zone.Id, request.Alias, request.Body.TemplateId);
-                _db.Format.Add(format);
+                var format = await _db.Format.SingleOrDefaultAsync(x => x.ZoneId == zone.Id && x.Alias == request.Alias);
+
+                if (format is object)
+                {
+                    format.TemplateId = request.Body.TemplateId;
+                }
+                else
+                {
+                    format = new Format(zone.Id, request.Alias, request.Body.TemplateId);
+                    _db.Format.Add(format);
+                }
+
                 await _db.SaveChangesAsync();
 
                 return SeeOtherEndpoint(new GetByAlias.Query() { ZoneId = request.ZoneId, Alias = request.Alias });

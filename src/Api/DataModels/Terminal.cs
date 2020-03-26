@@ -28,7 +28,7 @@ namespace Api.DataModels
 
 		public void AddRoute(string alias, int spoolerId, string printerName)
 		{
-			Routes.Add(new TerminalRoute(Routes.Count, alias, spoolerId, printerName));
+			Routes.Add(new TerminalRoute(alias, spoolerId, printerName));
 		}
 	}
 }

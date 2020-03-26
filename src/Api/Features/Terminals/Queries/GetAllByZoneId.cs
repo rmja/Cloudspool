@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Api.Features.Terminals.Queries
 {
-    public class GetAllByZone
+    public class GetAllByZoneId
     {
         public class Query
         {

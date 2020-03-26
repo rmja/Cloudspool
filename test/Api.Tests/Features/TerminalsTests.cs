@@ -1,5 +1,6 @@
 ﻿using Api.Client.Models;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,12 +26,12 @@ namespace Api.Tests.Features
             // Given
             var firstZone = SeedData.GetZones().First();
             var firstSpooler = SeedData.GetSpoolers().First();
-            var command = new
+            var command = new Terminal()
             {
-                name = "Test Terminal",
-                routes = new[]
+                Name = "Test Terminal",
+                Routes =
                 {
-                    new Terminal.Route() { Alias = "TerminalRoute", SpoolerId = firstSpooler.Id, PrinterName = "Test Printer" }
+                    ["TerminalRoute"] = new Terminal.Route() { SpoolerId = firstSpooler.Id, PrinterName = "Test Printer" }
                 }
             };
 
@@ -41,11 +42,11 @@ namespace Api.Tests.Features
             // Then
             Assert.Equal(SeedData.TestProject.Id, result.ProjectId);
             Assert.Equal(firstZone.Id, result.ZoneId);
-            Assert.Equal(command.name, result.Name);
+            Assert.Equal(command.Name, result.Name);
             var route = Assert.Single(result.Routes);
-            Assert.Equal(command.routes[0].Alias, route.Alias);
-            Assert.Equal(command.routes[0].SpoolerId, route.SpoolerId);
-            Assert.Equal(command.routes[0].PrinterName, route.PrinterName);
+            Assert.Equal(command.Routes.First().Key, route.Key);
+            Assert.Equal(command.Routes.First().Value.SpoolerId, route.Value.SpoolerId);
+            Assert.Equal(command.Routes.First().Value.PrinterName, route.Value.PrinterName);
         }
 
         [Fact]
@@ -68,8 +69,8 @@ namespace Api.Tests.Features
             var firstTerminal = SeedData.GetTerminals().First();
             var firstSpooler = SeedData.GetSpoolers().First();
             var patch = new JsonPatchDocument<Terminal>()
-                .Replace(x => x.Name, "Updated Name")
-                .Add(x => x.Routes, new Terminal.Route() { Alias = "UpdatedAlias", SpoolerId = firstSpooler.Id, PrinterName = "Updated Printer" });
+                .Replace(x => x.Name, "Updated Name");
+            patch.Operations.Add(new Operation<Terminal>("add", "/routes/UpdatedAlias", null, new Terminal.Route() { SpoolerId = firstSpooler.Id, PrinterName = "Updated Printer" }));
 
             // When
             var patchResponse = await _client.PatchAsJsonAsync($"/Terminals/{firstTerminal.Id}", patch.Operations);
@@ -79,13 +80,13 @@ namespace Api.Tests.Features
             // Then
             Assert.Equal("Updated Name", result.Name);
             Assert.Equal(firstTerminal.Routes.Count + 1, result.Routes.Count);
-            var addedRoute = result.Routes.Find(x => x.Alias == "UpdatedAlias");
+            var addedRoute = result.Routes["UpdatedAlias"];
             Assert.Equal(firstSpooler.Id, addedRoute.SpoolerId);
             Assert.Equal("Updated Printer", addedRoute.PrinterName);
         }
 
         [Fact]
-        public async Task CanGetAllByZone()
+        public async Task CanGetAllByZoneId()
         {
             // Given
             var firstZone = SeedData.GetZones().First();

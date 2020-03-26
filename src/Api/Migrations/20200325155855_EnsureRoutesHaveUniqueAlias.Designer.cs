@@ -3,15 +3,17 @@ using System;
 using Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Api.Migrations
 {
     [DbContext(typeof(CloudspoolContext))]
-    partial class CloudspoolContextModelSnapshot : ModelSnapshot
+    [Migration("20200325155855_EnsureRoutesHaveUniqueAlias")]
+    partial class EnsureRoutesHaveUniqueAlias
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -306,6 +308,10 @@ namespace Api.Migrations
                         .HasColumnName("created")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<int>("Index")
+                        .HasColumnName("index")
+                        .HasColumnType("integer");
+
                     b.Property<string>("PrinterName")
                         .HasColumnName("printer_name")
                         .HasColumnType("text");
@@ -379,6 +385,10 @@ namespace Api.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnName("created")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("Index")
+                        .HasColumnName("index")
+                        .HasColumnType("integer");
 
                     b.Property<string>("PrinterName")
                         .HasColumnName("printer_name")

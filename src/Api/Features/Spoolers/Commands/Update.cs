@@ -1,5 +1,5 @@
 ﻿using Api.Client.Models;
-using Api.Features.Terminals.Queries;
+using Api.Features.Spoolers.Queries;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Api.Features.Terminals.Commands
+namespace Api.Features.Spoolers.Commands
 {
     public class Update
     {
@@ -15,7 +15,7 @@ namespace Api.Features.Terminals.Commands
         {
             public int Id { get; set; }
             [FromBody]
-            public JsonPatchDocument<Terminal> Patch { get; set; }
+            public JsonPatchDocument<Spooler> Patch { get; set; }
         }
 
         public class Handler : ApiEndpoint<Command>
@@ -29,35 +29,23 @@ namespace Api.Features.Terminals.Commands
                 _mapper = mapper;
             }
 
-            [HttpPatch("/Terminals/{Id:int}")]
+            [HttpPatch("/Spoolers/{Id:int}")]
             public override async Task<ActionResult> HandleAsync(Command request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
 
-                var terminal = await _db.Terminal.Include(x => x.Routes).SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Id == request.Id);
+                var spooler = await _db.Spooler.SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Id == request.Id);
                 
-                if (terminal is null)
+                if (spooler is null)
                 {
                     return NotFound();
                 }
 
-                var patched = _mapper.Patch(terminal, request.Patch);
-                terminal.Name = patched.Name;
-
-                terminal.Routes.Clear();
-                foreach (var (alias, route) in patched.Routes)
-                {
-                    terminal.AddRoute(alias, route.SpoolerId, route.PrinterName);
-                }
-
-                if (!await CommandHelpers.HasValidRoutes(terminal, _db, projectId))
-                {
-                    return BadRequest();
-                }
-
+                var patched = _mapper.Patch(spooler, request.Patch);
+                spooler.Name = patched.Name;
                 await _db.SaveChangesAsync();
 
-                return SeeOtherEndpoint(new GetById.Query() { Id = terminal.Id });
+                return SeeOtherEndpoint(new GetById.Query() { Id = spooler.Id });
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Api.Client.Models;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,19 @@ namespace Api.Tests.Features
         }
 
         [Fact]
+        public async Task CanDelete()
+        {
+            // Given
+            var firstSpooler = SeedData.GetSpoolers().First();
+
+            // When
+            var response = await _client.DeleteAsync($"/Spoolers/{firstSpooler.Id}");
+            response.EnsureSuccessStatusCode();
+
+            // Then
+        }
+
+        [Fact]
         public async Task CanSetPrinters()
         {
             // Given
@@ -58,6 +72,23 @@ namespace Api.Tests.Features
         }
 
         [Fact]
+        public async Task CanUpdate()
+        {
+            // Given
+            var firstSpooler = SeedData.GetSpoolers().First();
+            var patch = new JsonPatchDocument<Spooler>()
+                .Replace(x => x.Name, "Updated name");
+
+            // When
+            var patchResponse = await _client.PatchAsJsonAsync($"/Spoolers/{firstSpooler.Id}", patch.Operations);
+            var getResponse = await _client.FollowRedirectAsync(patchResponse);
+            var result = await getResponse.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Spooler>();
+
+            // Then
+            Assert.Equal("Updated name", result.Name);
+        }
+
+        [Fact]
         public async Task CanGetAll()
         {
             // Given
@@ -68,6 +99,21 @@ namespace Api.Tests.Features
 
             // Then
             Assert.Equal(SeedData.GetSpoolers().Count(), result.Count);
+        }
+
+        [Fact]
+        public async Task CanGetAllByZoneId()
+        {
+            // Given
+            var firstZone = SeedData.GetZones().First();
+            firstZone.Spoolers = SeedData.GetSpoolers().Where(x => x.ZoneId == firstZone.Id).ToList();
+
+            // When
+            var response = await _client.GetAsync($"/Zones/{firstZone.Id}/Spoolers");
+            var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<List<Spooler>>();
+
+            // Then
+            Assert.Equal(firstZone.Spoolers.Count, result.Count);
         }
 
         [Fact]

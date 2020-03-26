@@ -9,6 +9,7 @@ namespace Api.EntityTypeConfigurations
         public void Configure(EntityTypeBuilder<ZoneRoute> builder)
         {
             builder.Property(x => x.Alias).HasMaxLength(100).IsRequired();
+            builder.HasIndex(x => new { x.ZoneId, x.Alias }).IsUnique();
         }
     }
 }

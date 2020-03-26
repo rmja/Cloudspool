@@ -10,10 +10,11 @@ using System.Threading.Tasks;
 
 namespace Api.Features.Spoolers.Queries
 {
-    public class GetAll
+    public class GetAllByZoneId
     {
         public class Query
         {
+            public int ZoneId { get; set; }
         }
 
         public class Handler : ApiEndpoint<Query, List<Spooler>>
@@ -29,12 +30,12 @@ namespace Api.Features.Spoolers.Queries
                 _mapper = mapper;
             }
 
-            [HttpGet("/Spoolers")]
+            [HttpGet("/Zones/{ZoneId:int}/Spoolers")]
             public override async Task<ActionResult<List<Spooler>>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Spooler.Where(x => x.Zone.ProjectId == projectId);
+                var query = _db.Spooler.Where(x => x.Zone.ProjectId == projectId && x.ZoneId == request.ZoneId);
                 var spoolers = await _mapper.ProjectTo<Spooler>(query).ToListAsync();
 
                 var db = _redis.GetDatabase();

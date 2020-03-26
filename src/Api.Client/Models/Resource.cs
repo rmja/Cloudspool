@@ -5,6 +5,6 @@
         public int Id { get; set; }
         public string Alias { get; set; }
         public string ContentUrl { get; set; }
-        public string MediaType { get; set; }
+        public string ContentType { get; set; }
     }
 }

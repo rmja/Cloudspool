@@ -45,9 +45,9 @@ namespace Api.Features.Zones.Commands
                 zone.Name = patched.Name;
 
                 zone.Routes.Clear();
-                foreach (var route in patched.Routes)
+                foreach (var (alias, route) in patched.Routes)
                 {
-                    zone.AddRoute(route.Alias, route.SpoolerId, route.PrinterName);
+                    zone.AddRoute(alias, route.SpoolerId, route.PrinterName);
                 }
 
                 if (!await CommandHelpers.HasValidRoutes(zone, _db, projectId))

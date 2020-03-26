@@ -7,7 +7,6 @@ namespace Api.DataModels
 		public int Id { get; set; }
 		public int ZoneId { get; set; }
 		public Zone Zone { get; set; }
-		public int Index { get; set; }
 		public string Alias { get; set; }
 		public int SpoolerId { get; set; }
 		public Spooler Spooler { get; set; }
@@ -18,9 +17,8 @@ namespace Api.DataModels
 		{
 		}
 
-		public ZoneRoute(int index, string alias, int spoolerId, string printerName)
+		public ZoneRoute(string alias, int spoolerId, string printerName)
 		{
-			Index = index;
 			Alias = alias;
 			SpoolerId = spoolerId;
 			PrinterName = printerName;

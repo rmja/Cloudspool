@@ -23,12 +23,10 @@ namespace Api.Features.Terminals.Commands
         {
             [Required]
             public string Name { get; set; }
-            public List<Route> Routes { get; set; } = new List<Route>();
+            public Dictionary<string, Route> Routes { get; set; } = new Dictionary<string, Route>();
 
             public class Route
             {
-                [Required]
-                public string Alias { get; set; }
                 [Required]
                 public int SpoolerId { get; set; }
                 [Required]
@@ -57,9 +55,9 @@ namespace Api.Features.Terminals.Commands
 
                 var terminal = new Terminal(request.ZoneId, request.Body.Name);
 
-                foreach (var route in request.Body.Routes)
+                foreach (var (alias, route) in request.Body.Routes)
                 {
-                    terminal.AddRoute(route.Alias, route.SpoolerId, route.PrinterName);
+                    terminal.AddRoute(alias, route.SpoolerId, route.PrinterName);
                 }
 
                 if (!await CommandHelpers.HasValidRoutes(terminal, _db, projectId))

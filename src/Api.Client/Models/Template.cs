@@ -5,6 +5,6 @@
         public int Id { get; set; }
         public string Name { get; set; }
         public string ScriptUrl { get; set; }
-        public string ScriptMediaType { get; set; }
+        public string ScriptContentType { get; set; }
     }
 }

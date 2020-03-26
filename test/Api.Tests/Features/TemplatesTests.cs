@@ -47,7 +47,7 @@ export default class Builder {
             Assert.Equal("Test Template", result.Name);
             Assert.Equal(script, scriptResult);
             Assert.Equal("application/javascript", scriptResponse.Content.Headers.ContentType.ToString());
-            Assert.Equal("application/javascript", result.ScriptMediaType);
+            Assert.Equal("application/javascript", result.ScriptContentType);
         }
 
         [Fact]
@@ -136,7 +136,7 @@ export default class Builder {
             // Then
             Assert.Equal(firstTemplate.Id, result.Id);
             Assert.Equal($"/Templates/{firstTemplate.Id}/Script", result.ScriptUrl);
-            Assert.Equal(firstTemplate.ScriptMediaType, result.ScriptMediaType);
+            Assert.Equal(firstTemplate.ScriptMediaType, result.ScriptContentType);
         }
 
         [Fact]

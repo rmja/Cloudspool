@@ -4,7 +4,7 @@ export interface Resource {
     id: number;
     alias: string;
     contentUrl: string;
-    mediaType: string;
+    contentType: string;
 }
 
 export const destroy = (alias: string) => Http.delete(`/Resources/${alias}`);
