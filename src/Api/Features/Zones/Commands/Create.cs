@@ -49,7 +49,11 @@ namespace Api.Features.Zones.Commands
 
                 foreach (var (alias, route) in request.Body.Routes)
                 {
-                    zone.AddRoute(alias, route.SpoolerId, route.PrinterName);
+                    zone.Routes.Add(new ZoneRoute(alias)
+                    {
+                        SpoolerId = route.SpoolerId,
+                        PrinterName = route.PrinterName
+                    });
                 }
 
                 if (!await CommandHelpers.HasValidRoutes(zone, _db, projectId))

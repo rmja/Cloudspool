@@ -64,14 +64,14 @@ export default class Builder {
         {
             var id = -1;
 
-            yield return new Zone(projectId: -1, "Test Zone") { Id = id--, Routes = { new ZoneRoute("RouteAlias", spoolerId: -1, "Test Printer") } };
+            yield return new Zone(projectId: -1, "Test Zone") { Id = id--, Routes = { new ZoneRoute("RouteAlias") { SpoolerId = -1, PrinterName = "Test Printer" } } };
         }
 
         public static IEnumerable<Terminal> GetTerminals()
         {
             var id = -1;
 
-            yield return new Terminal(zoneId: -1, "Test Terminal") { Id = id--, Key = TestTerminalKey, Routes = { new TerminalRoute("RouteAlias", spoolerId: -1, "Test Printer") } };
+            yield return new Terminal(zoneId: -1, "Test Terminal") { Id = id--, Key = TestTerminalKey, Routes = { new TerminalRoute("RouteAlias") { SpoolerId = -1, PrinterName = "Test Printer" } } };
         }
 
         public static IEnumerable<Format> GetFormats()

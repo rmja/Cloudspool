@@ -57,7 +57,11 @@ namespace Api.Features.Terminals.Commands
 
                 foreach (var (alias, route) in request.Body.Routes)
                 {
-                    terminal.AddRoute(alias, route.SpoolerId, route.PrinterName);
+                    terminal.Routes.Add(new TerminalRoute(alias)
+                    {
+                        SpoolerId = route.SpoolerId,
+                        PrinterName = route.PrinterName
+                    });
                 }
 
                 if (!await CommandHelpers.HasValidRoutes(terminal, _db, projectId))

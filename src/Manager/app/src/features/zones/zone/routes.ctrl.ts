@@ -35,6 +35,7 @@ export class RoutesController {
 					kind: "zone",
 					zoneId: route.zoneId,
 					alias: route.alias,
+					originalAlias: route.alias,
 					spoolerId: route.spoolerId,
 					printerName: route.printerName
 				};
@@ -59,6 +60,7 @@ export class RoutesController {
 							kind: "terminal",
 							terminalId: terminalRoute.terminalId,
 							alias: terminalRoute.alias,
+							originalAlias: terminalRoute.alias,
 							spoolerId: terminalRoute.spoolerId,
 							printerName: terminalRoute.printerName
 						});
@@ -67,6 +69,7 @@ export class RoutesController {
 						kind: "terminal",
 						terminalId: terminalRoute.terminalId,
 						alias: terminalRoute.alias,
+						originalAlias: terminalRoute.alias,
 						spoolerId: terminalRoute.spoolerId,
 						printerName: terminalRoute.printerName
 					});
@@ -79,12 +82,14 @@ export class RoutesController {
 		switch (route.kind) {
 			case "terminal":
 				this.TerminalResource.update(route.terminalId, [
-					{ op: "replace", path: `/routes/${route.alias}`, value: route }
+					{ op: "remove", path: `/routes/${route.originalAlias}` },
+					{ op: "add", path: `/routes/${route.alias}`, value: route }
 				]);
 				break;
 			case "zone":
 				this.ZoneResource.update(route.zoneId, [
-					{ op: "replace", path: `/routes/${route.alias}`, value: route }
+					{ op: "remove", path: `/routes/${route.originalAlias}` },
+					{ op: "add", path: `/routes/${route.alias}`, value: route }
 				]);
 				break;
 		}
@@ -224,12 +229,14 @@ type RouteViewModel = {
 	kind: "zone";
 	zoneId: number;
 	alias: string;
+	originalAlias: string;
 	spoolerId: number;
 	printerName: string;
 } | {
 	kind: "terminal";
 	terminalId: number;
 	alias: string;
+	originalAlias: string;
 	spoolerId: number;
 	printerName: string;
 }

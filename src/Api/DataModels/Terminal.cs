@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Api.DataModels
 {
@@ -26,9 +27,17 @@ namespace Api.DataModels
 			Created = DateTime.UtcNow;
 		}
 
-		public void AddRoute(string alias, int spoolerId, string printerName)
+		public TerminalRoute GetOrAddRoute(string alias)
 		{
-			Routes.Add(new TerminalRoute(alias, spoolerId, printerName));
+			var route = Routes.SingleOrDefault(x => x.Alias == alias);
+
+			if (route is null)
+			{
+				route = new TerminalRoute(alias);
+				Routes.Add(route);
+			}
+
+			return route;
 		}
 	}
 }

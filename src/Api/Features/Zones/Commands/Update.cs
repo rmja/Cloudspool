@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Api.Features.Zones.Commands
 {
@@ -44,11 +46,13 @@ namespace Api.Features.Zones.Commands
                 var patched = _mapper.Patch(zone, request.Patch);
                 zone.Name = patched.Name;
 
-                zone.Routes.Clear();
-                foreach (var (alias, route) in patched.Routes)
+                foreach (var (alias, patchedRoute) in patched.Routes)
                 {
-                    zone.AddRoute(alias, route.SpoolerId, route.PrinterName);
+                    var route = zone.GetOrAddRoute(alias);
+                    route.SpoolerId = patchedRoute.SpoolerId;
+                    route.PrinterName = patchedRoute.PrinterName;
                 }
+                zone.Routes.RemoveAll(x => !patched.Routes.ContainsKey(x.Alias));
 
                 if (!await CommandHelpers.HasValidRoutes(zone, _db, projectId))
                 {

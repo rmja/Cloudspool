@@ -17,11 +17,9 @@ namespace Api.DataModels
 		{
 		}
 
-		public TerminalRoute(string alias, int spoolerId, string printerName)
+		public TerminalRoute(string alias)
 		{
 			Alias = alias;
-			SpoolerId = spoolerId;
-			PrinterName = printerName;
 			Created = DateTime.UtcNow;
 		}
 	}

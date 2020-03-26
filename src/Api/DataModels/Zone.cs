@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Api.DataModels
 {
@@ -27,9 +28,17 @@ namespace Api.DataModels
 			Created = DateTime.UtcNow;
 		}
 
-		public void AddRoute(string alias, int spoolerId, string printerName)
+		public ZoneRoute GetOrAddRoute(string alias)
 		{
-			Routes.Add(new ZoneRoute(alias, spoolerId, printerName));
+			var route = Routes.SingleOrDefault(x => x.Alias == alias);
+
+			if (route is null)
+			{
+				route = new ZoneRoute(alias);
+				Routes.Add(route);
+			}
+
+			return route;
 		}
 	}
 }

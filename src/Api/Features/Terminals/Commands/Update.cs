@@ -44,11 +44,13 @@ namespace Api.Features.Terminals.Commands
                 var patched = _mapper.Patch(terminal, request.Patch);
                 terminal.Name = patched.Name;
 
-                terminal.Routes.Clear();
-                foreach (var (alias, route) in patched.Routes)
+                foreach (var (alias, patchedRoute) in patched.Routes)
                 {
-                    terminal.AddRoute(alias, route.SpoolerId, route.PrinterName);
+                    var route = terminal.GetOrAddRoute(alias);
+                    route.SpoolerId = patchedRoute.SpoolerId;
+                    route.PrinterName = patchedRoute.PrinterName;
                 }
+                terminal.Routes.RemoveAll(x => !patched.Routes.ContainsKey(x.Alias));
 
                 if (!await CommandHelpers.HasValidRoutes(terminal, _db, projectId))
                 {

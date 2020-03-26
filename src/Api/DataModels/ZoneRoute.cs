@@ -17,11 +17,9 @@ namespace Api.DataModels
 		{
 		}
 
-		public ZoneRoute(string alias, int spoolerId, string printerName)
+		public ZoneRoute(string alias)
 		{
 			Alias = alias;
-			SpoolerId = spoolerId;
-			PrinterName = printerName;
 			Created = DateTime.UtcNow;
 		}
 	}
