@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Api.Client
+namespace Cloudspool.Api.Client
 {
     class AuthorizationMessageHandler : DelegatingHandler
     {

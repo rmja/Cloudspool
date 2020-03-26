@@ -1,4 +1,4 @@
-﻿namespace Api.Client.Models
+﻿namespace Cloudspool.Api.Client.Models
 {
     public class Resource
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Api.Client
+namespace Cloudspool.Api.Client
 {
     public class ApiClientOptions
     {

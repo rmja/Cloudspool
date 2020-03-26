@@ -1,4 +1,4 @@
-﻿using Api.Client.Models;
+﻿using Cloudspool.Api.Client.Models;
 using Api.Features.Templates.Queries;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;

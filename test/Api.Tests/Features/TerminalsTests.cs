@@ -1,4 +1,4 @@
-﻿using Api.Client.Models;
+﻿using Cloudspool.Api.Client.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.Net.Http.Headers;
