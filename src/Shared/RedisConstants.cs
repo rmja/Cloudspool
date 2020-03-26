@@ -11,7 +11,10 @@ public static class RedisConstants
 
     public static class Queues
     {
-        public static string PrintJobQueue(int spoolerId) => $"cloudspool:spoolers:{spoolerId}:print-job-queue";
-        public static string GetInstalledPrintersQueue(int spoolerId) => $"cloudspool:spoolers:{spoolerId}:get-installed-printers-queue";
+        public const string PrintJobQueueSuffix = "print-job-queue";
+        public static string PrintJobQueue(int spoolerId) => $"cloudspool:spoolers:{spoolerId}:{PrintJobQueueSuffix}";
+        
+        public const string RequestInstalledPrintersRefreshQueueSuffix = "request-installed-printers-refresh-queue";
+        public static string RequestInstalledPrintersRefreshQueue(int spoolerId) => $"cloudspool:spoolers:{spoolerId}:{RequestInstalledPrintersRefreshQueueSuffix}";
     }
 }

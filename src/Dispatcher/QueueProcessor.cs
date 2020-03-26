@@ -37,19 +37,24 @@ namespace Dispatcher
                 {
                     try
                     {
-                        if (queue.EndsWith(":print-job-queue"))
+                        var queueSuffix = queue.Substring(queue.LastIndexOf(':') + 1);
+
+                        switch (queueSuffix)
                         {
-                            var request = JsonSerializer.Deserialize<PrintJobRequest>(requestJson);
-                            await HandlePrintJobAsync(request);
-                        }
-                        else if (queue.EndsWith(":get-installed-printers-queue"))
-                        {
-                            var request = JsonSerializer.Deserialize<RequestInstalledPrintersRefreshRequest>(requestJson);
-                            await HandleGetInstalledPrintersAsync(request);
-                        }
-                        else
-                        {
-                            throw new NotSupportedException("Invalid queue name");
+                            case RedisConstants.Queues.PrintJobQueueSuffix:
+                                {
+                                    var request = JsonSerializer.Deserialize<PrintJobRequest>(requestJson);
+                                    await HandlePrintJobAsync(request);
+                                }
+                                break;
+                            case RedisConstants.Queues.RequestInstalledPrintersRefreshQueueSuffix:
+                                {
+                                    var request = JsonSerializer.Deserialize<RequestInstalledPrintersRefreshRequest>(requestJson);
+                                    await HandleGetInstalledPrintersAsync(request);
+                                }
+                                break;
+                            default:
+                                throw new NotSupportedException("Invalid queue name");
                         }
                     }
                     catch (Exception)

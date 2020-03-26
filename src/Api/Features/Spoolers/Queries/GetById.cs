@@ -55,7 +55,7 @@ namespace Api.Features.Spoolers.Queries
 
                     var refreshedSubscription = await subscriber.SubscribeAsync(RedisConstants.Channels.InstalledPrintersRefreshed(spooler.Id));
 
-                    var queue = RedisConstants.Queues.GetInstalledPrintersQueue(spooler.Id);
+                    var queue = RedisConstants.Queues.RequestInstalledPrintersRefreshQueue(spooler.Id);
                     var queueRequest = new RequestInstalledPrintersRefreshRequest()
                     {
                         SpoolerId = spooler.Id
