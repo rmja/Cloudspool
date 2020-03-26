@@ -28,7 +28,7 @@ namespace Api.Features.Resources.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Resource
+                var query = _db.Resources
                     .Where(x => x.ProjectId == projectId && x.Alias == request.Alias)
                     .Select(x => new { x.Content, x.MediaType });
                 var result = await query.SingleOrDefaultAsync();

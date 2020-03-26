@@ -13,7 +13,7 @@ namespace Api.Features.Terminals.Commands
         {
             var ids = new HashSet<int>(terminal.Routes.Select(x => x.SpoolerId));
 
-            return await db.Spooler.Where(x => x.Zone.ProjectId == projectId).CountAsync(x => ids.Contains(x.Id)) == ids.Count;
+            return await db.Spoolers.Where(x => x.Zone.ProjectId == projectId).CountAsync(x => ids.Contains(x.Id)) == ids.Count;
         }
     }
 }

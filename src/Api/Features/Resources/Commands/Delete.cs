@@ -26,14 +26,14 @@ namespace Api.Features.Resources.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var resource = await _db.Resource.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Alias == request.Alias);
+                var resource = await _db.Resources.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Alias == request.Alias);
 
                 if (resource is null)
                 {
                     return NotFound();
                 }
 
-                _db.Resource.Remove(resource);
+                _db.Resources.Remove(resource);
                 await _db.SaveChangesAsync();
 
                 return Ok();

@@ -8,6 +8,8 @@ namespace Api.EntityTypeConfigurations
     {
         public void Configure(EntityTypeBuilder<TerminalRoute> builder)
         {
+            builder.ToTable("terminal_routes");
+
             builder.Property(x => x.Alias).HasMaxLength(100).IsRequired();
             builder.HasIndex(x => new { x.TerminalId, x.Alias }).IsUnique();
         }

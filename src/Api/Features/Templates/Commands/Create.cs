@@ -47,7 +47,7 @@ namespace Api.Features.Templates.Commands
 
                 var mediaType = Request.GetTypedHeaders().ContentType.MediaType.Value;
                 var template = new Template(projectId, request.Name, script, mediaType);
-                _db.Template.Add(template);
+                _db.Templates.Add(template);
                 await _db.SaveChangesAsync();
 
                 return RedirectToEndpoint(new GetById.Query() { Id = template.Id});

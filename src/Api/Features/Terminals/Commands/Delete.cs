@@ -26,14 +26,14 @@ namespace Api.Features.Terminals.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var terminal = await _db.Terminal.SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Id == request.Id);
+                var terminal = await _db.Terminals.SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Id == request.Id);
 
                 if (terminal is null)
                 {
                     return NotFound();
                 }
 
-                _db.Terminal.Remove(terminal);
+                _db.Terminals.Remove(terminal);
                 await _db.SaveChangesAsync();
 
                 return Ok();

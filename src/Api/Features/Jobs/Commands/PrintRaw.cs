@@ -34,7 +34,7 @@ namespace Api.Features.Jobs.Commands
             {
                 var projectId = User.GetProjectId();
 
-                if (!await _db.Spooler.AnyAsync(x => x.Zone.ProjectId == projectId && x.Id == request.SpoolerId))
+                if (!await _db.Spoolers.AnyAsync(x => x.Zone.ProjectId == projectId && x.Id == request.SpoolerId))
                 {
                     return NotFound();
                 }

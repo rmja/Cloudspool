@@ -31,7 +31,7 @@ namespace Api.Features.Documents.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Document
+                var query = _db.Documents
                     .Where(x => x.ProjectId == projectId);
                 var documents = await _mapper.ProjectTo<Document>(query).ToListAsync();
 

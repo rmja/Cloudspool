@@ -29,7 +29,7 @@ namespace Api.Features.Documents.Commands
                 await Request.Body.CopyToAsync(body);
 
                 var document = new Document(User.GetProjectId(), body.ToArray(), Request.ContentType);
-                _db.Document.Add(document);
+                _db.Documents.Add(document);
                 await _db.SaveChangesAsync();
 
                 return RedirectToEndpoint(new GetById.Query() { Id = document.Id });

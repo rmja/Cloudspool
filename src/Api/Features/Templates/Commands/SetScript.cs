@@ -31,7 +31,7 @@ namespace Api.Features.Templates.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var template = await _db.Template.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
+                var template = await _db.Templates.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
                 
                 if (template is null)
                 {

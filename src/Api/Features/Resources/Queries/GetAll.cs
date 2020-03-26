@@ -31,7 +31,7 @@ namespace Api.Features.Resources.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Resource.Where(x => x.ProjectId == projectId);
+                var query = _db.Resources.Where(x => x.ProjectId == projectId);
                 var resources = await _mapper.ProjectTo<Resource>(query).ToListAsync();
 
                 foreach (var resource in resources)

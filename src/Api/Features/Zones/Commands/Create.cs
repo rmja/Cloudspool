@@ -57,7 +57,7 @@ namespace Api.Features.Zones.Commands
                     return BadRequest();
                 }
 
-                _db.Zone.Add(zone);
+                _db.Zones.Add(zone);
                 await _db.SaveChangesAsync();
 
                 return RedirectToEndpoint(new GetById.Query() { Id = zone.Id });

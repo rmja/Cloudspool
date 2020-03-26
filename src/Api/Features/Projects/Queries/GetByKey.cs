@@ -32,7 +32,7 @@ namespace Api.Features.Projects.Queries
             [HttpGet("/Projects/{Key:guid}")]
             public override async Task<ActionResult<Project>> HandleAsync(Query request, CancellationToken cancellationToken)
             {
-                var query = _db.Project.Where(x => x.Key == request.Key);
+                var query = _db.Projects.Where(x => x.Key == request.Key);
                 var project = await _mapper.ProjectTo<Project>(query).SingleOrDefaultAsync();
 
                 if (project is null)

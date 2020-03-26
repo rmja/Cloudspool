@@ -1,5 +1,6 @@
 .vs
 *.csproj.user
+*Dockerfile.generated
 **/bower_components
 **/node_modules
 **/wwwroot/lib

@@ -27,7 +27,7 @@ namespace Api.Features.Documents.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var document = await _db.Document
+                var document = await _db.Documents
                     .Where(x => x.ProjectId == projectId)
                     .SingleOrDefaultAsync(x => x.Id == request.Id);
 
@@ -36,7 +36,7 @@ namespace Api.Features.Documents.Commands
                     return NotFound();
                 }
 
-                _db.Document.Remove(document);
+                _db.Documents.Remove(document);
                 await _db.SaveChangesAsync();
 
                 return Ok();

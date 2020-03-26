@@ -32,7 +32,7 @@ namespace Api.Features.Resources.Commands
                 using var content = new MemoryStream();
                 await Request.Body.CopyToAsync(content);
 
-                var resource = await _db.Resource.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Alias == request.Alias);
+                var resource = await _db.Resources.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Alias == request.Alias);
 
                 var mediaType = Request.GetTypedHeaders().ContentType.MediaType.Value;
                 if (resource is object)
@@ -43,7 +43,7 @@ namespace Api.Features.Resources.Commands
                 else
                 {
                     resource = new DataModels.Resource(projectId, request.Alias, content.ToArray(), mediaType);
-                    _db.Resource.Add(resource);
+                    _db.Resources.Add(resource);
                 }
 
                 await _db.SaveChangesAsync();

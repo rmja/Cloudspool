@@ -26,14 +26,14 @@ namespace Api.Features.Spoolers.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var spooler = await _db.Spooler.SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Id == request.Id);
+                var spooler = await _db.Spoolers.SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Id == request.Id);
 
                 if (spooler is null)
                 {
                     return NotFound();
                 }
 
-                _db.Spooler.Remove(spooler);
+                _db.Spoolers.Remove(spooler);
                 await _db.SaveChangesAsync();
 
                 return Ok();

@@ -19,7 +19,7 @@ namespace Api.Infrastructure
         {
             if (TryParseProjectKey(key, out var projectKey))
             {
-                var project = await _db.Project.SingleOrDefaultAsync(x => x.Key == projectKey);
+                var project = await _db.Projects.SingleOrDefaultAsync(x => x.Key == projectKey);
 
                 if (project is null)
                 {
@@ -33,7 +33,7 @@ namespace Api.Infrastructure
             }
             else if (TryParseSpoolerKey(key, out var spoolerKey))
             {
-                var spooler = await _db.Spooler.Include(x => x.Zone).SingleOrDefaultAsync(x => x.Key == spoolerKey);
+                var spooler = await _db.Spoolers.Include(x => x.Zone).SingleOrDefaultAsync(x => x.Key == spoolerKey);
 
                 if (spooler is null)
                 {

@@ -38,14 +38,14 @@ namespace Api.Features.Formats.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var zone = await _db.Zone.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.ZoneId);
+                var zone = await _db.Zones.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.ZoneId);
 
                 if (zone is null)
                 {
                     return NotFound();
                 }
 
-                var format = await _db.Format.SingleOrDefaultAsync(x => x.ZoneId == zone.Id && x.Alias == request.Alias);
+                var format = await _db.Formats.SingleOrDefaultAsync(x => x.ZoneId == zone.Id && x.Alias == request.Alias);
 
                 if (format is object)
                 {
@@ -54,7 +54,7 @@ namespace Api.Features.Formats.Commands
                 else
                 {
                     format = new Format(zone.Id, request.Alias, request.Body.TemplateId);
-                    _db.Format.Add(format);
+                    _db.Formats.Add(format);
                 }
 
                 await _db.SaveChangesAsync();

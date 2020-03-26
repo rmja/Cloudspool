@@ -29,14 +29,14 @@ namespace Api.Features.Templates.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var template = await _db.Template.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
+                var template = await _db.Templates.SingleOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.Id);
 
                 if (template is null)
                 {
                     return NotFound();
                 }
 
-                _db.Template.Remove(template);
+                _db.Templates.Remove(template);
                 await _db.SaveChangesAsync();
 
                 return Ok();

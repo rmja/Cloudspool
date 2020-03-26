@@ -27,7 +27,7 @@ namespace Api.Features.Templates.Queries
             {
                 var projectId = User.GetProjectId();
 
-                var query = _db.Template
+                var query = _db.Templates
                     .Where(x => x.ProjectId == projectId && x.Id == request.Id)
                     .Select(x => new { x.Script, x.ScriptMediaType });
                 var result = await query.SingleOrDefaultAsync();

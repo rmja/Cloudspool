@@ -34,7 +34,7 @@ namespace Api.Features.Terminals.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var terminal = await _db.Terminal.Include(x => x.Routes).SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Id == request.Id);
+                var terminal = await _db.Terminals.Include(x => x.Routes).SingleOrDefaultAsync(x => x.Zone.ProjectId == projectId && x.Id == request.Id);
                 
                 if (terminal is null)
                 {

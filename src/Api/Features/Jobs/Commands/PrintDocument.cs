@@ -34,7 +34,7 @@ namespace Api.Features.Jobs.Commands
             {
                 var projectId = User.GetProjectId();
 
-                var document = await _db.Document.FirstOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.DocumentId);
+                var document = await _db.Documents.FirstOrDefaultAsync(x => x.ProjectId == projectId && x.Id == request.DocumentId);
 
                 if (document is null)
                 {
@@ -67,7 +67,7 @@ namespace Api.Features.Jobs.Commands
 
             private async Task<PrinterRoute> GetPrinterByTerminal(int projectId, string routeAlias)
             {
-                var route = await _db.Terminal
+                var route = await _db.Terminals
                     .SelectMany(x => x.Routes)
                     .Where(x => x.Terminal.Zone.ProjectId == projectId && x.Alias == routeAlias)
                     .SingleOrDefaultAsync();
@@ -82,7 +82,7 @@ namespace Api.Features.Jobs.Commands
 
             private async Task<PrinterRoute> GetPrinterByZone(int projectId, string routeAlias)
             {
-                var route = await _db.Zone
+                var route = await _db.Zones
                         .SelectMany(x => x.Routes)
                         .Where(x => x.Zone.ProjectId == projectId && x.Alias == routeAlias)
                         .SingleOrDefaultAsync();
