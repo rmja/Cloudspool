@@ -33,10 +33,25 @@ namespace Api.Features.Documents.Commands
             }
 
             [HttpPost("/Zones/{ZoneId:int}/Documents/Generate")]
+            [HttpPost("/Documents/Generate")]
             public override async Task<ActionResult> HandleAsync(Command request, CancellationToken cancellationToken)
             {
+                var projectId = User.GetProjectId();
+
+                if (request.ZoneId == 0)
+                {
+                    if (User.TryGetZoneId(out var zoneId))
+                    {
+                        request.ZoneId = zoneId;
+                    }
+                    else
+                    {
+                        return Forbid();
+                    }
+                }
+
                 var format = await _db.Formats
-                    .Where(x => x.ZoneId == request.ZoneId)
+                    .Where(x => x.Zone.ProjectId == projectId && x.ZoneId == request.ZoneId)
                     .Select(x => new
                     {
                         x.Alias,

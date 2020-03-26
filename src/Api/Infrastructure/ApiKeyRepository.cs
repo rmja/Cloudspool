@@ -42,7 +42,23 @@ namespace Api.Infrastructure
 
                 return new ApiKey(key, new[] {
                     new Claim(ClaimTypes.Role, "Spooler"),
-                    new Claim("ProjectId", spooler.Zone.ProjectId.ToString())
+                    new Claim("ProjectId", spooler.Zone.ProjectId.ToString()),
+                    new Claim("ZoneId", spooler.ZoneId.ToString())
+                });
+            }
+            else if (TryParseTerminalKey(key, out var terminalKey))
+            {
+                var terminal = await _db.Terminals.Include(x => x.Zone).SingleOrDefaultAsync(x => x.Key == terminalKey);
+
+                if (terminal is null)
+                {
+                    return null;
+                }
+
+                return new ApiKey(key, new[] {
+                    new Claim(ClaimTypes.Role, "Spooler"),
+                    new Claim("ProjectId", terminal.Zone.ProjectId.ToString()),
+                    new Claim("ZoneId", terminal.ZoneId.ToString())
                 });
             }
 
@@ -70,6 +86,18 @@ namespace Api.Infrastructure
             }
 
             spoolerKey = default;
+            return false;
+        }
+
+        private static bool TryParseTerminalKey(string key, out Guid terminalKey)
+        {
+            var prefix = "terminal:";
+            if (key.StartsWith(prefix) && Guid.TryParse(key.AsSpan(prefix.Length), out terminalKey))
+            {
+                return true;
+            }
+
+            terminalKey = default;
             return false;
         }
     }

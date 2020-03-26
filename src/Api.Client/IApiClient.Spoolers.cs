@@ -8,7 +8,7 @@ namespace Api.Client
     public partial interface IApiClient
     {
         [Get("/Spoolers/{spoolerKey}")]
-        Task<Spooler> SpoolerGetByKey(Guid spoolerKey);
+        Task<Spooler> SpoolerGetByKeyAsync(Guid spoolerKey);
 
         [Put("/Spoolers/{spoolerId}/Printers")]
         [Headers("Authorization: Bearer")]

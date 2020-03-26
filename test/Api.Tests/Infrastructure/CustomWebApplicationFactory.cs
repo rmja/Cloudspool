@@ -17,7 +17,15 @@ namespace Api.Tests
 
         protected override IHostBuilder CreateHostBuilder()
         {
-            return Host.CreateDefaultBuilder().ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<TestStartup>());
+            return Host.CreateDefaultBuilder()
+                .ConfigureAppConfiguration((context, configBuilder) =>
+                {
+                    context.Configuration["ConnectionStrings:Redis"] = "redis";
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<TestStartup>();
+                });
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)

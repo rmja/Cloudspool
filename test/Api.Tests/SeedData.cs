@@ -13,6 +13,7 @@ namespace Api.Tests
     {
         public static readonly Guid TestProjectKey = Guid.Parse("893530ba-1e5c-423b-b154-fe79b2ef7121");
         public static readonly Guid TestSpoolerKey = Guid.Parse("49668ec2-2bac-4a17-a7ae-901ea997e18a");
+        public static readonly Guid TestTerminalKey = Guid.Parse("8de343f2-6387-4b06-a4fa-456f0d19e55b");
 
         public static Project TestProject => GetProjects().First(x => x.Key == TestProjectKey);
 
@@ -63,14 +64,14 @@ export default class Builder {
         {
             var id = -1;
 
-            yield return new Zone(projectId: -1, "Test Zone") { Id = id--, Routes = { new ZoneRoute(index: 0, "RouteAlias", spoolerId: -1, "Test Printer") } };
+            yield return new Zone(projectId: -1, "Test Zone") { Id = id--, Routes = { new ZoneRoute("RouteAlias", spoolerId: -1, "Test Printer") } };
         }
 
         public static IEnumerable<Terminal> GetTerminals()
         {
             var id = -1;
 
-            yield return new Terminal(zoneId: -1, "Test Terminal") { Id = id--, Routes = { new TerminalRoute(index: 0, "RouteAlias", spoolerId: -1, "Test Printer") } };
+            yield return new Terminal(zoneId: -1, "Test Terminal") { Id = id--, Key = TestTerminalKey, Routes = { new TerminalRoute("RouteAlias", spoolerId: -1, "Test Printer") } };
         }
 
         public static IEnumerable<Format> GetFormats()

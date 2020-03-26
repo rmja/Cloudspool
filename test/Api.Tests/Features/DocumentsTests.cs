@@ -3,6 +3,7 @@ using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -52,7 +53,7 @@ namespace Api.Tests.Features
         }
 
         [Fact]
-        public async Task CanGenerate()
+        public async Task CanGenerateAsProject()
         {
             // Given
             var firstZone = SeedData.GetZones().First();
@@ -63,6 +64,28 @@ namespace Api.Tests.Features
 
             // When
             var response = await _client.PostAsJsonAsync($"/Zones/{firstZone.Id}/Documents/Generate?format=slip", model);
+            var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Document>();
+
+            var contentResponse = await _client.GetAsync(result.ContentUrl);
+            var contentString = await contentResponse.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
+
+            // Then
+            Assert.Equal("application/escpos", result.ContentType);
+            Assert.Equal("name: Rasmus, json: {\"name\":\"Rasmus\"}", contentString);
+        }
+
+        [Fact]
+        public async Task CanGenerateAsTerminal()
+        {
+            // Given
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"terminal:{SeedData.TestTerminalKey}");
+            var model = new
+            {
+                name = "Rasmus"
+            };
+
+            // When
+            var response = await _client.PostAsJsonAsync($"/Documents/Generate?format=slip", model);
             var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<Document>();
 
             var contentResponse = await _client.GetAsync(result.ContentUrl);

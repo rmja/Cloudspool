@@ -26,7 +26,7 @@ namespace Dispatcher
 
 			try
 			{
-				var spooler = await _api.SpoolerGetByKey(spoolerKey);
+				var spooler = await _api.SpoolerGetByKeyAsync(spoolerKey);
 
 				return new ApiKey(key, new[]
 				{
