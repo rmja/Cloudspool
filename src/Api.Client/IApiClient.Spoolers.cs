@@ -11,6 +11,7 @@ namespace Api.Client
         Task<Spooler> SpoolerGetByKey(Guid spoolerKey);
 
         [Put("/Spoolers/{spoolerId}/Printers")]
+        [Headers("Authorization: Bearer")]
         Task SpoolerSetPrintersAsync(int spoolerId, [Body] string[] printerNames);
     }
 }
