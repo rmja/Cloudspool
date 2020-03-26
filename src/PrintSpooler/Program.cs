@@ -17,6 +17,7 @@ namespace PrintSpooler
                 {
                     services.AddHostedService<Worker>();
                     services.AddSingleton<PrintingHubProxy>();
+                    services.Configure<PrintSpoolerOptions>(hostContext.Configuration);
                 })
                 .UseWindowsService();
     }
