@@ -74,7 +74,6 @@ namespace Api
                     }
                     return next();
                 })
-                .UseHttpsRedirection()
                 .UseRouting()
                 .UseAuthentication()
                 .UseAuthorization()

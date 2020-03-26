@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,12 +17,28 @@ namespace PrintSpooler.Proxy
 
         public event SpoolJobEventHandler OnSpoolJob;
 
-        public PrintingHubProxy(IOptions<PrintSpoolerOptions> options)
+        public PrintingHubProxy(IHostEnvironment env, IOptions<PrintSpoolerOptions> options)
         {
             var spoolerKey = options.Value.SpoolerKey;
 
             _hub = new HubConnectionBuilder()
-                .WithUrl("https://localhost:51332/Printing", options => options.Headers.Add(AuthorizationHeaderName, $"Bearer spooler:{spoolerKey}"))
+                .WithUrl(options.Value.PrintingHubUrl, options =>
+                {
+                    options.Headers.Add(AuthorizationHeaderName, $"Bearer spooler:{spoolerKey}");
+
+                    if (env.IsDevelopment())
+                    {
+                        options.HttpMessageHandlerFactory = handler =>
+                        {
+                            if (handler is HttpClientHandler clientHandler)
+                            {
+                                clientHandler.ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
+                            }
+
+                            return handler;
+                        };
+                    }
+                })
                 .WithAutomaticReconnect()
                 .Build();
 

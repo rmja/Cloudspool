@@ -63,19 +63,19 @@ namespace Dispatcher
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHub<PrintingHub>("/Printing");
-                endpoints.MapGet("/", async context =>
+            app
+                .UsePathBase(Configuration["PathBase"])
+                .UseRouting()
+                .UseAuthentication()
+                .UseAuthorization()
+                .UseEndpoints(endpoints =>
                 {
-                    await context.Response.WriteAsync("Hello World!");
+                    endpoints.MapHub<PrintingHub>("/Printing");
+                    endpoints.MapGet("/", async context =>
+                    {
+                        await context.Response.WriteAsync("Hello World!");
+                    });
                 });
-            });
         }
     }
 }

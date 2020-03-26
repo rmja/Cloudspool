@@ -1,9 +1,16 @@
-﻿{
+{
   "profiles": {
-    "PrintSpooler": {
+    "PrintSpooler (Development)": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "PrintSpooler (Local k8s)": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "PrintingHubUrl": "https://cloudspool.localhost/dispatcher/Printing"
       }
     }
   }

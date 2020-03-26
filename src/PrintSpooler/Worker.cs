@@ -15,7 +15,7 @@ namespace PrintSpooler
     {
         private readonly PrintingHubProxy _printingHubProxy;
         private readonly ILogger<Worker> _logger;
-        private BlockingCollection<SpoolerJob> _queue = new BlockingCollection<SpoolerJob>();
+        private readonly BlockingCollection<SpoolerJob> _queue = new BlockingCollection<SpoolerJob>();
 
         public Worker(PrintingHubProxy printingHubProxy, ILogger<Worker> logger)
         {

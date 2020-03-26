@@ -4,4 +4,5 @@ metadata:
   name: dispatcher-config
   namespace: cloudspool
 data:
+  PathBase: /dispatcher
   ConnectionStrings__Redis: redis
