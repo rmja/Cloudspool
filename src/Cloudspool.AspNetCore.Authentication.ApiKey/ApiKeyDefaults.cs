@@ -1,4 +1,4 @@
-﻿namespace Api.Infrastructure
+﻿namespace Cloudspool.AspNetCore.Authentication.ApiKey
 {
     public static class ApiKeyDefaults
     {

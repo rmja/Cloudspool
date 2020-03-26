@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 
-namespace Api.Infrastructure
+namespace Cloudspool.AspNetCore.Authentication.ApiKey
 {
     public class ApiKeyAuthenticationSchemeOptions : AuthenticationSchemeOptions
     {

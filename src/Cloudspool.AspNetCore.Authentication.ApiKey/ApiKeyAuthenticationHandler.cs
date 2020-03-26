@@ -1,28 +1,26 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using System;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
-namespace Api.Infrastructure
+namespace Cloudspool.AspNetCore.Authentication.ApiKey
 {
     public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthenticationSchemeOptions>
     {
-        private readonly CloudspoolContext _db;
+        private readonly IApiKeyRepository _keyRepository;
 
         public ApiKeyAuthenticationHandler(
             IOptionsMonitor<ApiKeyAuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock,
-            CloudspoolContext db) : base(options, logger, encoder, clock)
+            IApiKeyRepository keyRepository) : base(options, logger, encoder, clock)
         {
-            _db = db;
+            _keyRepository = keyRepository;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -32,23 +30,19 @@ namespace Api.Infrastructure
                 return AuthenticateResult.NoResult();
             }
 
-            if (!TryParseAuthorizationValue(headerValue, out var key))
+            if (!TryGetKey(headerValue, out var key))
             {
                 return AuthenticateResult.NoResult();
             }
 
-            var project = await _db.Project.SingleOrDefaultAsync(x => x.Key == key);
+            var apiKey = await _keyRepository.GetByKey(key);
 
-            if (project is null)
+            if (apiKey is null)
             {
                 return AuthenticateResult.Fail("Invalid key");
             }
 
-            var identity = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Role, "Project"),
-                new Claim("ProjectId", project.Id.ToString())
-            }, Options.AuthenticationType);
+            var identity = new ClaimsIdentity(apiKey.Claims, Options.AuthenticationType);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, Options.AuthenticationScheme);
 
@@ -67,11 +61,12 @@ namespace Api.Infrastructure
             return Task.CompletedTask;
         }
 
-        private static bool TryParseAuthorizationValue(string headerValue, out Guid key)
+        private static bool TryGetKey(string headerValue, out string key)
         {
-            var prefix = "Bearer project:";
-            if (headerValue.StartsWith(prefix) && Guid.TryParse(headerValue.AsSpan(prefix.Length), out key))
+            var prefix = "Bearer ";
+            if (headerValue.StartsWith(prefix))
             {
+                key = headerValue.Substring(prefix.Length);
                 return true;
             }
 
