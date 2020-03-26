@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: api
+  namespace: cloudspool
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+    - hosts:
+      - cloudspool.dk
+      secretName: cloudspool-ingress-tls
+  rules:
+    - host: cloudspool.dk
+      http:
+        paths:
+          - path: /api
+            backend:
+              serviceName: api
+              servicePort: 80
+          - path: /dispatcher
+            backend:
+              serviceName: dispatcher
+              servicePort: 80
+          - path: /
+            backend:
+              serviceName: manager
+              servicePort: 80

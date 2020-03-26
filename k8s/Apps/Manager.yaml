@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manager
+  namespace: cloudspool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: manager
+  template:
+    metadata:
+      labels:
+        app: manager
+    spec:
+      containers:
+      - name: manager
+        image: rmjac/cloudspool-manager:latest
+        resources:
+          limits:
+            cpu: 500m
+            memory: 0.1Gi
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: manager
+  namespace: cloudspool
+spec:
+  selector:
+    app: manager
+  ports:
+  - port: 80

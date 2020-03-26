@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatcher
+  namespace: cloudspool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dispatcher
+  template:
+    metadata:
+      labels:
+        app: dispatcher
+    spec:
+      containers:
+      - name: dispatcher
+        image: rmjac/cloudspool-dispatcher:latest
+        resources:
+          limits:
+            cpu: 500m
+            memory: 0.1Gi
+        ports:
+        - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name:  dispatcher-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dispatcher
+  namespace: cloudspool
+spec:
+  selector:
+    app: dispatcher
+  ports:
+  - port: 80

@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Tests", "test\Api.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Manager", "src\Manager\Manager.csproj", "{EABA5076-2897-4658-836C-C2AE0F3CABA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cloudspool.AspNetCore.Authentication.ApiKey", "src\Cloudspool.AspNetCore.Authentication.ApiKey\Cloudspool.AspNetCore.Authentication.ApiKey.csproj", "{73D563F1-EA83-4490-813C-B4A127839F68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cloudspool.AspNetCore.Authentication.ApiKey", "src\Cloudspool.AspNetCore.Authentication.ApiKey\Cloudspool.AspNetCore.Authentication.ApiKey.csproj", "{73D563F1-EA83-4490-813C-B4A127839F68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

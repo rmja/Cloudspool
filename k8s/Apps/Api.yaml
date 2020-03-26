@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: cloudspool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: rmjac/cloudspool-api:latest
+        resources:
+          limits:
+            cpu: 500m
+            memory: 0.1Gi
+        ports:
+        - containerPort: 80
+        envFrom:
+          - configMapRef:
+              name:  api-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: cloudspool
+spec:
+  selector:
+    app: api
+  ports:
+  - port: 80

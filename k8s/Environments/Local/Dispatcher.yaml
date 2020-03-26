@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dispatcher-config
+  namespace: cloudspool
+data:
+  ConnectionStrings__Redis: redis
