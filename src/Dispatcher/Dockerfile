@@ -7,6 +7,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR "/src"
 COPY ["Dispatcher/Dispatcher.csproj", "Dispatcher/"]
 RUN dotnet restore "Dispatcher/Dispatcher.csproj"
+COPY ["Shared", "Shared/"]
 COPY . .
 WORKDIR "/src/Dispatcher"
 RUN dotnet build --no-restore "Dispatcher.csproj" -c ${DOTNET_CONFIG:-Release} -o /app/build
