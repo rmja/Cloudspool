@@ -33,12 +33,14 @@ steps:
   displayName: Set tag to env variable githubTag
   failOnStderr: true
 - task: GithubRelease@0
-  displayName: 'Add assets to GitHub release'
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+  displayName: 'Add assets to GitHub release tag $githubTag'
   inputs:
     gitHubConnection: github-release
     repositoryName: rmja/Cloudspool
     action: edit
     assets: $(Build.ArtifactStagingDirectory)/*
     target: '$(Build.SourceVersion)'
-    tag: $(githubTag)
+    tag: $githubTag
     addChangeLog: true
+    assetUploadMode: replace
