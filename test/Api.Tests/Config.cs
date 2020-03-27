@@ -2,6 +2,6 @@
 {
     public static class Config
     {
-        public static readonly DatabaseProvider TestDatabaseProvider = DatabaseProvider.Npgsql;
+        public static readonly DatabaseProvider TestDatabaseProvider = DatabaseProvider.InMemory;
     }
 }
