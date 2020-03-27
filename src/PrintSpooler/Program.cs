@@ -1,6 +1,10 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PrintSpooler.Proxy;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace PrintSpooler
@@ -11,13 +15,16 @@ namespace PrintSpooler
         {
             var host = CreateHostBuilder(args).Build();
 
-            var appUpdater = host.Services.GetRequiredService<AppUpdater>();
-            var appLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-            await appUpdater.EnsureUpdatedAsync();
-
-            if (appLifetime.ApplicationStopping.IsCancellationRequested)
+            if (!args.Contains("--disable-updates"))
             {
-                return 1;
+                var appUpdater = host.Services.GetRequiredService<AppUpdater>();
+                var appLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+                await appUpdater.EnsureUpdatedAsync();
+
+                if (appLifetime.ApplicationStopping.IsCancellationRequested)
+                {
+                    return 1;
+                }
             }
 
             await host.RunAsync();
@@ -27,9 +34,11 @@ namespace PrintSpooler
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration(builder => builder.SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)))
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddHostedService<Worker>();
+                    services.AddHostedService<PrintWorker>();
+                    services.AddHostedService<HeartbeatWorker>();
                     services.AddSingleton<PrintingHubProxy>();
                     services.AddTransient<AppUpdater>();
                     services.Configure<PrintSpoolerOptions>(hostContext.Configuration);

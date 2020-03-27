@@ -1,6 +1,7 @@
 public static class RedisConstants
 {
     public const string ConnectedClients = "cloudspool:connected-clients";
+    public static string SpoolerDetails(int spoolerId) => $"cloudspool:spoolers:{spoolerId}:details";
     public static string InstalledPrinters(int spoolerId) => $"cloudspool:spoolers:{spoolerId}:installed-printers";
 
     public static class Channels

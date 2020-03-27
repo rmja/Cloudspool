@@ -1,22 +1,23 @@
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using PrintSpooler.Printing;
 using PrintSpooler.Printing.Ghostscript;
 using PrintSpooler.Printing.Raw;
 using PrintSpooler.Proxy;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace PrintSpooler
 {
-    public class Worker : BackgroundService
+    public class PrintWorker : BackgroundService
     {
         private readonly PrintingHubProxy _printingHubProxy;
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger<PrintWorker> _logger;
         private readonly BlockingCollection<SpoolerJob> _queue = new BlockingCollection<SpoolerJob>();
 
-        public Worker(PrintingHubProxy printingHubProxy, ILogger<Worker> logger)
+        public PrintWorker(PrintingHubProxy printingHubProxy, ILogger<PrintWorker> logger)
         {
             _printingHubProxy = printingHubProxy;
             _logger = logger;
@@ -37,6 +38,9 @@ namespace PrintSpooler
             };
 
             await _printingHubProxy.StartAsync(stoppingToken);
+
+            _logger.LogInformation("Sending hello");
+            await _printingHubProxy.Hello(Assembly.GetEntryAssembly().GetName().Version.ToString(3));
 
             var printers = Printers.GetInstalledPrinters();
             _logger.LogInformation("Reporting {PrinterCount} printers to dispatcher", printers.Length);

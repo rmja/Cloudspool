@@ -4,8 +4,6 @@ using Onova;
 using Onova.Models;
 using Onova.Services;
 using System;
-using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -26,16 +24,7 @@ namespace PrintSpooler
         {
             var updatee = AssemblyMetadata.FromEntryAssembly();
 
-            _logger.LogInformation("PrintSpooler {Version}", updatee.Version);
-
-            var storageDirPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Onova", updatee.Name);
-
-            // Set lock file path
-            var lockFilePath = Path.Combine(storageDirPath, "Onova.lock");
-
-            _logger.LogInformation("Lock file is at {LockFilePath}", lockFilePath);
+            _logger.LogInformation("PrintSpooler {Version}", updatee.Version.ToString(3));
 
             using (var um = new UpdateManager(
                 updatee,
@@ -52,7 +41,7 @@ namespace PrintSpooler
                     }
                     else
                     {
-                        _logger.LogInformation("Downloading version {NewVersion}", check.LastVersion);
+                        _logger.LogInformation("Downloading version {NewVersion}", check.LastVersion.ToString(3));
 
                         await um.PrepareUpdateAsync(check.LastVersion);
 
@@ -60,7 +49,7 @@ namespace PrintSpooler
 
                         um.LaunchUpdater(check.LastVersion, restart: false);
 
-                        _logger.LogInformation("Updater completed");
+                        _logger.LogInformation("Updater completed, run again to start the new version");
 
                         _applicationLifetime.StopApplication();
                     }
