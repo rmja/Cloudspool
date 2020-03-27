@@ -10,6 +10,8 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+# See https://github.com/microsoft/azure-pipelines-tasks/issues/11558#issuecomment-541635061 for creating the "github" service connection
+# The curl command is in create-github-service-connection.cmd
 steps:
 - task: GithubRelease@0
   displayName: 'Attach artifact assets to GitHub Release'
