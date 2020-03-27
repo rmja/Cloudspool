@@ -10,15 +10,16 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  BuildConfiguration: 'Release'
-  Version.MajorMinor: 1.0
-  Version.Patch: $[counter(variables['Version.MajorMinor'], 0)]
+  buildConfiguration: 'Release'
+  version.major: 1
+  version.minor: 1
+  version.patch: $[counter(format('{0}.{1}', variables['version.major'], variables['version.minor']), 0)]
 
-name: $(Version.MajorMinor).$(Version.Patch)
+name: $(version.major).$(version.minor).$(version.patch)
 
 steps:
 - script: |
-    dotnet publish ./src/PrintSpooler/ --configuration $(BuildConfiguration) --output $(Build_ArtifactStagingDirectory)/PrintSpooler-win64 --self-contained true -r win-x64 /p:Version $(Build_BuildNumber)
+    dotnet publish ./src/PrintSpooler/ --configuration $(buildConfiguration) --output $(BUILD_ARTIFACTSTAGINGDIRECTORY)/PrintSpooler-win64 --self-contained true -r win-x64 /p:Version $(BUILD_BUILDNUMBER)
   failOnStderr: true
   displayName: Build PrintSpooler Win x64 $(Build.BuildNumber)
 - task: ArchiveFiles@2
