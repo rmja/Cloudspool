@@ -25,4 +25,3 @@ steps:
     assets: $(Build.ArtifactStagingDirectory)/*
     target: '$(Build.SourceVersion)'
     addChangeLog: true
-    isDraft: true
