@@ -15,12 +15,12 @@ pool:
 #    'https://dev.azure.com/rmja/Cloudspool/_apis/serviceendpoint/endpoints?api-version=5.1-preview'
 steps:
 - task: GithubRelease@0
-  displayName: 'Create GitHub Release'
+  displayName: 'Create GitHub release draft'
   inputs:
     gitHubConnection: github-release
     repositoryName: rmja/Cloudspool
     action: create
     assets: $(Build.ArtifactStagingDirectory)/*
     target: '$(Build.SourceVersion)'
-    tagSource: manual
     addChangeLog: true
+    isDraft: true
