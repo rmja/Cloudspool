@@ -25,7 +25,7 @@ steps:
   displayName: Build PrintSpooler Win x64
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)/win64'
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/PrintSpooler.win64'
     artifactName: 'PrintSpooler.win64'
   displayName: Publish PrintSpooler Win x64 artifacts
 - task: ArchiveFiles@2
