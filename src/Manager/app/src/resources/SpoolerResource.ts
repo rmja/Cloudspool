@@ -1,4 +1,6 @@
-﻿import * as api from "../api/spoolers";
+﻿// import "../api/cache-extensions";
+
+import * as api from "../api/spoolers";
 
 import { Operation } from "ur-jsonpatch";
 import { ResourceCache } from './cache';
@@ -14,8 +16,14 @@ export class SpoolerResource {
 		return api.getAllByZoneId(zoneId).transfer().then(x => this.cache.ensureAll(x));
 	}
 
-	public getById(id: number) {
-		return api.getById(id).transfer().then(x => this.cache.ensure(x));
+	public getById(id: number, bypassCache?: boolean) {
+		const builder = api.getById(id);
+		
+		if (bypassCache) {
+			builder.addHeader("Cache-Control", "no-cache");
+		}
+
+		return builder.transfer().then(x => this.cache.ensure(x));
 	}
 
 	public create(command: { zoneId: number, name: string }) {

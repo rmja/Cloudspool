@@ -12,7 +12,7 @@ export class SpoolersController {
 	}
 
 	refreshPrinters(spooler: Spooler) {
-		this.SpoolerResource.getById(spooler.id);
+		this.SpoolerResource.getById(spooler.id, true);
 	}
 
 	saveSpooler(spooler: Spooler) {

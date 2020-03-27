@@ -1,10 +1,9 @@
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Cloudspool.PrintSpooler.Printing;
 using Cloudspool.PrintSpooler.Printing.Ghostscript;
 using Cloudspool.PrintSpooler.Printing.Raw;
 using Cloudspool.PrintSpooler.Proxy;
-using System;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
@@ -64,12 +63,6 @@ namespace Cloudspool.PrintSpooler
                     _logger.LogWarning("Unable to get printer handle");
                 }
             }
-
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(10000, stoppingToken);
-            }
         }
 
         private static bool TryGetPrinterHandle(string printerName, string contentType, out IPrinterHandle printerHandle)
@@ -79,6 +72,7 @@ namespace Cloudspool.PrintSpooler
                 case "application/zpl":
                 case "application/escp":
                 case "application/starline":
+                case "application/octet-stream":
                     printerHandle = new RawPrinterHandle(printerName);
                     return true;
                 case "application/pdf":

@@ -72,7 +72,6 @@ namespace Api.Features.Spoolers.Queries
                     }
                     catch (OperationCanceledException)
                     {
-                        return StatusCode(StatusCodes.Status504GatewayTimeout);
                     }
                     finally
                     {
