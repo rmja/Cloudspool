@@ -9,31 +9,8 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  buildConfiguration: 'Release'
-  version.major: 1
-  version.minor: 1
-  version.patch: $[counter(format('{0}.{1}', variables['version.major'], variables['version.minor']), 0)]
-
-name: $(version.major).$(version.minor).$(version.patch)
-
 steps:
 - task: DotNetCoreCLI@2
-  displayName: "Publish PrintSpooler Win x64 $(Build.BuildNumber)"
   inputs:
-    command: publish
-    publishWebProjects: false
-    projects: 'src/PrintSpooler/PrintSpooler.csproj'
-    arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/PrintSpooler-win64 --self-contained true -r win-x64
-    versioningScheme: byBuildNumber
-    zipAfterPublish: false
-- task: ArchiveFiles@2
-  displayName: Archive PrintSpooler Win x64 artifacts
-  inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler-win64/PrintSpooler'
-    includeRootFolder: false
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler-win64.zip'
-    replaceExistingArchive: true
-- publish: $(Build.ArtifactStagingDirectory)/PrintSpooler-win64.zip
-  artifact: PrintSpooler-win64
+    command: 'build'
+    projects: 'src/**/*.csproj'
