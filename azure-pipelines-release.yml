@@ -10,8 +10,18 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-# See https://github.com/microsoft/azure-pipelines-tasks/issues/11558#issuecomment-541635061 for creating the "github" service connection
-# The curl command is in create-github-service-connection.cmd
+# See https://github.com/microsoft/azure-pipelines-tasks/issues/11558 for creating the "github" service connection
+# 1. Create a personal access token for Azure DevOps to create the service connection. Do this from https://dev.azure.com/rmja/_usersSettings/tokens
+# 2. Create a personal access token for Github. Do this from https://github.com/settings/tokens
+#    The recommended scopes are: repo, user, admin:repo_hook (see https://dev.azure.com/rmja/Cloudspool/_settings/adminservices)
+# AZURE_PAL = "Token obtained from Azure DevOps"
+# GITHUB_PAL = "Token obtained from Github"
+# 3. Run the following curl command from bash:
+# curl -u rmja:AZURE_PAL \
+#    -d '{"name": "release","type": "github","url": "https://github.com","authorization":{"scheme":"PersonalAccessToken","parameters":{"accessToken":"GITHUB_PAL"}}}' \
+#    -H "Content-Type: application/json" \
+#    -X POST \
+#    'https://dev.azure.com/rmja/Cloudspool/_apis/serviceendpoint/endpoints?api-version=5.1-preview'
 steps:
 - task: GithubRelease@0
   displayName: 'Attach artifact assets to GitHub Release'
