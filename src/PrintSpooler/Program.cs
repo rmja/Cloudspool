@@ -12,7 +12,13 @@ namespace PrintSpooler
             var host = CreateHostBuilder(args).Build();
 
             var appUpdater = host.Services.GetRequiredService<AppUpdater>();
+            var appLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
             await appUpdater.EnsureUpdatedAsync();
+
+            if (appLifetime.ApplicationStopping.IsCancellationRequested)
+            {
+                return 1;
+            }
 
             await host.RunAsync();
 

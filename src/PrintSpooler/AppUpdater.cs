@@ -58,7 +58,7 @@ namespace PrintSpooler
 
                         _logger.LogInformation("Launching updater");
 
-                        um.LaunchUpdater(check.LastVersion);
+                        um.LaunchUpdater(check.LastVersion, restart: false);
 
                         _logger.LogInformation("Updater completed");
 
