@@ -41,6 +41,6 @@ steps:
     action: edit
     assets: $(Build.ArtifactStagingDirectory)/*
     target: '$(Build.SourceVersion)'
-    tag: $githubTag
+    tag: '$(githubTag)'
     addChangeLog: true
     assetUploadMode: replace
