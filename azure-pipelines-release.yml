@@ -46,9 +46,7 @@ steps:
     command: publish
     publishWebProjects: false
     projects: 'src/PrintSpooler/PrintSpooler.csproj'
-    arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/PrintSpooler-win64 --self-contained -r win-x64
-    versioningScheme: byEnvVar
-    versionEnvVar: version
+    arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/PrintSpooler-win64 --self-contained -r win-x64 /p:Version=$(version)
     zipAfterPublish: false
 - task: ArchiveFiles@2
   displayName: Archive PrintSpooler Win x64 artifacts
