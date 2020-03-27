@@ -13,9 +13,8 @@ variables:
   buildConfiguration: 'Release'
   major: 1
   minor: 0
-  patch: 0
 
-name: $(major).$(minor).$(patch)$(Rev:.r)
+name: $(major).$(minor).$(Rev:.r)
 
 steps:
 - script: |
