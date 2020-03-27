@@ -1,8 +1,3 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
 trigger:
   branches:
     include:
@@ -15,34 +10,14 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  buildConfiguration: 'Release'
-
 steps:
-- script: |
-    dotnet publish ./src/PrintSpooler/ --configuration $(buildConfiguration) --output $BUILD_ARTIFACTSTAGINGDIRECTORY/PrintSpooler.win64 --self-contained true -r win-x64
-  failOnStderr: true
-  displayName: Build PrintSpooler Win x64 $(Build.BuildNumber)
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)/PrintSpooler.win64'
-    artifactName: 'PrintSpooler.win64'
-  displayName: Publish PrintSpooler Win x64 artifacts
-- task: ArchiveFiles@2
-  displayName: Zip PrintSpooler Win x64 artifacts
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
-  inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler.win64'
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler.win64.zip'
-    replaceExistingArchive: true
 - task: GithubRelease@0
-  displayName: 'Attach PrintSpooler Win x64 artifacts to GitHub Release'
+  displayName: 'Attach artifact assets to GitHub Release'
   condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
   inputs:
     gitHubConnection: github
     repositoryName: rmja/Cloudspool
-    assets: $(Build.ArtifactStagingDirectory)/PrintSpooler.win64.zip
+    assets: $(Build.ArtifactStagingDirectory)/*
     action: edit
     target: '$(Build.SourceVersion)'
     tag: $(githubTag)
