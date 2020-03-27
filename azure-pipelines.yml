@@ -10,7 +10,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  buildConfiguration: 'Release'
+  BuildConfiguration: 'Release'
   Version.MajorMinor: 1.0
   Version.Patch: $[counter(variables['Version.MajorMinor'], 0)]
 
@@ -19,7 +19,11 @@ name: $(Version.MajorMinor).$(Version.Patch)
 steps:
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'build'
+    command: 'publish'
+    publishWebProjects: false
+    projects: 'src/PrintSpooler'
     versioningScheme: byBuildNumber
-- publish: src/PrintSpooler/bin/$(buildConfiguration)/
+    zipAfterPublish: true
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/PrintSpooler-win64'
+- publish: PrintSpooler-win64
   artifact: PrintSpooler-win64
