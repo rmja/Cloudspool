@@ -42,7 +42,7 @@ steps:
   displayName: 'Attach Win x64 artifacts to GitHub Release'
   condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
   inputs:
-    gitHubConnection: rmja
+    gitHubConnection: github
     repositoryName: rmja/Cloudspool
     assets: $(Build.ArtifactStagingDirectory)/PrintSpooler.win64.zip
     action: edit
