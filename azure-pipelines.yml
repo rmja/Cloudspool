@@ -17,13 +17,16 @@ variables:
 name: $(Version.MajorMinor).$(Version.Patch)
 
 steps:
-- task: DotNetCoreCLI@2
+- script: |
+    dotnet publish ./src/PrintSpooler/ --configuration $(BuildConfiguration) --output $(Build_ArtifactStagingDirectory)/PrintSpooler-win64 --self-contained true -r win-x64 /p:Version $(Build_BuildNumber)
+  failOnStderr: true
+  displayName: Build PrintSpooler Win x64 $(Build.BuildNumber)
+- task: ArchiveFiles@2
+  displayName: Zip PrintSpooler Win x64 artifacts
   inputs:
-    command: 'publish'
-    publishWebProjects: false
-    projects: 'src/PrintSpooler'
-    versioningScheme: byBuildNumber
-    zipAfterPublish: true
-    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/PrintSpooler-win64'
-- publish: PrintSpooler-win64
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler-win64'
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler-win64.zip'
+    replaceExistingArchive: true
+- publish: $(Build_ArtifactStagingDirectory)/PrintSpooler-win64.zip
   artifact: PrintSpooler-win64
