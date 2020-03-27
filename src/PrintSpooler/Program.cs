@@ -1,10 +1,6 @@
-using PrintSpooler.Proxy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Onova;
-using Onova.Models;
-using Onova.Services;
-using System;
+using PrintSpooler.Proxy;
 using System.Threading.Tasks;
 
 namespace PrintSpooler
@@ -13,33 +9,13 @@ namespace PrintSpooler
     {
         public static async Task<int> Main(string[] args)
         {
-            var updatee = AssemblyMetadata.FromEntryAssembly();
+            var host = CreateHostBuilder(args).Build();
 
-            Console.WriteLine($"PrintSpooler v{updatee.Version}");
+            var appUpdater = host.Services.GetRequiredService<AppUpdater>();
+            await appUpdater.EnsureUpdatedAsync();
 
-            using (var um = new UpdateManager(
-                updatee,
-                new GithubPackageResolver("rmja", "Cloudspool", "PrintSpooler-*.zip"),
-                new ZipPackageExtractor()))
-            {
-                var check = await um.CheckForUpdatesAsync();
+            await host.RunAsync();
 
-                if (!check.CanUpdate)
-                {
-                    Console.WriteLine("There are no updates available");
-                }
-                else
-                {
-                    Console.WriteLine($"Preparing update to v{check.LastVersion}");
-
-                    await um.PrepareUpdateAsync(check.LastVersion);
-
-                    um.LaunchUpdater(check.LastVersion);
-                    return 1;
-                }
-            }
-
-            await CreateHostBuilder(args).Build().RunAsync();
             return 0;
         }
 
@@ -49,6 +25,7 @@ namespace PrintSpooler
                 {
                     services.AddHostedService<Worker>();
                     services.AddSingleton<PrintingHubProxy>();
+                    services.AddTransient<AppUpdater>();
                     services.Configure<PrintSpoolerOptions>(hostContext.Configuration);
                 })
                 .UseWindowsService();
