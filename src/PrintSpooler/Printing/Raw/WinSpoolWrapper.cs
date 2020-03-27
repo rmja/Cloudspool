@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Cloudspool.PrintSpooler.Printing.Raw
+namespace PrintSpooler.Printing.Raw
 {
     internal static class WinSpoolWrapper
     {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Cloudspool.PrintSpooler.Printing.Ghostscript
+namespace PrintSpooler.Printing.Ghostscript
 {
     static class GsWrapper
     {

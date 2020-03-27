@@ -1,14 +1,14 @@
-using Cloudspool.PrintSpooler.Printing;
-using Cloudspool.PrintSpooler.Printing.Ghostscript;
-using Cloudspool.PrintSpooler.Printing.Raw;
-using Cloudspool.PrintSpooler.Proxy;
+using PrintSpooler.Printing;
+using PrintSpooler.Printing.Ghostscript;
+using PrintSpooler.Printing.Raw;
+using PrintSpooler.Proxy;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cloudspool.PrintSpooler
+namespace PrintSpooler
 {
     public class Worker : BackgroundService
     {

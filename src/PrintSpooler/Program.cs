@@ -1,4 +1,4 @@
-using Cloudspool.PrintSpooler.Proxy;
+using PrintSpooler.Proxy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Onova;
@@ -7,7 +7,7 @@ using Onova.Services;
 using System;
 using System.Threading.Tasks;
 
-namespace Cloudspool.PrintSpooler
+namespace PrintSpooler
 {
     public class Program
     {

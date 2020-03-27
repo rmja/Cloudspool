@@ -1,7 +1,7 @@
 ﻿using System.Drawing.Printing;
 using System.Linq;
 
-namespace Cloudspool.PrintSpooler.Printing
+namespace PrintSpooler.Printing
 {
     static class Printers
     {

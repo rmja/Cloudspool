@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Cloudspool.PrintSpooler.Printing
+namespace PrintSpooler.Printing
 {
     class PrinterException : Exception
     {

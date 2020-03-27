@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cloudspool.AspNetCore.Authe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cloudspool.Api.Client", "src\Cloudspool.Api.Client\Cloudspool.Api.Client.csproj", "{E13EBBF9-F811-4899-9337-A49A61B934D4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cloudspool.PrintSpooler", "src\Cloudspool.PrintSpooler\Cloudspool.PrintSpooler.csproj", "{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrintSpooler", "src\PrintSpooler\PrintSpooler.csproj", "{109EB852-01E2-46AC-82AB-AE88D147E5DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,10 +47,10 @@ Global
 		{E13EBBF9-F811-4899-9337-A49A61B934D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E13EBBF9-F811-4899-9337-A49A61B934D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E13EBBF9-F811-4899-9337-A49A61B934D4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{61538F35-3373-4AD3-BCD3-5DCA15B64BA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{109EB852-01E2-46AC-82AB-AE88D147E5DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{109EB852-01E2-46AC-82AB-AE88D147E5DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{109EB852-01E2-46AC-82AB-AE88D147E5DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{109EB852-01E2-46AC-82AB-AE88D147E5DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

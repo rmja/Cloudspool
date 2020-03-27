@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cloudspool.PrintSpooler.Proxy
+namespace PrintSpooler.Proxy
 {
     public class PrintingHubProxy : IAsyncDisposable
     {
