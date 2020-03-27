@@ -18,7 +18,7 @@ pool:
 # GITHUB_PAL = "Token obtained from Github"
 # 3. Run the following curl command from bash:
 # curl -u rmja:AZURE_PAL \
-#    -d '{"name": "release","type": "github","url": "https://github.com","authorization":{"scheme":"PersonalAccessToken","parameters":{"accessToken":"GITHUB_PAL"}}}' \
+#    -d '{"name": "github-release","type": "github","url": "https://github.com","authorization":{"scheme":"PersonalAccessToken","parameters":{"accessToken":"GITHUB_PAL"}}}' \
 #    -H "Content-Type: application/json" \
 #    -X POST \
 #    'https://dev.azure.com/rmja/Cloudspool/_apis/serviceendpoint/endpoints?api-version=5.1-preview'
@@ -27,7 +27,7 @@ steps:
   displayName: 'Attach artifact assets to GitHub Release'
   condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
   inputs:
-    gitHubConnection: github
+    gitHubConnection: github-release
     repositoryName: rmja/Cloudspool
     assets: $(Build.ArtifactStagingDirectory)/*
     action: edit
