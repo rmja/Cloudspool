@@ -4,11 +4,7 @@
 trigger:
  branches:
    include:
-     - master
-     - releases/*
- tags:
-  include:
-    - v*
+     - refs/tags/v*
 
 pool:
   vmImage: 'ubuntu-latest'
