@@ -17,6 +17,7 @@ variables:
 
 name: $(version.major).$(version.minor).$(version.patch)
 
+steps:
 - task: DotNetCoreCLI@2
   displayName: "Build PrintSpooler Win x64 $(Build.BuildNumber)"
   inputs:
