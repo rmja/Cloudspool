@@ -13,12 +13,6 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- script: dotnet publish --configuration $(buildConfiguration) src/PrintSpooler/PrintSpooler.csproj
-  displayName: 'dotnet publish PrintSpooler $(buildConfiguration)'
-- task: ArchiveFiles@2
+- task: DotNetCoreCLI@2
   inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)'
-    includeRootFolder: true
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    replaceExistingArchive: true
+    command: 'build'
