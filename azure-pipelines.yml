@@ -11,8 +11,13 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  Version.MajorMinor: 1.0
+  Version.Patch: $[counter(variables['Version.MajorMinor'], 0)]
+
+name: $(Build.DefinitionName)-$(Version.MajorMinor).$(Version.Patch)
 
 steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
+    versioningScheme: byBuildNumber
