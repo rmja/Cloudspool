@@ -30,7 +30,8 @@ steps:
 - task: ArchiveFiles@2
   displayName: Archive PrintSpooler Win x64 artifacts
   inputs:
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler-win64'
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler-win64/PrintSpooler'
+    includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler-win64.zip'
     replaceExistingArchive: true
