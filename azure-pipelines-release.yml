@@ -9,6 +9,9 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  buildConfiguration: 'Release'
+
 # See https://github.com/microsoft/azure-pipelines-tasks/issues/11558 for creating the "github" service connection
 # 1. Create a personal access token for Azure DevOps to create the service connection. Do this from https://dev.azure.com/rmja/_usersSettings/tokens
 # 2. Create a personal access token for Github. Do this from https://github.com/settings/tokens
