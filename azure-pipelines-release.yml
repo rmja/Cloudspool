@@ -1,4 +1,11 @@
+# References:
+# - https://www.olivercoding.com/2019-12-07-github-release-azdevops/
+
 trigger:
+ branches:
+   include:
+     - master
+     - releases/*
  tags:
   include:
     - v*
@@ -19,12 +26,19 @@ pool:
 #    -X POST \
 #    'https://dev.azure.com/rmja/Cloudspool/_apis/serviceendpoint/endpoints?api-version=5.1-preview'
 steps:
+- script: |
+    export githubTag=$(git describe --abbrev=0 --tags)
+    echo "##vso[task.setvariable variable=githubTag]$githubTag"
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+  displayName: Set tag to env variable githubTag
+  failOnStderr: true
 - task: GithubRelease@0
-  displayName: 'Create GitHub release draft'
+  displayName: 'Add assets to GitHub release'
   inputs:
     gitHubConnection: github-release
     repositoryName: rmja/Cloudspool
-    action: create
+    action: edit
     assets: $(Build.ArtifactStagingDirectory)/*
     target: '$(Build.SourceVersion)'
+    tag: $(githubTag)
     addChangeLog: true
