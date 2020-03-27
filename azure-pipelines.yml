@@ -19,7 +19,7 @@ name: $(version.major).$(version.minor).$(version.patch)
 
 steps:
 - task: DotNetCoreCLI@2
-  displayName: "Build PrintSpooler Win x64 $(Build.BuildNumber)"
+  displayName: "Publish PrintSpooler Win x64 $(Build.BuildNumber)"
   inputs:
     command: publish
     publishWebProjects: false
@@ -28,11 +28,11 @@ steps:
     versioningScheme: byBuildNumber
     zipAfterPublish: false
 - task: ArchiveFiles@2
-  displayName: Zip PrintSpooler Win x64 artifacts
+  displayName: Archive PrintSpooler Win x64 artifacts
   inputs:
     rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler-win64'
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/PrintSpooler-win64.zip'
     replaceExistingArchive: true
-- publish: $(Build_ArtifactStagingDirectory)/PrintSpooler-win64.zip
+- publish: $(Build.ArtifactStagingDirectory)/PrintSpooler-win64.zip
   artifact: PrintSpooler-win64
