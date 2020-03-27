@@ -1,6 +1,8 @@
 # References:
 # - https://www.olivercoding.com/2019-12-07-github-release-azdevops/
 
+# Create a github release to trigger this pipeline, where the tag name should be vX.Y.Z
+
 trigger:
  branches:
    include:
