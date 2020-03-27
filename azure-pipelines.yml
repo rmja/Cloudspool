@@ -21,3 +21,5 @@ steps:
   inputs:
     command: 'build'
     versioningScheme: byBuildNumber
+- publish: src/PrintSpooler/bin/$(buildConfiguration)/
+  artifact: PrintSpooler-win64
