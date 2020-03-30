@@ -38,4 +38,8 @@
     <Compile Include="..\Shared\*.cs" LinkBase="Shared\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="node_modules\typescript\lib\typescriptServices.js" Link="Generators/TypeScript/typescriptServices.js" />
+  </ItemGroup>
+
 </Project>

@@ -1,5 +1,6 @@
 ﻿using Api.DataModels;
 using Api.Features.Templates.Queries;
+using Api.Generators;
 using Api.Generators.ECMAScript6;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,16 +22,16 @@ namespace Api.Features.Templates.Commands
         public class Handler : ApiEndpoint<Command>
         {
             private readonly CloudspoolContext _db;
-            private readonly ECMAScript6Generator _ecmaScript6Generator;
+            private readonly GeneratorProvider _generatorProvider;
 
-            public Handler(CloudspoolContext db, ECMAScript6Generator ecmaScript6Generator)
+            public Handler(CloudspoolContext db, GeneratorProvider generatorProvider)
             {
                 _db = db;
-                _ecmaScript6Generator = ecmaScript6Generator;
+                _generatorProvider = generatorProvider;
             }
 
             [HttpPost("/Templates")]
-            [Consumes("application/javascript")]
+            [Consumes("application/javascript", "application/typescript")]
             public override async Task<ActionResult> HandleAsync(Command request, CancellationToken cancellationToken)
             {
                 var projectId = User.GetProjectId();
@@ -38,19 +39,21 @@ namespace Api.Features.Templates.Commands
                 using var reader = new StreamReader(Request.Body);
                 var script = await reader.ReadToEndAsync();
 
-                var errors = _ecmaScript6Generator.ValidateTemplate(script);
+                var mediaType = Request.GetTypedHeaders().ContentType.MediaType.Value;
+
+                var generator = _generatorProvider.GetGenerator(mediaType);
+                var errors = generator.ValidateTemplate(script);
 
                 if (errors.Length > 0)
                 {
                     return BadRequest(errors);
                 }
 
-                var mediaType = Request.GetTypedHeaders().ContentType.MediaType.Value;
                 var template = new Template(projectId, request.Name, script, mediaType);
                 _db.Templates.Add(template);
                 await _db.SaveChangesAsync();
 
-                return RedirectToEndpoint(new GetById.Query() { Id = template.Id});
+                return RedirectToEndpoint(new GetById.Query() { Id = template.Id });
             }
         }
     }

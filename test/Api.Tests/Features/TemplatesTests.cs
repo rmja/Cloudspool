@@ -78,7 +78,6 @@ export default class Builder {
 }";
             var firstTemplate = SeedData.GetTemplates().First();
             var scriptContent = new StringContent(script, Encoding.UTF8, "application/javascript");
-            var scriptContentType = scriptContent.Headers.ContentType.ToString();
 
             // When
             var response = await _client.PutAsync($"/Templates/{firstTemplate.Id}/Script", scriptContent);
@@ -90,7 +89,7 @@ export default class Builder {
 
             // Then
             Assert.Equal(script, scriptResult);
-            Assert.Equal(scriptContentType, scriptResponse.Content.Headers.ContentType.ToString());
+            Assert.Equal(scriptContent.Headers.ContentType.MediaType, scriptResponse.Content.Headers.ContentType.MediaType);
         }
 
         [Fact]

@@ -1,0 +1,6 @@
+{
+  "name": "cloudspool-api",
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  }
+}

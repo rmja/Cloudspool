@@ -1,4 +1,5 @@
 ﻿using Api.Generators.ECMAScript6;
+using Api.Generators.TypeScript;
 using Microsoft.Extensions.DependencyInjection;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -10,18 +11,20 @@ using Xunit;
 
 namespace Api.Tests.Generators
 {
-    public class ECMAScript6GeneratorTests
+    public class TypeScriptGeneratorTests
     {
-        private readonly ECMAScript6Generator _generator;
+        private readonly TypeScriptGenerator _generator;
 
-        public ECMAScript6GeneratorTests()
+        public TypeScriptGeneratorTests()
         {
             var services = new ServiceCollection()
+                .AddSingleton<TypeScriptGenerator>()
                 .AddSingleton<ECMAScript6Generator>()
+                .AddSingleton<TypeScriptTranspiler>()
                 .AddMemoryCache()
                 .BuildServiceProvider();
 
-            _generator = services.GetRequiredService<ECMAScript6Generator>();
+            _generator = services.GetRequiredService<TypeScriptGenerator>();
         }
 
         [Fact]
@@ -29,9 +32,7 @@ namespace Api.Tests.Generators
         {
             var script = @"
 export default class Builder {
-    constructor() {
-        this.contentType = 'text/plain';
-    }
+    contentType = 'text/plain';
     build(model) {
         return `The result ${model.name}`
     }
@@ -47,9 +48,7 @@ export default class Builder {
         {
             var script = @"
 export default class Builder {
-    constructor() {
-        this.contentType = 'text/plain';
-    }
+    contentType = 'text/plain';
     build(model) {
         return new Uint8Array([1,2,3]);
     }
@@ -67,9 +66,7 @@ export default class Builder {
 import obj from 'resources/alias.json';
 
 export default class Builder {
-    constructor() {
-        this.contentType = 'text/plain';
-    }
+    contentType = 'text/plain';
     build(model) {
         return obj.name;
     }
@@ -92,9 +89,7 @@ export default class Builder {
 import array from 'resources/alias.bin';
 
 export default class Builder {
-    constructor() {
-        this.contentType = 'text/plain';
-    }
+    contentType = 'text/plain';
     build(model) {
         return [array.length, array[0]];
     }
@@ -118,9 +113,7 @@ export default class Builder {
 import imageData from 'resources/alias.bmp';
 
 export default class Builder {
-    constructor() {
-        this.contentType = 'text/plain';
-    }
+    contentType = 'text/plain';
     build(model) {
         return [imageData.width, imageData.height, imageData.data.length, imageData.data[0], imageData.data[1], imageData.data[2], imageData.data[3]];
     }
@@ -152,9 +145,7 @@ export default class Builder {
         {
             var script = @"
 export default class Builder {
-    constructor() {
-        this.contentType = 'application/escp';
-    }
+    contentType = 'text/plain';
     build(model) {
         let obj = require('resources/alias.json');
         return obj.name;

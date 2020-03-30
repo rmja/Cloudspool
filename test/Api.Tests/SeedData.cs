@@ -43,7 +43,7 @@ export default class Builder {
         {
             var id = -1;
 
-            yield return new Resource(projectId: -1, alias: "my-resource", Encoding.UTF8.GetBytes("\"a string\""), "application/json") { Id = id-- };
+            yield return new Resource(projectId: -1, alias: "my-resource.json", Encoding.UTF8.GetBytes("\"a string\""), "application/json") { Id = id-- };
         }
 
         public static IEnumerable<Document> GetDocuments()

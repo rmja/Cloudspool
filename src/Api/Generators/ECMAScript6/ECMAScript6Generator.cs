@@ -42,7 +42,7 @@ namespace Api.Generators.ECMAScript6
             }
         }
 
-        public async Task<(byte[] Content, string ContentType)> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
+        public Task<(byte[] Content, string ContentType)> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
         {
             var script = _cache.GetOrCreate(code, entry =>
             {
@@ -50,11 +50,16 @@ namespace Api.Generators.ECMAScript6
                 return Script.Parse(code);
             });
 
-            var (build, contentType) = CreateBuilder(script, resourceManager);
+            return GenerateDocumentAsync(script, model, resourceManager);
+        }
+
+        public async Task<(byte[] Content, string ContentType)> GenerateDocumentAsync(Script script, object model, IResourceManager resourceManager)
+        {
+            var (builder, build, contentType) = CreateBuilder(script, resourceManager);
 
             var json = JsonSerializer.Serialize(model, model?.GetType());
             var jsModel = JS.JSON.parse(json);
-            var result = build(jsModel);
+            var result = build.Call(builder, new Arguments() { jsModel });
 
             if (result.Value is JS.Promise promise)
             {
@@ -71,13 +76,20 @@ namespace Api.Generators.ECMAScript6
             return (content, contentType);
         }
 
-        static (Func<JSValue, JSValue> Build, string ContentType) CreateBuilder(Script script, IResourceManager resourceManager)
+        static (JSObject Builder, ICallable Build, string ContentType) CreateBuilder(Script script, IResourceManager resourceManager)
         {
             var module = new Module("builder.js", script);
-            ExtendGlobalContext(module.Context.GlobalContext);
+            module.Context.GlobalContext.CurrentTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time");
+            
             if (resourceManager is object)
             {
-                module.ModuleResolversChain.Add(new ResourcesModuleResolver(resourceManager));
+                var resourcesModuleResolver = new ResourcesModuleResolver(resourceManager);
+                module.ModuleResolversChain.Add(resourcesModuleResolver);
+                ExtendGlobalContext(module.Context.GlobalContext, resourcesModuleResolver);
+            }
+            else
+            {
+                ExtendGlobalContext(module.Context.GlobalContext, null);
             }
 
             module.Run();
@@ -100,23 +112,27 @@ namespace Api.Generators.ECMAScript6
                 throw new GeneratorException("The exported Builder class does not have a contentType property and a build method");
             }
 
-            var buildMethod = build.MakeDelegate<Func<JSValue, JSValue>>();
+            var buildMethod = build.As<ICallable>();
 
-            return (buildMethod, contentType);
+            return (builder, buildMethod, contentType);
         }
 
-        static void ExtendGlobalContext(GlobalContext context)
+        static void ExtendGlobalContext(GlobalContext context, ResourcesModuleResolver resourcesModuleResolver)
         {
             var module = LoadModule("image-data.js");
             module.Run();
             context.Add("ImageData", module.Exports.Default);
 
-            Func<string, Task<JSValue>> import = async name =>
+            Func<string, JSValue> require = resourcePath =>
             {
-                return "asd";
+                if (!resourcesModuleResolver.TryGetModule("/" + resourcePath, out var module)) {
+                    return JSValue.Undefined;
+                }
+                module.Run();
+                return module.Exports.Default;
             };
 
-            context.Add("get", import);
+            context.Add("require", require);
         }
 
         static Module LoadModule(string fileName)
@@ -130,7 +146,7 @@ namespace Api.Generators.ECMAScript6
         class ResourcesModuleResolver : CachedModuleResolverBase
         {
             private readonly IResourceManager _resources;
-            private static readonly Regex _regex = new Regex(@"^\/resources/([a-zA-Z0-9]+)(\.[a-z]+)$", RegexOptions.Compiled);
+            private static readonly Regex _regex = new Regex(@"^\/resources/([a-zA-Z0-9_-]+(\.[a-z]+))$", RegexOptions.Compiled);
             private readonly Dictionary<string, Func<string, byte[], Module>> _moduleFactories = new Dictionary<string, Func<string, byte[], Module>>()
             {
                 [".json"] = CreateJson,
@@ -145,7 +161,12 @@ namespace Api.Generators.ECMAScript6
 
             public override bool TryGetModule(ModuleRequest moduleRequest, out Module result)
             {
-                var match = _regex.Match(moduleRequest.AbsolutePath);
+                return TryGetModule(moduleRequest.AbsolutePath, out result);
+            }
+
+            public bool TryGetModule(string moduleAbsolutePath, out Module result)
+            {
+                var match = _regex.Match(moduleAbsolutePath);
 
                 if (!match.Success)
                 {
@@ -170,7 +191,7 @@ namespace Api.Generators.ECMAScript6
                     return false;
                 }
 
-                result = factory(moduleRequest.AbsolutePath, resource);
+                result = factory(moduleAbsolutePath, resource);
                 return true;
             }
 

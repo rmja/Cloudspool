@@ -1,4 +1,4 @@
-﻿using Api.Generators.ECMAScript6;
+﻿using Api.Generators;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;

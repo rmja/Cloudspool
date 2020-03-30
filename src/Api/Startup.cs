@@ -1,4 +1,6 @@
+using Api.Generators;
 using Api.Generators.ECMAScript6;
+using Api.Generators.TypeScript;
 using Api.Infrastructure;
 using AutoMapper;
 using Cloudspool.AspNetCore.Authentication.ApiKey;
@@ -44,7 +46,10 @@ namespace Api
 
             services.AddAutoMapper(typeof(Startup).Assembly);
             services.AddMemoryCache();
-            services.AddSingleton<ECMAScript6Generator>();
+            services.AddSingleton<ECMAScript6Generator>()
+                .AddSingleton<TypeScriptTranspiler>()
+                .AddSingleton<TypeScriptGenerator>()
+                .AddSingleton<GeneratorProvider>();
 
             services.AddAuthentication(options =>
             {
@@ -83,6 +88,9 @@ namespace Api
                 });
 
             Migrate(app);
+
+            // Load TS Transpiler so that it becomes ready
+            app.ApplicationServices.GetRequiredService<TypeScriptTranspiler>();
         }
 
         public virtual void Migrate(IApplicationBuilder app)

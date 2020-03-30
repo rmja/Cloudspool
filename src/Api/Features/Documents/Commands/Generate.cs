@@ -1,5 +1,6 @@
 ﻿using Api.DataModels;
 using Api.Features.Documents.Queries;
+using Api.Generators;
 using Api.Generators.ECMAScript6;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,12 +25,12 @@ namespace Api.Features.Documents.Commands
         public class Handler : ApiEndpoint<Command>
         {
             private readonly CloudspoolContext _db;
-            private readonly ECMAScript6Generator _ecmaScript6Generator;
+            private readonly GeneratorProvider _generatorProvider;
 
-            public Handler(CloudspoolContext db, ECMAScript6Generator ecmaScript6Generator)
+            public Handler(CloudspoolContext db, GeneratorProvider generatorProvider)
             {
                 _db = db;
-                _ecmaScript6Generator = ecmaScript6Generator;
+                _generatorProvider = generatorProvider;
             }
 
             [HttpPost("/Zones/{ZoneId:int}/Documents/Generate")]
@@ -56,7 +57,8 @@ namespace Api.Features.Documents.Commands
                     {
                         x.Alias,
                         x.TemplateId,
-                        x.Template.Script
+                        x.Template.Script,
+                        x.Template.ScriptMediaType
                     })
                     .SingleOrDefaultAsync(x => x.Alias == request.Format);
 
@@ -65,8 +67,9 @@ namespace Api.Features.Documents.Commands
                     return BadRequest("Invalid format");
                 }
 
+                var generator = _generatorProvider.GetGenerator(format.ScriptMediaType);
                 var resources = new DbResourceManager(_db, User.GetProjectId());
-                var (content, contentType) = await _ecmaScript6Generator.GenerateDocumentAsync(format.Script, request.Model, resources);
+                var (content, contentType) = await generator.GenerateDocumentAsync(format.Script, request.Model, resources);
 
                 var document = new Document(User.GetProjectId(), format.TemplateId, content, contentType);
                 _db.Documents.Add(document);

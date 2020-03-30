@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Api.Generators.ECMAScript6
+namespace Api.Generators
 {
     public interface IResourceManager
     {
