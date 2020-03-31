@@ -1,9 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using PrintSpooler.Proxy;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,25 +15,16 @@ namespace PrintSpooler
 {
     public class Program
     {
-        const string ServiceName = "CloudspoolPrintSpooler";
-
-        public static async Task<int> Main(string[] args)
+        public static bool IsWindowsService { get; private set; }
+        public static async Task Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
 
+            IsWindowsService = args.Contains("--service");
+
             if (args.Length > 0)
             {
-                if (!args.Contains("--disable-update"))
-                {
-                    var appUpdater = host.Services.GetRequiredService<AppUpdater>();
-                    var appLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-                    await appUpdater.EnsureUpdatedAsync();
-
-                    if (appLifetime.ApplicationStopping.IsCancellationRequested)
-                    {
-                        return 1;
-                    }
-                }
+                var serviceName = host.Services.GetRequiredService<IOptions<PrintSpoolerOptions>>().Value.ServiceName;
 
                 switch (args[0])
                 {
@@ -54,11 +47,19 @@ namespace PrintSpooler
                             var dllPath = Assembly.GetEntryAssembly().Location;
                             var exePath = Path.ChangeExtension(dllPath, ".exe");
 
-                            ServiceControl.Create(ServiceName, new Dictionary<string, string>()
+                            ServiceControl.Create(serviceName, new Dictionary<string, string>()
                             {
-                                ["binPath"] = $"{exePath} --service --spoolerkey={key}",
+                                ["binPath"] = $"{exePath} --service --servicename={serviceName} --spoolerkey={key}",
                                 ["start"] = "auto",
-                                ["displayName"] = "Cloudspool Print Spooler"
+                                ["displayName"] = GetServiceDisplayName(serviceName)
+                            });
+
+                            // Restart always (after 5000ms) when nonzero exit code is returned (after app update)
+                            // The delay needs to be there because we need to release the PrintSpooler.dll file for it to be writeable
+                            ServiceControl.Failure(serviceName, new Dictionary<string, string>()
+                            {
+                                ["reset"] = "0",
+                                ["actions"] = "restart/5000/restart/5000/restart/5000"
                             });
 
                             Console.Write("Start service now? [Y/n] ");
@@ -67,39 +68,47 @@ namespace PrintSpooler
 
                             if (answer == string.Empty || answer.Equals("y", StringComparison.OrdinalIgnoreCase))
                             {
-                                ServiceControl.Start(ServiceName);
+                                ServiceControl.Start(serviceName);
 
                                 Console.WriteLine("Service was started");
                             }
 
                             Console.WriteLine("All done!");
-                            return 0;
+                            return;
                         }
                     case "install":
                         {
                             var dllPath = Assembly.GetEntryAssembly().Location;
                             var exePath = Path.ChangeExtension(dllPath, ".exe");
 
-                            ServiceControl.Create(ServiceName, new Dictionary<string, string>()
+                            ServiceControl.Create(serviceName, new Dictionary<string, string>()
                             {
-                                ["binPath"] = $"{exePath} --service",
+                                ["binPath"] = $"{exePath} --service --servicename={serviceName}",
                                 ["start"] = "auto",
-                                ["displayName"] = "Cloudspool Print Spooler"
+                                ["displayName"] = GetServiceDisplayName(serviceName)
                             });
-                            return 0;
+
+                            // Restart always (after 5000ms) when nonzero exit code is returned (after app update)
+                            // The delay needs to be there because we need to release the PrintSpooler.dll file for it to be writeable
+                            ServiceControl.Failure(serviceName, new Dictionary<string, string>()
+                            {
+                                ["reset"] = "0",
+                                ["actions"] = "restart/5000/restart/5000/restart/5000"
+                            });
+                            return;
                         }
                     case "uninstall":
-                        ServiceControl.Delete(ServiceName);
-                        return 0;
+                        ServiceControl.Delete(serviceName);
+                        return;
                     case "start":
-                        ServiceControl.Start(ServiceName);
-                        return 0;
+                        ServiceControl.Start(serviceName);
+                        return;
                     case "stop":
-                        ServiceControl.Stop(ServiceName);
-                        return 0;
+                        ServiceControl.Stop(serviceName);
+                        return;
                     case "status":
                         {
-                            var state = ServiceControl.GetState(ServiceName);
+                            var state = ServiceControl.GetState(serviceName);
 
                             if (state == ServiceState.NotInstalled)
                             {
@@ -109,14 +118,31 @@ namespace PrintSpooler
                             {
                                 Console.WriteLine($"Service is installed, current state is '{state}'.");
                             }
-                            return 0;
+                            return;
                         }
+                    case "version":
+                        Console.WriteLine(Assembly.GetEntryAssembly().GetName().Version.ToString(3));
+                        return;
                 }
             }
 
+            EventLog.WriteEntry("PrintSpooler", "Invoking RunAsync", EventLogEntryType.Information);
+
             await host.RunAsync();
 
-            return 0;
+            EventLog.WriteEntry("PrintSpooler", $"Returning exit code {Environment.ExitCode}", EventLogEntryType.Information);
+        }
+
+        private static string GetServiceDisplayName(string serviceName)
+        {
+            var name = "Cloudspool Print Spooler";
+
+            if (serviceName != Constants.DefaultServiceName)
+            {
+                name += $" ({serviceName})";
+            }
+
+            return name;
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -125,10 +151,10 @@ namespace PrintSpooler
                     .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)))
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddHostedService<AppUpdater>();
                     services.AddHostedService<PrintWorker>();
                     services.AddHostedService<HeartbeatWorker>();
                     services.AddSingleton<PrintingHubProxy>();
-                    services.AddTransient<AppUpdater>();
                     services.Configure<PrintSpoolerOptions>(hostContext.Configuration);
                 })
                 .UseWindowsService();

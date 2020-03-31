@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cloudspool.Api.Client", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PrintSpooler", "src\PrintSpooler\PrintSpooler.csproj", "{109EB852-01E2-46AC-82AB-AE88D147E5DA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrintSpooler.Tests", "test\PrintSpooler.Tests\PrintSpooler.Tests.csproj", "{F43FD856-CD74-4899-A8E3-547B8EAC9CB6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{109EB852-01E2-46AC-82AB-AE88D147E5DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{109EB852-01E2-46AC-82AB-AE88D147E5DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{109EB852-01E2-46AC-82AB-AE88D147E5DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F43FD856-CD74-4899-A8E3-547B8EAC9CB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F43FD856-CD74-4899-A8E3-547B8EAC9CB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F43FD856-CD74-4899-A8E3-547B8EAC9CB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F43FD856-CD74-4899-A8E3-547B8EAC9CB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

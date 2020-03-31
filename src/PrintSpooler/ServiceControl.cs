@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace PrintSpooler
@@ -12,6 +11,7 @@ namespace PrintSpooler
         public static void Delete(string serviceName) => Run("delete", serviceName);
         public static void Start(string serviceName) => Run("start", serviceName);
         public static void Stop(string serviceName) => Run("stop", serviceName);
+        public static void Failure(string serviceName, Dictionary<string, string> options) => Run("failure", serviceName, options);
 
         public static ServiceState GetState(string serviceName)
         {

@@ -8,6 +8,7 @@
     },
     "PrintSpooler (Local k8s)": {
       "commandName": "Project",
+      "commandLineArgs": "--disableupdates=true",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
         "PrintingHubUrl": "https://cloudspool.localhost/dispatcher/Printing"
