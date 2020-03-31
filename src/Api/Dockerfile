@@ -1,3 +1,8 @@
+FROM node:12 AS npm
+WORKDIR "/src"
+COPY ["Api/package*.json", "./"]
+RUN npm install
+
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine AS base
 WORKDIR /app
 EXPOSE 80
@@ -5,6 +10,7 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR "/src"
+COPY --from=npm /src/node_modules Api/node_modules
 COPY ["Api/Api.csproj", "Api/"]
 RUN dotnet restore "Api/Api.csproj"
 COPY ["Shared", "Shared/"]
