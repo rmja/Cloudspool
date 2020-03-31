@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PublishTrimmed>true</PublishTrimmed>
+    <Version>99.99.99</Version>
   </PropertyGroup>
 
   <ItemGroup>
