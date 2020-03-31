@@ -30,9 +30,6 @@ namespace Api.Tests
 
             yield return new Template(projectId: -1, "Receipt", @"
 export default class Builder {
-    constructor() {
-        this.contentType = 'application/escpos';
-    }
     build(model) {
         return 'name: ' + model.name + ', json: ' + JSON.stringify(model);
     }

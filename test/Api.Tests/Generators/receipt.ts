@@ -39,26 +39,24 @@ interface VendorData {
     logoOffsetLeft?: number;
 }
 
-declare function require(path: string): any;
-
 export default class Builder {
     writer: StarLineWriter;
     contentType = "application/starline";
 
-    build(model: Model) {
-        let vendorData: VendorData = require(`resources/${model.vendorDataResource}.json`);
+    async build(model: Model) {
+        const { default: vendorData } = await import(`resources/${model.vendorDataResource}.json`);
 
-        let buffer = new WriteBuffer();
+        const buffer = new WriteBuffer();
         this.writer = new StarLineWriter(buffer);
 
         this.writer.writeInitialize();
         this.writer.writeSetCodeTable(CodeTable.Latin1_Windows1252);
 
-        this.header(vendorData);
-        // this.caseLinesHeader();
-        // this.caseLines(model);
-        // this.caseLinesFooter(model);
-        // this.footer(model, vendorData);
+        await this.header(vendorData);
+        this.caseLinesHeader();
+        this.caseLines(model);
+        this.caseLinesFooter(model);
+        this.footer(model, vendorData);
 
         for (let i = 0; i < 5; i++) {
             this.writer.writeNewline();
@@ -68,9 +66,9 @@ export default class Builder {
         return buffer.toArray();
     }
 
-    private header(vendorData: VendorData) {
+    private async header(vendorData: VendorData) {
         if (vendorData.logoResource) {
-            let imageData: ImageData = require(`resources/${vendorData.logoResource}.bmp`);
+            const { default: imageData } = await import(`resources/${vendorData.logoResource}.bmp`);
 
             if (imageData) {
                 let offsetLeft = vendorData.logoOffsetLeft ?? 0;
@@ -78,10 +76,10 @@ export default class Builder {
             }
         }
 
-        let postalCode = vendorData.postalCode.toString();
-        let length = vendorData.address.length + 1 + 1 + postalCode.length + 1 + vendorData.city.length;
-        let spacings = (length % 2) ? 1 : 2;
-        let indentation = (this.writer.LINEWIDTH - (length + spacings)) / 2;
+        const postalCode = vendorData.postalCode.toString();
+        const length = vendorData.address.length + 1 + 1 + postalCode.length + 1 + vendorData.city.length;
+        const spacings = (length % 2) ? 1 : 2;
+        const indentation = (this.writer.LINEWIDTH - (length + spacings)) / 2;
 
         this.writer.writeNewline();
         this.writer.writeNewline();
@@ -90,147 +88,143 @@ export default class Builder {
         this.writer.writeNewline();
     }
 
-    // private caseLinesHeader() {
-    //     this.writer.writeSetHorizontalTabPositions([4, this.writer.LINEWIDTH - 9 - 1 - 9, this.writer.LINEWIDTH - 9]);
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString("       á");
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString("    Pris");
-    //     this.writer.writeNewline();
-    // }
+    private caseLinesHeader() {
+        this.writer.writeSetHorizontalTabPositions([4, this.writer.LINEWIDTH - 9 - 1 - 9, this.writer.LINEWIDTH - 9]);
+        this.writer.writeHorizontalTab()
+        this.writer.writeHorizontalTab()
+        this.writer.writeString("       á");
+        this.writer.writeHorizontalTab()
+        this.writer.writeString("    Pris");
+        this.writer.writeNewline();
+    }
 
-    // private caseLines(model: Model) {
-    //     const padPrice = (price: number) => (" ".repeat(4) + price.toFixed(2)).slice(-8); // 12345.67
-    //     for (const line of model.lines) {
-    //         this.quantity(line.quantity);
-    //         this.writer.writeHorizontalTab();
-    //         this.writer.writeString(line.name.substr(this.writer.LINEWIDTH - 4 - 1 - 9 - 1 - 9));
-    //         this.writer.writeHorizontalTab();
-    //         this.writer.writeString(padPrice(line.unitPrice));
-    //         this.writer.writeHorizontalTab();
-    //         this.writer.writeString(padPrice(line.quantity * line.unitPrice));
-    //         this.writer.writeNewline();
+    private caseLines(model: Model) {
+        for (const line of model.lines) {
+            this.quantity(line.quantity);
+            this.writer.writeHorizontalTab();
+            this.writer.writeString(line.name.substr(0, this.writer.LINEWIDTH - 4 - 1 - 9 - 1 - 9));
+            this.writer.writeHorizontalTab();
+            this.writer.writeString(line.unitPrice.toFixed(2).padStart(8, " "));
+            this.writer.writeHorizontalTab();
+            this.writer.writeString((line.quantity * line.unitPrice).toFixed(2).padStart(8, " "));
+            this.writer.writeNewline();
 
-    //         if (line.discount) {
-    //             this.writer.writeHorizontalTab();
-    //             this.writer.writeString("Rabat");
-    //             this.writer.writeHorizontalTab();
-    //             this.writer.writeHorizontalTab();
-    //             this.writer.writeString(padPrice(-line.discount));
-    //             this.writer.writeNewline();
-    //         }
-    //     }
-    // }
+            if (line.discount) {
+                this.writer.writeHorizontalTab();
+                this.writer.writeString("Rabat");
+                this.writer.writeHorizontalTab();
+                this.writer.writeHorizontalTab();
+                this.writer.writeString((-line.discount).toFixed(2).padStart(8, " "));
+                this.writer.writeNewline();
+            }
+        }
+    }
 
-    // private caseLinesFooter(model: Model) {
-    //     const padTotalPrice = (price: number) => (" ".repeat(5) + price.toFixed(2)).slice(-6); // 123456.78
+    private caseLinesFooter(model: Model) {
+        this.writer.writeString(" ".repeat(this.writer.LINEWIDTH - 9) + "·········");
+        this.writer.writeNewline();
+        this.writer.writeSetHorizontalTabPositions([11, this.writer.LINEWIDTH - 10]);
 
-    //     this.writer.writeString(" ".repeat(this.writer.LINEWIDTH - 9) + "·········");
-    //     this.writer.writeNewline();
-    //     this.writer.writeSetHorizontalTabPositions([11, this.writer.LINEWIDTH - 10]);
+        if (model.discountTotal) {
+            this.writer.writeHorizontalTab()
+            this.writer.writeString('Total:')
+            this.writer.writeHorizontalTab()
+            this.writer.writeString(model.grossTotal.toFixed(2).padStart(9, " "));
+            this.writer.writeNewline();
 
-    //     if (model.discountTotal) {
-    //         this.writer.writeHorizontalTab()
-    //         this.writer.writeString('Total:')
-    //         this.writer.writeHorizontalTab()
-    //         this.writer.writeString(padTotalPrice(model.grossTotal));
-    //         this.writer.writeNewline();
+            this.writer.writeHorizontalTab()
+            this.writer.writeString('Rabat:');
+            this.writer.writeHorizontalTab()
+            this.writer.writeString((-model.discountTotal).toFixed(2).padStart(9, " "));
+            this.writer.writeNewline();
+        }
 
-    //         this.writer.writeHorizontalTab()
-    //         this.writer.writeString('Rabat:');
-    //         this.writer.writeHorizontalTab()
-    //         this.writer.writeString(padTotalPrice(-model.discountTotal));
-    //         this.writer.writeNewline();
-    //     }
+        this.writer.writeSetEmphasize(true);
+        this.writer.writeHorizontalTab()
+        this.writer.writeString('At betale:');
+        this.writer.writeHorizontalTab()
+        this.writer.writeString(model.netTotal.toFixed(2).padStart(9, " "));
+        this.writer.writeSetEmphasize(false);
+        this.writer.writeNewline();
 
-    //     this.writer.writeSetEmphasize(true);
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString('At betale:');
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString(padTotalPrice(model.netTotal));
-    //     this.writer.writeSetEmphasize(false);
-    //     this.writer.writeNewline();
+        this.writer.writeHorizontalTab()
+        this.writer.writeString('Heraf 25% moms:');
+        this.writer.writeHorizontalTab()
+        this.writer.writeString(model.netTaxTotal.toFixed(2).padStart(9, " "));
+        this.writer.writeNewline();
 
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString('Heraf 25% moms:');
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString(padTotalPrice(model.netTaxTotal));
-    //     this.writer.writeNewline();
+        this.writer.writeHorizontalTab()
+        this.writer.writeString('At betale €:');
+        this.writer.writeHorizontalTab()
+        this.writer.writeString(model.netEuroTotal.toFixed(2).padStart(9, " "));
+        this.writer.writeNewline();
+        this.writer.writeNewline();
+        this.writer.writeNewline();
+    }
+    private footer(model: Model, vendorData: VendorData) {
+        let maxLength = "xx/xx-xxxx xx:xx".length;
+        this.writer.writeSetHorizontalTabPositions([4, this.writer.LINEWIDTH - 4 - maxLength]);
+        this.writer.writeHorizontalTab()
+        this.writer.writeString('Bon nr.');
+        this.writer.writeHorizontalTab();
+        this.writer.writeString(model.slipId.toString());
+        this.writer.writeNewline();
 
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString('At betale €:');
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString(padTotalPrice(model.netEuroTotal));
-    //     this.writer.writeNewline();
-    //     this.writer.writeNewline();
-    //     this.writer.writeNewline();
-    // }
-    // private footer(model: Model, vendorData: VendorData) {
-    //     let maxLength = "xx/xx-xxxx xx:xx".length;
-    //     this.writer.writeSetHorizontalTabPositions([4, this.writer.LINEWIDTH - 4 - maxLength]);
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString('Bon nr.');
-    //     this.writer.writeHorizontalTab();
-    //     this.writer.writeString(model.slipId.toString());
-    //     this.writer.writeNewline();
+        this.writer.writeHorizontalTab()
+        this.writer.writeString('Sag nr.');
+        this.writer.writeHorizontalTab();
+        this.writer.writeString(model.case.id.toString());
+        this.writer.writeNewline();
 
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString('Sag nr.');
-    //     this.writer.writeHorizontalTab();
-    //     this.writer.writeString(model.case.id.toString());
-    //     this.writer.writeNewline();
+        this.writer.writeHorizontalTab()
+        this.writer.writeString('Emne');
+        this.writer.writeHorizontalTab();
+        this.writer.writeString(model.itemName.substr(0, maxLength));
+        this.writer.writeNewline();
 
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString('Emne');
-    //     this.writer.writeHorizontalTab();
-    //     this.writer.writeString(model.itemName.substr(maxLength));
-    //     this.writer.writeNewline();
+        if (model.printedByEmployeeName) {
+            this.writer.writeHorizontalTab()
+            this.writer.writeString('Udskrevet af');
+            this.writer.writeHorizontalTab()
+            this.writer.writeString(model.printedByEmployeeName);
+            this.writer.writeNewline();
+        }
 
-    //     if (model.printedByEmployeeName) {
-    //         this.writer.writeHorizontalTab()
-    //         this.writer.writeString('Udskrevet af');
-    //         this.writer.writeHorizontalTab()
-    //         this.writer.writeString(model.printedByEmployeeName);
-    //         this.writer.writeNewline();
-    //     }
+        let arrived = new Date(model.case.arrived);
+        this.writer.writeHorizontalTab();
+        this.writer.writeString('Startet');
+        this.writer.writeHorizontalTab();
+        this.writer.writeString(formatDate(arrived) + " " + formatTime(arrived));
+        this.writer.writeNewline();
 
-    //     let arrived = new Date(model.case.arrived);
-    //     this.writer.writeHorizontalTab();
-    //     this.writer.writeString('Startet');
-    //     this.writer.writeHorizontalTab();
-    //     this.writer.writeString(formatDate(arrived) + " " + formatTime(arrived));
-    //     this.writer.writeNewline();
+        let printed = new Date(model.printed);
+        this.writer.writeHorizontalTab()
+        this.writer.writeString('Udskrevet');
+        this.writer.writeHorizontalTab();
+        this.writer.writeString(formatDate(printed) + " " + formatTime(printed));
+        this.writer.writeNewline();
+        this.writer.writeNewline();
 
-    //     let printed = new Date(model.printed);
-    //     this.writer.writeHorizontalTab()
-    //     this.writer.writeString('Udskrevet');
-    //     this.writer.writeHorizontalTab();
-    //     this.writer.writeString(formatDate(printed) + " " + formatTime(printed));
-    //     this.writer.writeNewline();
-    //     this.writer.writeNewline();
+        for (const line of [`Tlf: +45 ${vendorData.phone} · CVR nr: ${vendorData.cvr}`, vendorData.email]) {
+            this.writer.writeString(' '.repeat((this.writer.LINEWIDTH - line.length) / 2) + line);
+            this.writer.writeNewline();
+        }
+    }
 
-    //     for (const line of [`Tlf: +45 ${vendorData.phone} · CVR nr: ${vendorData.cvr}`, vendorData.email]) {
-    //         this.writer.writeString(' '.repeat((this.writer.LINEWIDTH - line.length) / 2) + line);
-    //         this.writer.writeNewline();
-    //     }
-    // }
-
-    // private quantity(quantity: number) {
-    //     if (Math.round(quantity) === quantity) {
-    //         this.writer.writeString(quantity.toString());
-    //     }
-    //     else {
-    //         this.writer.writeString(quantity.toFixed(1));
-    //     }
-    // }
+    private quantity(quantity: number) {
+        if (Math.round(quantity) === quantity) {
+            this.writer.writeString(quantity.toString());
+        }
+        else {
+            this.writer.writeString(quantity.toFixed(1));
+        }
+    }
 }
 
 const ESC = 0x1B
 const GS = 0x1D
-const pad2 = (input: number) => ("0" + input).slice(-2);
-const formatTime = (date: Date) => pad2(date.getHours()) + ":" + pad2(date.getMinutes());
-const formatDate = (date: Date) => pad2(date.getDate()) + "/" + pad2(date.getMonth() + 1) + "-" + date.getFullYear();
+const formatTime = (date: Date) => date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0");
+const formatDate = (date: Date) => date.getDate().toString().padStart(2, "0") + "/" + (date.getMonth() + 1).toString().padStart(2, "0") + "-" + date.getFullYear();
 
 enum CodeTable {
     Latin1_Windows1252 = 32,
@@ -241,7 +235,7 @@ enum CodeTable {
 class StarLineWriter {
     LINEWIDTH: number;
     private buffer: WriteBuffer;
-    private encodingBuffer: number[];
+    private encodingBuffer: Uint8Array;
 
     constructor(buffer: WriteBuffer) {
         this.LINEWIDTH = 48;
@@ -268,8 +262,8 @@ class StarLineWriter {
         for (var i = 0; i < 128; i++) {
             asciiChars += String.fromCharCode(i);
         }
-        let allChars = asciiChars + extensionChars;
-        this.encodingBuffer = [];
+        const allChars = asciiChars + extensionChars;
+        this.encodingBuffer = new Uint8Array(0xFFFF);
         for (let i = 0; i < allChars.length; i++) {
             this.encodingBuffer[allChars.charCodeAt(i)] = i;
         }
@@ -292,16 +286,16 @@ class StarLineWriter {
     }
 
     writeString(value: string) {
-        let encoded = [];
+        const encoded = new Uint8Array(value.length);
         for (let i = 0; i < value.length; i++) {
             let char = this.encodingBuffer[value.charCodeAt(i)];
 
             if (char === undefined) {
                 char = '?'.charCodeAt(0);
             }
-            encoded.push(char);
+            encoded[i] = char;
         }
-        this.buffer.write(encoded);
+        this.buffer.writeArray(encoded);
     }
 
     writeHorizontalTab() {
@@ -312,43 +306,40 @@ class StarLineWriter {
         this.buffer.write([ESC, "d".charCodeAt(0), partial ? 1 : 0])
     }
 
-    writeImage(bitmap: ImageData, offsetLeft: number) {
-        function isBlack(r: number, g: number, b: number) {
-            // http://en.wikipedia.org/wiki/YCbCr#ITU-R_BT.601_conversion
-            // http://www.w3.org/TR/AERT#color-contrast
-            let luminance = r * 0.299 + g * 0.587 + b * 0.114;
-            return luminance <= 127;
-        }
+    writeImage(bitmap: ImageData, xOffset: number) {        
+        const totalWidth = xOffset + bitmap.width;
+        const yLastOffset = Math.floor(bitmap.height / 24) * 24;
+        const marshalled = new Uint8Array(Math.ceil(totalWidth / 8) * 24); // 1 bit per pixel in a 24 bit tall slice
 
-        let totalWidth = offsetLeft + bitmap.width;
-        let yLastOffset = Math.floor(bitmap.height / 24) * 24;
-        let marshalled = new Uint8Array(new ArrayBuffer(Math.ceil(totalWidth / 8) * 24)); // 1 bit per pixel in a 24 bit tall slice
         // Set multiple slices, each with 24 pixels in the height
         for (let yOffset = 0; yOffset < bitmap.height; yOffset += 24) {
             // Define the full slice as white
             marshalled.fill(0);
             let index = 0;
-            let yEnd = Math.max(yOffset + 24, bitmap.height);
+            const yEnd = Math.max(yOffset + 24, bitmap.height);
             // Marshal one row at a time (up to 24 rows)
             for (let y = yOffset; y < yEnd; y++) {
-                for (let xOffset = 0; xOffset < totalWidth; xOffset += 8) {
-                    let byte = 0
-                    let xEnd = Math.max(xOffset + 8, totalWidth);
-                    for (let x = xOffset; x < xEnd; x++) {
-                        if (x < offsetLeft) {
-                            // Not in image data yet
-                            continue;
-                        }
-
-                        let start = (y * bitmap.width + x - offsetLeft) * 4;
-                        let r = bitmap.data[start + 0];
-                        let g = bitmap.data[start + 1];
-                        let b = bitmap.data[start + 2];
+                let mask = 0x80;
+                for (let x = 0; x < totalWidth; x++) {
+                    if (x >= xOffset) {
+                        const start = (y * bitmap.width + x - xOffset) * 4;
+                        const r = bitmap.data[start + 0];
+                        const g = bitmap.data[start + 1];
+                        const b = bitmap.data[start + 2];
                         if (isBlack(r, g, b)) {
-                            byte |= 0x80 >>> (x & 7);
+                            marshalled[index] |= mask;
                         }
                     }
-                    marshalled[index++] = byte;
+
+                    mask >>>= 1;
+                    if (mask === 0) {
+                        mask = 0x80;
+                        index++;
+                    }
+                }
+
+                if (mask !== 0x80) {
+                    index++;
                 }
             }
 
@@ -360,6 +351,13 @@ class StarLineWriter {
                 // All but last - move 24 pixels down.
                 this.buffer.write([ESC, 'I'.charCodeAt(0), 24]);
             }
+        }
+
+        function isBlack(r: number, g: number, b: number) {
+            // http://en.wikipedia.org/wiki/YCbCr#ITU-R_BT.601_conversion
+            // http://www.w3.org/TR/AERT#color-contrast
+            let luminance = r * 0.299 + g * 0.587 + b * 0.114;
+            return luminance <= 127;
         }
     }
 }
@@ -383,11 +381,11 @@ class WriteBuffer {
     }
 
     private ensure(amount: number) {
-        let needed = this.written + amount;
+        const needed = this.written + amount;
         if (needed > this.buffer.byteLength) {
-            let newSize = Math.floor((needed + 64 - 1) / 64) * 64;
-            let newBuffer = new ArrayBuffer(newSize);
-            let array = new Uint8Array(newBuffer);
+            const newSize = Math.floor((needed + 64 - 1) / 64) * 64;
+            const newBuffer = new ArrayBuffer(newSize);
+            const array = new Uint8Array(newBuffer);
             array.set(new Uint8Array(this.buffer, 0, this.written));
             this.buffer = newBuffer;
         }

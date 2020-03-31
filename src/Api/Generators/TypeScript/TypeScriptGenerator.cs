@@ -1,7 +1,5 @@
 ﻿using Api.Generators.ECMAScript6;
 using Microsoft.Extensions.Caching.Memory;
-using NiL.JS;
-using NiL.JS.Core;
 using System;
 using System.Threading.Tasks;
 
@@ -22,30 +20,17 @@ namespace Api.Generators.TypeScript
 
         public string[] ValidateTemplate(string code)
         {
-            try
-            {
-                var (transpiled, diagnostics) = _tsTranspiler.Transpile(code);
+            var transpiled = _tsTranspiler.Transpile(code);
 
-                if (diagnostics.Length > 0)
-                {
-                    return diagnostics;
-                }
-
-                return _ecmaScript6Generator.ValidateTemplate(transpiled);
-            }
-            catch (JSException e)
-            {
-                return new[] { e.Message };
-            }
+            return _ecmaScript6Generator.ValidateTemplate(transpiled);
         }
 
-        public Task<(byte[] Content, string ContentType)> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
+        public Task<GenerateResult> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
         {
             var script = _cache.GetOrCreate(code, entry =>
             {
                 entry.SetSlidingExpiration(TimeSpan.FromHours(1));
-                var (transpiled, _) = _tsTranspiler.Transpile(code);
-                return Script.Parse(transpiled);
+                return _tsTranspiler.Transpile(code);
             });
 
             return _ecmaScript6Generator.GenerateDocumentAsync(script, model, resourceManager);

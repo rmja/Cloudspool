@@ -73,9 +73,6 @@ namespace PrintSpooler
         {
             switch (contentType)
             {
-                case "application/zpl":
-                case "application/escp":
-                case "application/starline":
                 case "application/octet-stream":
                     printerHandle = new RawPrinterHandle(printerName);
                     return true;

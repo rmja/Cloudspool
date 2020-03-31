@@ -1,7 +1,6 @@
 ﻿using Api.DataModels;
 using Api.Features.Templates.Queries;
 using Api.Generators;
-using Api.Generators.ECMAScript6;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;

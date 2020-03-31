@@ -88,9 +88,6 @@ namespace Api
                 });
 
             Migrate(app);
-
-            // Load TS Transpiler so that it becomes ready
-            app.ApplicationServices.GetRequiredService<TypeScriptTranspiler>();
         }
 
         public virtual void Migrate(IApplicationBuilder app)

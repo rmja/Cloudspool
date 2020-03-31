@@ -1,51 +1,48 @@
-﻿using NiL.JS;
-using NiL.JS.Core;
-using NiL.JS.Extensions;
+﻿using Microsoft.ClearScript.V8;
 using System;
 using System.IO;
-using System.Text.Json;
-using JS = NiL.JS.BaseLibrary;
 
 namespace Api.Generators.TypeScript
 {
-    public class TypeScriptTranspiler
+    public class TypeScriptTranspiler : IDisposable
     {
-        private static readonly Func<string, JSValue, JSValue> _transpileModule;
-        private static readonly JSValue _transpileOptions;
+        private readonly V8ScriptEngine _engine;
+        private readonly dynamic _transpileModule;
+        private readonly object _transpileOptions = new
+        {
+            compilerOptions = new
+            {
+                target = 2, // ts.ScriptTarget.ES2015
+                module = 5, // ts.ModuleKind.ES2015
+                lib = new[] { "ES2015" }
+            }
+        };
 
-        static TypeScriptTranspiler()
+        public TypeScriptTranspiler()
         {
             // See https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API#a-simple-transform-function
 
             using var stream = typeof(TypeScriptTranspiler).Assembly.GetManifestResourceStream(typeof(TypeScriptTranspiler), "typescriptServices.js");
             using var reader = new StreamReader(stream);
-            var typescriptCompilerSource = reader.ReadToEnd();
+            var typescriptServicesSource = reader.ReadToEnd();
 
-            var module = new Module(typescriptCompilerSource);
-            module.Context.Add("globalThis", JSObject.CreateObject());
-            module.Run();
+            _engine = new V8ScriptEngine();
 
-            var ts = module.Context.GetVariable("ts");
+            _engine.Execute(typescriptServicesSource);
 
-            var transpileModuleFunction = ts["transpileModule"].Value as JS.Function;
-            _transpileModule = transpileModuleFunction.MakeDelegate<Func<string, object, JSValue>>();
-
-            _transpileOptions = JS.JSON.parse(JsonSerializer.Serialize(new
-            {
-                compilerOptions = new
-                {
-                    target = 2, // ts.ScriptTarget.ES2015
-                    module = 5, // ts.ModuleKind.ES2015
-                    lib = new[] { "ES2015" }
-                }
-            }));
+            _transpileModule = _engine.Script.ts.transpileModule;
         }
 
-        public (string OutputText, string[] Diagnostics) Transpile(string input)
+        public string Transpile(string input)
         {
             var result = _transpileModule(input, _transpileOptions);
 
-            return ((string)result["outputText"].Value, Array.Empty<string>());
+            return result.outputText;
+        }
+
+        public void Dispose()
+        {
+            _engine.Dispose();
         }
     }
 }

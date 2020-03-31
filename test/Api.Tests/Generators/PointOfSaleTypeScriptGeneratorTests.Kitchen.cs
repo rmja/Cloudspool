@@ -20,14 +20,14 @@ namespace Api.Tests.Generators
                     itemId = 1,
                     createdByEmployeeName = "Andreas",
                     note = null,
-                    arrived = new DateTime(2020, 3, 22, 15, 45, 0),
+                    arrived = new DateTime(2020, 3, 22, 15, 45, 0).ToString("o"),
                     departed = null,
                     
                 },
                 itemName = " 1",
                 sequenceNumber = 1,
                 printedByEmployeeName = "Andreas",
-                printed = new DateTime(2020, 3, 22, 15, 45, 0),
+                printed = new DateTime(2020, 3, 22, 15, 45, 0).ToString("o"),
                 isCancellation = false,
                 added =
                 {
@@ -39,7 +39,7 @@ namespace Api.Tests.Generators
                 removed = { }
             };
 
-            var (content, contentType) = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
 
             var expected = new byte[]
             {
@@ -108,7 +108,7 @@ namespace Api.Tests.Generators
                 0x1B, 0x64, 0x00
             };
 
-            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(content));
+            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
         }
 
         [Fact]
@@ -124,14 +124,14 @@ namespace Api.Tests.Generators
                     itemId = 1,
                     createdByEmployeeName = "Andreas",
                     note = null,
-                    arrived = new DateTime(2020, 3, 12, 15, 21, 0),
+                    arrived = new DateTime(2020, 3, 12, 15, 21, 0).ToString("o"),
                     departed = null,
 
                 },
                 itemName = " 1",
                 sequenceNumber = 2,
                 printedByEmployeeName = "Andreas",
-                printed = new DateTime(2020, 3, 17, 17, 31, 0),
+                printed = new DateTime(2020, 3, 17, 17, 31, 0).ToString("o"),
                 isCancellation = false,
                 added =
                 {
@@ -141,7 +141,7 @@ namespace Api.Tests.Generators
                 removed = { }
             };
 
-            var (content, contentType) = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
 
             var expected = new byte[]
             {
@@ -204,7 +204,7 @@ namespace Api.Tests.Generators
                 0x1B, 0x64, 0x00
             };
 
-            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(content));
+            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
         }
 
         [Fact]
@@ -220,14 +220,14 @@ namespace Api.Tests.Generators
                     itemId = 1,
                     createdByEmployeeName = "Andreas",
                     note = null,
-                    arrived = new DateTime(2020, 3, 12, 15, 21, 0),
+                    arrived = new DateTime(2020, 3, 12, 15, 21, 0).ToString("o"),
                     departed = null,
 
                 },
                 itemName = " 1",
                 sequenceNumber = 2,
                 printedByEmployeeName = "Andreas",
-                printed = new DateTime(2020, 3, 17, 17, 31, 0),
+                printed = new DateTime(2020, 3, 17, 17, 31, 0).ToString("o"),
                 isCancellation = false,
                 added = { },
                 changed =
@@ -241,7 +241,7 @@ namespace Api.Tests.Generators
                 removed = { }
             };
 
-            var (content, contentType) = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
 
             var expected = new byte[]
             {
@@ -314,7 +314,7 @@ namespace Api.Tests.Generators
                 0x1B, 0x64, 0x00
             };
 
-            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(content));
+            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
         }
 
         [Fact]
@@ -330,14 +330,14 @@ namespace Api.Tests.Generators
                     itemId = 1,
                     createdByEmployeeName = "Lisbeth",
                     note = null,
-                    arrived = new DateTime(2020, 3, 6, 18, 12, 0),
+                    arrived = new DateTime(2020, 3, 6, 18, 12, 0).ToString("o"),
                     departed = null,
 
                 },
                 itemName = " 4",
                 sequenceNumber = 2,
                 printedByEmployeeName = "Lisbeth",
-                printed = new DateTime(2020, 3, 6, 19, 46, 0),
+                printed = new DateTime(2020, 3, 6, 19, 46, 0).ToString("o"),
                 isCancellation = false,
                 added =
                 {
@@ -350,7 +350,7 @@ namespace Api.Tests.Generators
                 }
             };
 
-            var (content, contentType) = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
 
             var expected = new byte[]
             {
@@ -421,7 +421,7 @@ namespace Api.Tests.Generators
                 0x1B, 0x64, 0x00
             };
 
-            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(content));
+            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
         }
 
         [Fact]
@@ -437,19 +437,20 @@ namespace Api.Tests.Generators
                     itemId = 1,
                     createdByEmployeeName = "Andreas",
                     note = "19:30",
-                    arrived = new DateTime(2020, 3, 17, 17, 41, 0),
+                    arrived = new DateTime(2020, 3, 17, 17, 41, 0).ToString("o"),
                     departed = null
                 },
                 itemName = " 3",
                 sequenceNumber = 1,
                 printedByEmployeeName = "Andreas",
-                printed = new DateTime(2020, 3, 17, 17, 41, 0),
+                printed = new DateTime(2020, 3, 17, 17, 41, 0).ToString("o"),
                 isCancellation = true,
                 added = { },
                 changed = { },
                 removed = { }
             };
-            var (content, contentType) = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+
+            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
 
             var expected = new byte[]
             {
@@ -509,7 +510,7 @@ namespace Api.Tests.Generators
                 0x1B, 0x64, 0x00
             };
 
-            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(content));
+            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
         }
     }
 
@@ -520,7 +521,7 @@ namespace Api.Tests.Generators
         public string itemName { get; set; }
         public int sequenceNumber { get; set; }
         public string printedByEmployeeName { get; set; }
-        public DateTime printed { get; set; }
+        public string printed { get; set; }
         public bool isCancellation { get; set; }
         public List<Line> added { get; set; } = new List<Line>();
         public List<LineDifference> changed { get; set; } = new List<LineDifference>();

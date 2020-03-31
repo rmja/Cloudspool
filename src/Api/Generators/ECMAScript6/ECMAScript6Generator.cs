@@ -1,218 +1,210 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using NiL.JS;
-using NiL.JS.Core;
-using NiL.JS.Extensions;
+﻿using Microsoft.ClearScript;
+using Microsoft.ClearScript.JavaScript;
+using Microsoft.ClearScript.V8;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-using JS = NiL.JS.BaseLibrary;
-
 namespace Api.Generators.ECMAScript6
 {
     public class ECMAScript6Generator : IGenerator
     {
         private readonly IMemoryCache _cache;
+        private readonly ILogger _consoleLogger;
 
-        public ECMAScript6Generator(IMemoryCache cache)
+        public ECMAScript6Generator(IMemoryCache cache, ILoggerFactory loggerFactory)
         {
             _cache = cache;
+            _consoleLogger = loggerFactory.CreateLogger("ScriptConsole");
         }
 
         public string[] ValidateTemplate(string code)
         {
+            using var engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports);
+
             try
             {
-                var script = Script.Parse(code);
-                CreateBuilder(script, null);
+                engine.Compile(new DocumentInfo("main") { Category = ModuleCategory.Standard }, code);
+
                 return Array.Empty<string>();
             }
-            catch (JSException e)
+            catch (ScriptEngineException e)
             {
-                return new[] { e.Message };
+                return new[] { e.ErrorDetails };
             }
         }
 
-        public Task<(byte[] Content, string ContentType)> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
+        public async Task<GenerateResult> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
         {
-            var script = _cache.GetOrCreate(code, entry =>
+            using var engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports);
+            engine.DocumentSettings.Loader = new CustomLoader(engine.DocumentSettings.Loader, resourceManager);
+            engine.DocumentSettings.AccessFlags = DocumentAccessFlags.EnableFileLoading;
+            engine.DocumentSettings.SearchPath = string.Join(';',
+                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Modules"));
+
+            engine.Execute(new DocumentInfo() { Category = ModuleCategory.Standard }, "import ImageData from 'ImageData'; globalThis.ImageData = ImageData");
+
+            engine.AddHostObject("console", new Console(_consoleLogger));
+
+            engine.DocumentSettings.AddSystemDocument("main", ModuleCategory.Standard, code);
+
+            dynamic setModel = engine.Evaluate(@"
+let model;
+const setModel = m => model = JSON.parse(m);
+setModel");
+
+            setModel(JsonSerializer.Serialize(model));
+
+            dynamic contentTypePromise = engine.Evaluate(new DocumentInfo() { Category = ModuleCategory.Standard }, @"
+async function getContentType() {
+    const {ContentType} = await import('main');
+    return ContentType;
+}
+getContentType()");
+            var contentType = await ToTask(contentTypePromise);
+
+            if (contentType is Undefined)
             {
-                entry.SetSlidingExpiration(TimeSpan.FromHours(1));
-                return Script.Parse(code);
-            });
-
-            return GenerateDocumentAsync(script, model, resourceManager);
-        }
-
-        public async Task<(byte[] Content, string ContentType)> GenerateDocumentAsync(Script script, object model, IResourceManager resourceManager)
-        {
-            var (builder, build, contentType) = CreateBuilder(script, resourceManager);
-
-            var json = JsonSerializer.Serialize(model, model?.GetType());
-            var jsModel = JS.JSON.parse(json);
-            var result = build.Call(builder, new Arguments() { jsModel });
-
-            if (result.Value is JS.Promise promise)
-            {
-                result = await promise.Task;
+                contentType = null;
             }
 
-            var content = result.Value switch
-            {
-                string @string => Encoding.UTF8.GetBytes(@string),
-                IEnumerable<KeyValuePair<string, JSValue>> enumerable => enumerable.Select(x => (byte)x.Value).ToArray(),
-                _ => throw new GeneratorException("build did not produce a result"),
-            };
+            dynamic resultPromise = engine.Evaluate(new DocumentInfo() { Category = ModuleCategory.Standard }, @"
+import Builder from 'main';
+let builder = new Builder();
+Promise.resolve(builder.build(model));");
 
-            return (content, contentType);
+            var result = await ToTask(resultPromise);
+
+            switch (result)
+            {
+                case string @string: return new GenerateResult() { Content = Encoding.UTF8.GetBytes(@string), ContentType = contentType ?? "text/plain" };
+                case ITypedArray<byte> typedArray: return new GenerateResult() { Content = typedArray.ToArray(), ContentType = contentType ?? "application/octet-stream" };
+                case IList list:
+                    { 
+                        var array = new byte[list.Count];
+                        for (var i = 0; i < list.Count; i++)
+                        {
+                            array[i] = Convert.ToByte(list[i]);
+                        }
+                        return new GenerateResult() { Content = array, ContentType = contentType ?? "application/octet-stream" };
+                    }
+                default: throw new GeneratorException("build did not produce a result");
+            }
         }
 
-        static (JSObject Builder, ICallable Build, string ContentType) CreateBuilder(Script script, IResourceManager resourceManager)
+        private static Task<dynamic> ToTask(dynamic promise)
         {
-            var module = new Module("builder.js", script);
-            module.Context.GlobalContext.CurrentTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time");
-            
-            if (resourceManager is object)
-            {
-                var resourcesModuleResolver = new ResourcesModuleResolver(resourceManager);
-                module.ModuleResolversChain.Add(resourcesModuleResolver);
-                ExtendGlobalContext(module.Context.GlobalContext, resourcesModuleResolver);
-            }
-            else
-            {
-                ExtendGlobalContext(module.Context.GlobalContext, null);
-            }
-
-            module.Run();
-
-            var Builder = module.Exports.Default.Value as JS.Function;
-
-            if (Builder is null)
-            {
-                throw new GeneratorException("Template does not have a default class export");
-            }
-
-            var arguments = new Arguments();
-            var builder = Builder.Construct(arguments) as JSObject;
-
-            var contentType = builder.GetProperty("contentType").Value as string;
-            var build = builder.GetProperty("build").Value as JS.Function;
-
-            if (contentType is null || build is null)
-            {
-                throw new GeneratorException("The exported Builder class does not have a contentType property and a build method");
-            }
-
-            var buildMethod = build.As<ICallable>();
-
-            return (builder, buildMethod, contentType);
+            var tcs = new TaskCompletionSource<dynamic>();
+            Action<object> onResolved = value => tcs.SetResult(value);
+            Action<dynamic> onRejected = reason => tcs.SetException(new Exception(reason.message));
+            promise.then(onResolved, onRejected);
+            return tcs.Task;
         }
 
-        static void ExtendGlobalContext(GlobalContext context, ResourcesModuleResolver resourcesModuleResolver)
+        public class Console
         {
-            var module = LoadModule("image-data.js");
-            module.Run();
-            context.Add("ImageData", module.Exports.Default);
+            private readonly ILogger _logger;
 
-            Func<string, JSValue> require = resourcePath =>
+            public Console(ILogger logger)
             {
-                if (!resourcesModuleResolver.TryGetModule("/" + resourcePath, out var module)) {
-                    return JSValue.Undefined;
-                }
-                module.Run();
-                return module.Exports.Default;
-            };
+                _logger = logger;
+            }
 
-            context.Add("require", require);
+            public void log(string message)
+            {
+                _logger.LogInformation(message);
+            }
         }
 
-        static Module LoadModule(string fileName)
+        class CustomLoader : DocumentLoader
         {
-            using var stream = typeof(ECMAScript6Generator).Assembly.GetManifestResourceStream(typeof(ECMAScript6Generator), "Modules." + fileName);
-            using var reader = new StreamReader(stream);
-            var code = reader.ReadToEnd();
-            return new Module(fileName, code);
-        }
-
-        class ResourcesModuleResolver : CachedModuleResolverBase
-        {
-            private readonly IResourceManager _resources;
-            private static readonly Regex _regex = new Regex(@"^\/resources/([a-zA-Z0-9_-]+(\.[a-z]+))$", RegexOptions.Compiled);
-            private readonly Dictionary<string, Func<string, byte[], Module>> _moduleFactories = new Dictionary<string, Func<string, byte[], Module>>()
+            private readonly DocumentLoader _defaultLoader;
+            private readonly IResourceManager _resourceManager;
+            private static readonly Regex _regex = new Regex(@"^resources/([a-zA-Z0-9_-]+\.[a-z]+)$", RegexOptions.Compiled);
+            private static readonly Dictionary<string, Func<string, byte[], Document>> _documentFactories = new Dictionary<string, Func<string, byte[], Document>>()
             {
                 [".json"] = CreateJson,
                 [".bin"] = CreateBin,
                 [".bmp"] = CreateBmp
             };
 
-            public ResourcesModuleResolver(IResourceManager resources)
+            public CustomLoader(DocumentLoader defaultLoader, IResourceManager resourceManager)
             {
-                _resources = resources;
+                _defaultLoader = defaultLoader;
+                _resourceManager = resourceManager;
             }
 
-            public override bool TryGetModule(ModuleRequest moduleRequest, out Module result)
+            public override Document LoadDocument(DocumentSettings settings, DocumentInfo? sourceInfo, string specifier, DocumentCategory category, DocumentContextCallback contextCallback)
             {
-                return TryGetModule(moduleRequest.AbsolutePath, out result);
+                var alias = GetResourceAlias(specifier);
+
+                if (alias is object && _documentFactories.TryGetValue(Path.GetExtension(alias), out var factory))
+                {
+                    var resource = _resourceManager.GetResource(alias);
+
+                    if (resource is object)
+                    {
+                        return factory(specifier, resource);
+                    }
+                }
+
+                return _defaultLoader.LoadDocument(settings, sourceInfo, specifier, category, contextCallback);
             }
 
-            public bool TryGetModule(string moduleAbsolutePath, out Module result)
+            public override async Task<Document> LoadDocumentAsync(DocumentSettings settings, DocumentInfo? sourceInfo, string specifier, DocumentCategory category, DocumentContextCallback contextCallback)
             {
-                var match = _regex.Match(moduleAbsolutePath);
+                var alias = GetResourceAlias(specifier);
 
-                if (!match.Success)
+                if (alias is object && _documentFactories.TryGetValue(Path.GetExtension(alias), out var factory))
                 {
-                    result = default;
-                    return false;
+                    var resource = await _resourceManager.GetResourceAsync(alias, default);
+
+                    if (resource is object)
+                    {
+                        return factory(specifier, resource);
+                    }
                 }
 
-                var alias = match.Groups[1].Value;
-                var extension = match.Groups[2].Value;
-
-                if (!_moduleFactories.TryGetValue(extension, out var factory))
-                {
-                    result = default;
-                    return false;
-                }
-
-                var resource = _resources.GetResource(alias);
-
-                if (resource is null)
-                {
-                    result = default;
-                    return false;
-                }
-
-                result = factory(moduleAbsolutePath, resource);
-                return true;
+                return await _defaultLoader.LoadDocumentAsync(settings, sourceInfo, specifier, category, contextCallback);
             }
 
-            static Module CreateJson(string path, byte[] resource)
+            private static string GetResourceAlias(string modulePath)
+            {
+                var match = _regex.Match(modulePath);
+
+                return match.Success ? match.Groups[1].Value : null;
+            }
+
+            static Document CreateJson(string path, byte[] resource)
             {
                 var json = Encoding.UTF8.GetString(resource);
                 var script = $"const resource = {json}; export default resource";
-                return new Module(path, script);
+                return new StringDocument(new DocumentInfo(path) { Category = ModuleCategory.Standard }, script);
             }
 
-            static Module CreateBin(string path, byte[] resource)
+            static Document CreateBin(string path, byte[] resource)
             {
                 var scriptBuilder = new StringBuilder(100 + 4 * resource.Length); // ',' and three digits per element
                 scriptBuilder.Append("const resource = new Uint8Array([");
                 scriptBuilder.AppendJoin(',', resource);
                 scriptBuilder.Append("]);export default resource;");
                 var script = scriptBuilder.ToString();
-                return new Module(path, script);
+                return new StringDocument(new DocumentInfo(path) { Category = ModuleCategory.Standard }, script);
             }
 
-            static Module CreateBmp(string path, byte[] resource)
+            static Document CreateBmp(string path, byte[] resource)
             {
                 using var stream = new MemoryStream(resource);
                 using var bitmap = new Bitmap(stream);
@@ -225,7 +217,7 @@ namespace Api.Generators.ECMAScript6
                 {
                     Marshal.Copy(bitmapData.Scan0, RGBA, 0, size);
 
-                    var scriptBuilder = new StringBuilder(150 + 4 * size); // ',' and three digits per element
+                    var scriptBuilder = new StringBuilder(150 + 4 * size); // ',' and at most three digits per element
                     scriptBuilder.Append("const data = new Uint8ClampedArray([");
                     for (var offset = 0; offset < size; offset += 4)
                     {
@@ -242,7 +234,7 @@ namespace Api.Generators.ECMAScript6
                     }
                     scriptBuilder.AppendFormat("]);const resource = new ImageData(data, {0});export default resource;", bitmap.Width);
                     var script = scriptBuilder.ToString();
-                    return new Module(path, script);
+                    return new StringDocument(new DocumentInfo(path) { Category = ModuleCategory.Standard }, script);
                 }
                 finally
                 {

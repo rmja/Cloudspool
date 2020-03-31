@@ -69,9 +69,8 @@ namespace Api.Features.Documents.Commands
 
                 var generator = _generatorProvider.GetGenerator(format.ScriptMediaType);
                 var resources = new DbResourceManager(_db, User.GetProjectId());
-                var (content, contentType) = await generator.GenerateDocumentAsync(format.Script, request.Model, resources);
-
-                var document = new Document(User.GetProjectId(), format.TemplateId, content, contentType);
+                var result = await generator.GenerateDocumentAsync(format.Script, request.Model, resources);
+                var document = new Document(User.GetProjectId(), format.TemplateId, result.Content, result.ContentType);
                 _db.Documents.Add(document);
                 await _db.SaveChangesAsync();
 

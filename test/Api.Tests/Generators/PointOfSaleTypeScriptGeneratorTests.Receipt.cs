@@ -23,7 +23,7 @@ namespace Api.Tests.Generators
                     itemId = 1,
                     createdByEmployeeName = "Malene",
                     note = null,
-                    arrived = new DateTime(2020, 3, 22, 15, 45, 0),
+                    arrived = new DateTime(2020, 3, 20, 19, 31, 0).ToString("o"),
                     departed = null,
                     
                 },
@@ -36,9 +36,9 @@ namespace Api.Tests.Generators
                 grossTotal = 55,
                 discountTotal = 0,
                 netTotal = 55,
-                netTaxTotal = 0,
-                netEuroTotal = 0,                
-                printed = new DateTime(2020, 3, 20, 19, 31, 0),
+                netTaxTotal = 11,
+                netEuroTotal = 7.53m,                
+                printed = new DateTime(2020, 3, 20, 19, 31, 0).ToString("o"),
             };
 
             var resources = new DictionaryResourceManager()
@@ -56,11 +56,12 @@ namespace Api.Tests.Generators
                 }),
                 ["pos_slip_havnebakken_logo_2.bmp"] = File.ReadAllBytes("havnebakken.bmp")
             };
-            var (content, contentType) = await _generator.GenerateDocumentAsync(_receiptScript, model, resources);
+
+            var result = await _generator.GenerateDocumentAsync(_receiptScript, model, resources);
 
             var expected = File.ReadAllBytes(Path.Combine("Expected", nameof(PointOfSaleTypeScriptGeneratorTests) + "." + nameof(Receipt_New) + ".bin"));
 
-            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(content));
+            Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
         }
     }
 
@@ -77,7 +78,7 @@ namespace Api.Tests.Generators
         public decimal netTotal { get; set; }
         public decimal netTaxTotal { get; set; }
         public decimal netEuroTotal { get; set; }
-        public DateTime printed { get; set; }
+        public string printed { get; set; }
 
         public class Line
         {

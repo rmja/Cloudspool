@@ -1,5 +1,6 @@
 ﻿using Api.Generators.ECMAScript6;
 using Api.Generators.TypeScript;
+using Api.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
@@ -15,12 +17,13 @@ namespace Api.Tests.Generators
     {
         private readonly TypeScriptGenerator _generator;
 
-        public TypeScriptGeneratorTests()
+        public TypeScriptGeneratorTests(ITestOutputHelper output)
         {
             var services = new ServiceCollection()
                 .AddSingleton<TypeScriptGenerator>()
                 .AddSingleton<ECMAScript6Generator>()
                 .AddSingleton<TypeScriptTranspiler>()
+                .AddLogging(logging => new XunitLoggerProvider(output))
                 .AddMemoryCache()
                 .BuildServiceProvider();
 
@@ -32,15 +35,14 @@ namespace Api.Tests.Generators
         {
             var script = @"
 export default class Builder {
-    contentType = 'text/plain';
     build(model) {
         return `The result ${model.name}`
     }
 }";
-            var (result, contentType) = await _generator.GenerateDocumentAsync(script, new { name = "Rasmus" });
+            var result = await _generator.GenerateDocumentAsync(script, new { name = "Rasmus" });
 
-            Assert.Equal("The result Rasmus", Encoding.UTF8.GetString(result));
-            Assert.Equal("text/plain", contentType);
+            Assert.Equal("The result Rasmus", Encoding.UTF8.GetString(result.Content));
+            Assert.Equal("text/plain", result.ContentType);
         }
 
         [Fact]
@@ -48,15 +50,32 @@ export default class Builder {
         {
             var script = @"
 export default class Builder {
-    contentType = 'text/plain';
     build(model) {
         return new Uint8Array([1,2,3]);
     }
 }";
 
-            var (result, _) = await _generator.GenerateDocumentAsync(script, null);
+            var result = await _generator.GenerateDocumentAsync(script, null);
 
-            Assert.Equal(new byte[] { 1, 2, 3 }, result);
+            Assert.Equal(new byte[] { 1, 2, 3 }, result.Content);
+            Assert.Equal("application/octet-stream", result.ContentType);
+        }
+
+        [Fact]
+        public async Task CanOverrideContentType()
+        {
+            var script = @"
+export let ContentType = 'test/test';
+export default class Builder {
+    build(model) {
+        return `The result ${model.name}`
+    }
+}";
+
+            var result = await _generator.GenerateDocumentAsync(script, new { name = "Rasmus" });
+
+            Assert.Equal("The result Rasmus", Encoding.UTF8.GetString(result.Content));
+            Assert.Equal("test/test", result.ContentType);
         }
 
         [Fact]
@@ -66,7 +85,6 @@ export default class Builder {
 import obj from 'resources/alias.json';
 
 export default class Builder {
-    contentType = 'text/plain';
     build(model) {
         return obj.name;
     }
@@ -77,19 +95,18 @@ export default class Builder {
                 ["alias.json"] = JsonSerializer.SerializeToUtf8Bytes(new { name = "Rasmus" })
             };
 
-            var (result, _) = await _generator.GenerateDocumentAsync(script, null, resources);
+            var result = await _generator.GenerateDocumentAsync(script, null, resources);
 
-            Assert.Equal("Rasmus", Encoding.UTF8.GetString(result));
+            Assert.Equal("Rasmus", Encoding.UTF8.GetString(result.Content));
         }
 
         [Fact]
-        public async Task CanImportBinary()
+        public async Task CanImportBinaryResource()
         {
             var script = @"
 import array from 'resources/alias.bin';
 
 export default class Builder {
-    contentType = 'text/plain';
     build(model) {
         return [array.length, array[0]];
     }
@@ -100,10 +117,10 @@ export default class Builder {
                 ["alias.bin"] = new byte[] { 0xA0 }
             };
 
-            var (result, _) = await _generator.GenerateDocumentAsync(script, null, resources);
+            var result = await _generator.GenerateDocumentAsync(script, null, resources);
 
-            Assert.Equal(1, result[0]);
-            Assert.Equal(0xA0, result[1]);
+            Assert.Equal(1, result.Content[0]);
+            Assert.Equal(0xA0, result.Content[1]);
         }
 
         [Fact]
@@ -113,7 +130,6 @@ export default class Builder {
 import imageData from 'resources/alias.bmp';
 
 export default class Builder {
-    contentType = 'text/plain';
     build(model) {
         return [imageData.width, imageData.height, imageData.data.length, imageData.data[0], imageData.data[1], imageData.data[2], imageData.data[3]];
     }
@@ -129,25 +145,24 @@ export default class Builder {
                 ["alias.bmp"] = stream.ToArray()
             };
 
-            var (result, _) = await _generator.GenerateDocumentAsync(script, null, resources);
+            var result = await _generator.GenerateDocumentAsync(script, null, resources);
 
-            Assert.Equal(2, result[0]);
-            Assert.Equal(2, result[1]);
-            Assert.Equal(16, result[2]);
-            Assert.Equal(1, result[3]);
-            Assert.Equal(2, result[4]);
-            Assert.Equal(3, result[5]);
-            Assert.Equal(255, result[6]);
+            Assert.Equal(2, result.Content[0]);
+            Assert.Equal(2, result.Content[1]);
+            Assert.Equal(16, result.Content[2]);
+            Assert.Equal(1, result.Content[3]);
+            Assert.Equal(2, result.Content[4]);
+            Assert.Equal(3, result.Content[5]);
+            Assert.Equal(255, result.Content[6]);
         }
 
         [Fact]
-        public async Task CanRequireJsonResource()
+        public async Task CanDynamicImportJsonResource()
         {
             var script = @"
 export default class Builder {
-    contentType = 'text/plain';
-    build(model) {
-        let obj = require('resources/alias.json');
+    async build(model) {
+        let { default: obj } = await import('resources/alias.json');
         return obj.name;
     }
 }";
@@ -157,9 +172,9 @@ export default class Builder {
                 ["alias.json"] = JsonSerializer.SerializeToUtf8Bytes(new { name = "Rasmus" })
             };
 
-            var (result, _) = await _generator.GenerateDocumentAsync(script, null, resources);
+            var result = await _generator.GenerateDocumentAsync(script, null, resources);
 
-            Assert.Equal("Rasmus", Encoding.UTF8.GetString(result));
+            Assert.Equal("Rasmus", Encoding.UTF8.GetString(result.Content));
         }
 
         [Fact]

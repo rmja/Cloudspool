@@ -1,8 +1,9 @@
 ﻿using Api.Generators.ECMAScript6;
 using Api.Generators.TypeScript;
+using Api.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.IO;
+using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
@@ -12,12 +13,13 @@ namespace Api.Tests.Generators
         private readonly string _kitchenScript;
         private readonly string _receiptScript;
 
-        public PointOfSaleTypeScriptGeneratorTests()
+        public PointOfSaleTypeScriptGeneratorTests(ITestOutputHelper output)
         {
             var services = new ServiceCollection()
                 .AddSingleton<TypeScriptGenerator>()
                 .AddSingleton<ECMAScript6Generator>()
                 .AddSingleton<TypeScriptTranspiler>()
+                .AddLogging(logging => new XunitLoggerProvider(output))
                 .AddMemoryCache()
                 .BuildServiceProvider();
 
@@ -44,7 +46,7 @@ namespace Api.Tests.Generators
         public int itemId { get; set; }
         public string createdByEmployeeName { get; set; }
         public string note { get; set; }
-        public DateTime arrived { get; set; }
-        public DateTime? departed { get; set; }
+        public string arrived { get; set; }
+        public string departed { get; set; }
     }
 }

@@ -30,7 +30,7 @@ export default class Builder {
     contentType = "application/starline";
 
     build(model: Model) {
-        let buffer = new WriteBuffer();
+        const buffer = new WriteBuffer();
         this.writer = new StarLineWriter(buffer);
 
         this.writer.writeInitialize();
@@ -76,7 +76,7 @@ export default class Builder {
         this.writer.writeString(`${model.sequenceNumber}`);
         this.writer.writeNewline();
 
-        let arrived = new Date(model.case.arrived);
+        const arrived = new Date(model.case.arrived);
         this.writer.writeSetFontSize(1, 1);
         this.writer.writeString("Startet");
         this.writer.writeHorizontalTab();
@@ -85,7 +85,7 @@ export default class Builder {
         this.writer.writeString(" " + formatDate(arrived));
         this.writer.writeNewline();
 
-        let printed = new Date(model.printed);
+        const printed = new Date(model.printed);
         this.writer.writeSetFontSize(1, 1);
         this.writer.writeString("Udskrevet");
         this.writer.writeHorizontalTab();
@@ -102,7 +102,7 @@ export default class Builder {
     }
 
     private writeDiff(model: Model) {
-        let isFirst = model.sequenceNumber == 1
+        const isFirst = model.sequenceNumber == 1
 
         this.writer.writeSetHorizontalTabPositions([7]);
         if (model.added && model.added.length) {
@@ -133,8 +133,8 @@ export default class Builder {
         if (model.changed && model.changed.length) {
             this.writeMergeBlockHeader("ÆNDRET");
             for (const diff of model.changed) {
-                let baseline = diff.baseline
-                let target = diff.target
+                const baseline = diff.baseline
+                const target = diff.target
                 if (target.quantity) {
                     this.writeQuantity(baseline.quantity, true);
                     this.writeDifference(target.quantity - baseline.quantity);
@@ -187,7 +187,7 @@ export default class Builder {
 
     private writeFooter(model: Model) {
         if (model.case.note) {
-            let note = model.case.note.trim();
+            const note = model.case.note.trim();
             if (note) {
                 this.writer.writeSetFontSize(1, 1);
                 this.writer.writeNewline();
@@ -264,9 +264,8 @@ export default class Builder {
 
 const ESC = 0x1B
 const GS = 0x1D
-const pad2 = (input: number) => ("0" + input).slice(-2);
-const formatTime = (date: Date) => pad2(date.getHours()) + ":" + pad2(date.getMinutes());
-const formatDate = (date: Date) => pad2(date.getDate()) + "/" + pad2(date.getMonth() + 1) + "-" + date.getFullYear();
+const formatTime = (date: Date) => date.getHours().toString().padStart(2, "0") + ":" + date.getMinutes().toString().padStart(2, "0");
+const formatDate = (date: Date) => date.getDate().toString().padStart(2, "0") + "/" + (date.getMonth() + 1).toString().padStart(2, "0") + "-" + date.getFullYear();
 
 enum CodeTable {
     Latin1_Windows1252 = 32,
@@ -277,7 +276,7 @@ enum CodeTable {
 class StarLineWriter {
     LINEWIDTH: number;
     private buffer: WriteBuffer;
-    private encodingBuffer: number[];
+    private encodingBuffer: Uint8Array;
 
     constructor(buffer: WriteBuffer) {
         this.LINEWIDTH = 48;
@@ -304,8 +303,8 @@ class StarLineWriter {
         for (var i = 0; i < 128; i++) {
             asciiChars += String.fromCharCode(i);
         }
-        let allChars = asciiChars + extensionChars;
-        this.encodingBuffer = [];
+        const allChars = asciiChars + extensionChars;
+        this.encodingBuffer = new Uint8Array(0xFFFF);
         for (let i = 0; i < allChars.length; i++) {
             this.encodingBuffer[allChars.charCodeAt(i)] = i;
         }
@@ -328,16 +327,16 @@ class StarLineWriter {
     }
 
     writeString(value: string) {
-        let encoded = [];
+        const encoded = new Uint8Array(value.length);
         for (let i = 0; i < value.length; i++) {
             let char = this.encodingBuffer[value.charCodeAt(i)];
 
             if (char === undefined) {
                 char = '?'.charCodeAt(0);
             }
-            encoded.push(char);
+            encoded[i] = char;
         }
-        this.buffer.write(encoded);
+        this.buffer.writeArray(encoded);
     }
 
     writeHorizontalTab() {
@@ -354,9 +353,13 @@ class WriteBuffer {
     public written = 0;
 
     write(values: number[]) {
-        this.ensure(values.length);
-        (new Uint8Array(this.buffer)).set(new Uint8Array(values), this.written);
-        this.written += values.length;
+        this.writeArray(new Uint8Array(values));
+    }
+
+    writeArray(array: Uint8Array) {
+        this.ensure(array.byteLength);
+        (new Uint8Array(this.buffer)).set(array, this.written);
+        this.written += array.byteLength;
     }
 
     toArray() {
@@ -364,11 +367,11 @@ class WriteBuffer {
     }
 
     private ensure(amount: number) {
-        let needed = this.written + amount;
+        const needed = this.written + amount;
         if (needed > this.buffer.byteLength) {
-            let newSize = Math.floor((needed + 64 - 1) / 64) * 64;
-            let newBuffer = new ArrayBuffer(newSize);
-            let array = new Uint8Array(newBuffer);
+            const newSize = Math.floor((needed + 64 - 1) / 64) * 64;
+            const newBuffer = new ArrayBuffer(newSize);
+            const array = new Uint8Array(newBuffer);
             array.set(new Uint8Array(this.buffer, 0, this.written));
             this.buffer = newBuffer;
         }

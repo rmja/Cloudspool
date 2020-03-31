@@ -70,7 +70,7 @@ namespace Api.Tests.Features
             var contentString = await contentResponse.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
             // Then
-            Assert.Equal("application/escpos", result.ContentType);
+            Assert.Equal("text/plain", result.ContentType);
             Assert.Equal("name: Rasmus, json: {\"name\":\"Rasmus\"}", contentString);
         }
 
@@ -92,7 +92,7 @@ namespace Api.Tests.Features
             var contentString = await contentResponse.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 
             // Then
-            Assert.Equal("application/escpos", result.ContentType);
+            Assert.Equal("text/plain", result.ContentType);
             Assert.Equal("name: Rasmus, json: {\"name\":\"Rasmus\"}", contentString);
         }
 
