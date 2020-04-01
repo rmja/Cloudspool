@@ -13,6 +13,7 @@ steps:
 - task: Npm@1
   inputs:
     command: 'install'
+    workingDir: 'src/Api'
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
