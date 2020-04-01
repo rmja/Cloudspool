@@ -1,12 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
-    public partial class PointOfSaleTypeScriptGeneratorTests
+    public class KitchenStarLinePointOfSaleTypeScriptGeneratorTests : PointOfSaleTypeScriptGeneratorTestBase
     {
+        public KitchenStarLinePointOfSaleTypeScriptGeneratorTests(ITestOutputHelper output) : base(output, "kitchen-starline.ts")
+        {
+        }
+
         [Fact]
         public async Task Kitchen_New()
         {
@@ -39,7 +43,7 @@ namespace Api.Tests.Generators
                 removed = { }
             };
 
-            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+            var result = await _generator.GenerateDocumentAsync(_script, model, null);
 
             var expected = new byte[]
             {
@@ -141,7 +145,7 @@ namespace Api.Tests.Generators
                 removed = { }
             };
 
-            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+            var result = await _generator.GenerateDocumentAsync(_script, model, null);
 
             var expected = new byte[]
             {
@@ -241,7 +245,7 @@ namespace Api.Tests.Generators
                 removed = { }
             };
 
-            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+            var result = await _generator.GenerateDocumentAsync(_script, model, null);
 
             var expected = new byte[]
             {
@@ -350,7 +354,7 @@ namespace Api.Tests.Generators
                 }
             };
 
-            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+            var result = await _generator.GenerateDocumentAsync(_script, model, null);
 
             var expected = new byte[]
             {
@@ -450,7 +454,7 @@ namespace Api.Tests.Generators
                 removed = { }
             };
 
-            var result = await _generator.GenerateDocumentAsync(_kitchenScript, model, null);
+            var result = await _generator.GenerateDocumentAsync(_script, model, null);
 
             var expected = new byte[]
             {
@@ -511,33 +515,6 @@ namespace Api.Tests.Generators
             };
 
             Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
-        }
-    }
-
-    public class KitchenModel
-    {
-        public bool isFood { get; set; }
-        public CaseModel @case { get; set; }
-        public string itemName { get; set; }
-        public int sequenceNumber { get; set; }
-        public string printedByEmployeeName { get; set; }
-        public string printed { get; set; }
-        public bool isCancellation { get; set; }
-        public List<Line> added { get; set; } = new List<Line>();
-        public List<LineDifference> changed { get; set; } = new List<LineDifference>();
-        public List<Line> removed { get; set; } = new List<Line>();
-
-        public class Line
-        {
-            public string name { get; set; }
-            public decimal? quantity { get; set; }
-            public string note { get; set; }
-        }
-
-        public class LineDifference
-        {
-            public Line baseline { get; set; }
-            public Line target { get; set; }
         }
     }
 }

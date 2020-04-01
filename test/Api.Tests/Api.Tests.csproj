@@ -12,8 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Generators\kitchen.ts" />
-    <EmbeddedResource Include="Generators\receipt.ts" />
+    <EmbeddedResource Include="Generators\*.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,10 +34,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="havnebakken.bmp">
+    <None Update="*.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Expected\PointOfSaleTypeScriptGeneratorTests.Receipt_New.bin">
+    <None Update="Expected\*.bin">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

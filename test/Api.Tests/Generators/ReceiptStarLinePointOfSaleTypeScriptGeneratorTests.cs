@@ -1,14 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
-    public partial class PointOfSaleTypeScriptGeneratorTests
+    public class ReceiptStarLinePointOfSaleTypeScriptGeneratorTests : PointOfSaleTypeScriptGeneratorTestBase
     {
+        public ReceiptStarLinePointOfSaleTypeScriptGeneratorTests(ITestOutputHelper output) : base(output, "receipt-starline.ts")
+        {
+
+        }
+
         [Fact]
         public async Task Receipt_New()
         {
@@ -57,35 +62,11 @@ namespace Api.Tests.Generators
                 ["pos_slip_havnebakken_logo_2.bmp"] = File.ReadAllBytes("havnebakken.bmp")
             };
 
-            var result = await _generator.GenerateDocumentAsync(_receiptScript, model, resources);
+            var result = await _generator.GenerateDocumentAsync(_script, model, resources);
 
-            var expected = File.ReadAllBytes(Path.Combine("Expected", nameof(PointOfSaleTypeScriptGeneratorTests) + "." + nameof(Receipt_New) + ".bin"));
+            var expected = File.ReadAllBytes(Path.Combine("Expected", nameof(ReceiptStarLinePointOfSaleTypeScriptGeneratorTests) + "." + nameof(Receipt_New) + ".bin"));
 
             Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
-        }
-    }
-
-    public class ReceiptModel
-    {
-        public string vendorDataResource { get; set; }
-        public int slipId { get; set; }
-        public CaseModel @case { get; set; }
-        public List<Line> lines { get; set; } = new List<Line>();
-        public string itemName { get; set; }
-        public string printedByEmployeeName { get; set; }
-        public decimal grossTotal { get; set; }
-        public decimal discountTotal { get; set; }
-        public decimal netTotal { get; set; }
-        public decimal netTaxTotal { get; set; }
-        public decimal netEuroTotal { get; set; }
-        public string printed { get; set; }
-
-        public class Line
-        {
-            public string name { get; set; }
-            public decimal quantity { get; set; }
-            public decimal unitPrice { get; set; }
-            public decimal discount { get; set; }
         }
     }
 }

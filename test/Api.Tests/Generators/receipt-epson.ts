@@ -40,14 +40,13 @@ interface VendorData {
 }
 
 export default class Builder {
-    writer: StarLineWriter;
-    contentType = "application/starline";
+    writer: EpsonWriter;
 
     async build(model: Model) {
         const { default: vendorData } = await import(`resources/${model.vendorDataResource}.json`);
 
         const buffer = new WriteBuffer();
-        this.writer = new StarLineWriter(buffer);
+        this.writer = new EpsonWriter(buffer);
 
         this.writer.writeInitialize();
         this.writer.writeSetCodeTable(CodeTable.Latin1_Windows1252);
@@ -227,18 +226,18 @@ const formatTime = (date: Date) => date.getHours().toString().padStart(2, "0") +
 const formatDate = (date: Date) => date.getDate().toString().padStart(2, "0") + "/" + (date.getMonth() + 1).toString().padStart(2, "0") + "-" + date.getFullYear();
 
 enum CodeTable {
-    Latin1_Windows1252 = 32,
-    Nordic_PC865 = 9,
-    Euro_PC858 = 4
+    Latin1_Windows1252 = 16,
+    Nordic_PC865 = 5,
+    Euro_PC858 = 19
 }
 
-class StarLineWriter {
+class EpsonWriter {
     LINEWIDTH: number;
     private buffer: WriteBuffer;
     private encodingBuffer: Uint8Array;
 
     constructor(buffer: WriteBuffer) {
-        this.LINEWIDTH = 48;
+        this.LINEWIDTH = 42;
         this.buffer = buffer;
     }
 
@@ -247,7 +246,7 @@ class StarLineWriter {
     }
 
     writeSetCodeTable(value: CodeTable) {
-        this.buffer.write([ESC, GS, "t".charCodeAt(0), value]);
+        this.buffer.write([ESC, "t".charCodeAt(0), value]);
 
         let extensionChars: string;
         switch (value) {
@@ -278,7 +277,7 @@ class StarLineWriter {
     }
 
     writeSetEmphasize(enabled: boolean) {
-        this.buffer.write([ESC, enabled ? "E".charCodeAt(0) : "F".charCodeAt(0)]);
+        this.buffer.write([ESC, "E".charCodeAt(0), enabled ? 1 : 0]);
     }
 
     writeNewline() {
@@ -303,10 +302,10 @@ class StarLineWriter {
     }
 
     cutPaper(partial: boolean) {
-        this.buffer.write([ESC, "d".charCodeAt(0), partial ? 1 : 0])
+        this.buffer.write([GS, "V".charCodeAt(0), partial ? 1 : 0])
     }
 
-    writeImage(bitmap: ImageData, xOffset: number) {        
+    writeImage(bitmap: ImageData, xOffset: number) {
         const totalWidth = xOffset + bitmap.width;
         const yLastOffset = Math.floor(bitmap.height / 24) * 24;
         const marshalled = new Uint8Array(Math.ceil(totalWidth / 8) * 24); // 1 bit per pixel in a 24 bit tall slice
@@ -315,13 +314,12 @@ class StarLineWriter {
         for (let yOffset = 0; yOffset < bitmap.height; yOffset += 24) {
             // Define the full slice as white
             marshalled.fill(0);
-            let index = 0;
-            const yEnd = Math.max(yOffset + 24, bitmap.height);
-            // Marshal one row at a time (up to 24 rows)
-            for (let y = yOffset; y < yEnd; y++) {
+            let index = xOffset * 3; // 3*8=24 bit column per offset
+            // Marshal one column of 24 bits at a time
+            for (let x = xOffset; x < totalWidth; x++) {
                 let mask = 0x80;
-                for (let x = 0; x < totalWidth; x++) {
-                    if (x >= xOffset) {
+                for (let y = yOffset; y < yOffset + 24; y++) {
+                    if (y < bitmap.height) {
                         const start = (y * bitmap.width + x - xOffset) * 4;
                         const r = bitmap.data[start + 0];
                         const g = bitmap.data[start + 1];
@@ -337,19 +335,15 @@ class StarLineWriter {
                         index++;
                     }
                 }
-
-                if (mask !== 0x80) {
-                    index++;
-                }
             }
 
-            let n = marshalled.byteLength / 24;
-            this.buffer.write([ESC, "k".charCodeAt(0), n & 0xff, n >> 8]);
+            let n = marshalled.byteLength / 3;
+            this.buffer.write([ESC, "*".charCodeAt(0), 33, n & 0xff, n >> 8]);
             this.buffer.writeArray(marshalled);
 
             if (yOffset < yLastOffset) {
                 // All but last - move 24 pixels down.
-                this.buffer.write([ESC, 'I'.charCodeAt(0), 24]);
+                this.writeNewline()
             }
         }
 

@@ -27,7 +27,6 @@ interface Line {
 
 export default class Builder {
     writer: StarLineWriter;
-    contentType = "application/starline";
 
     build(model: Model) {
         const buffer = new WriteBuffer();
@@ -345,6 +344,61 @@ class StarLineWriter {
 
     cutPaper(partial: boolean) {
         this.buffer.write([ESC, "d".charCodeAt(0), partial ? 1 : 0])
+    }
+
+    writeImage(bitmap: ImageData, xOffset: number) {        
+        const totalWidth = xOffset + bitmap.width;
+        const yLastOffset = Math.floor(bitmap.height / 24) * 24;
+        const marshalled = new Uint8Array(Math.ceil(totalWidth / 8) * 24); // 1 bit per pixel in a 24 bit tall slice
+
+        // Set multiple slices, each with 24 pixels in the height
+        for (let yOffset = 0; yOffset < bitmap.height; yOffset += 24) {
+            // Define the full slice as white
+            marshalled.fill(0);
+            let index = 0;
+            const yEnd = Math.min(yOffset + 24, bitmap.height);
+            // Marshal one row at a time (up to 24 rows)
+            for (let y = yOffset; y < yEnd; y++) {
+                let mask = 0x80;
+                for (let x = 0; x < totalWidth; x++) {
+                    if (x >= xOffset) {
+                        const start = (y * bitmap.width + x - xOffset) * 4;
+                        const r = bitmap.data[start + 0];
+                        const g = bitmap.data[start + 1];
+                        const b = bitmap.data[start + 2];
+                        if (isBlack(r, g, b)) {
+                            marshalled[index] |= mask;
+                        }
+                    }
+
+                    mask >>>= 1;
+                    if (mask === 0) {
+                        mask = 0x80;
+                        index++;
+                    }
+                }
+
+                if (mask !== 0x80) {
+                    index++;
+                }
+            }
+
+            let n = marshalled.byteLength / 24;
+            this.buffer.write([ESC, "k".charCodeAt(0), n & 0xff, n >> 8]);
+            this.buffer.writeArray(marshalled);
+
+            if (yOffset < yLastOffset) {
+                // All but last - move 24 pixels down.
+                this.buffer.write([ESC, 'I'.charCodeAt(0), 24]);
+            }
+        }
+
+        function isBlack(r: number, g: number, b: number) {
+            // http://en.wikipedia.org/wiki/YCbCr#ITU-R_BT.601_conversion
+            // http://www.w3.org/TR/AERT#color-contrast
+            let luminance = r * 0.299 + g * 0.587 + b * 0.114;
+            return luminance <= 127;
+        }
     }
 }
 
