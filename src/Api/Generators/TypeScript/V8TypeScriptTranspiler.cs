@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Api.Generators.TypeScript
 {
-    public class TypeScriptTranspiler : IDisposable
+    public class V8TypeScriptTranspiler : IDisposable
     {
         private readonly V8ScriptEngine _engine;
         private readonly dynamic _transpileModule;
@@ -18,16 +18,15 @@ namespace Api.Generators.TypeScript
             }
         };
 
-        public TypeScriptTranspiler()
+        public V8TypeScriptTranspiler()
         {
             // See https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API#a-simple-transform-function
 
-            using var stream = typeof(TypeScriptTranspiler).Assembly.GetManifestResourceStream(typeof(TypeScriptTranspiler), "typescriptServices.js");
+            using var stream = typeof(V8TypeScriptTranspiler).Assembly.GetManifestResourceStream(typeof(V8TypeScriptTranspiler), "typescriptServices.js");
             using var reader = new StreamReader(stream);
             var typescriptServicesSource = reader.ReadToEnd();
 
             _engine = new V8ScriptEngine();
-
             _engine.Execute(typescriptServicesSource);
 
             _transpileModule = _engine.Script.ts.transpileModule;

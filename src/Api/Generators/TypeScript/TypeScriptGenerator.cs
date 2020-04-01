@@ -1,4 +1,4 @@
-﻿using Api.Generators.ECMAScript6;
+﻿using Api.Generators.JavaScript;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Threading.Tasks;
@@ -7,14 +7,14 @@ namespace Api.Generators.TypeScript
 {
     public class TypeScriptGenerator : IGenerator
     {
-        private readonly TypeScriptTranspiler _tsTranspiler;
-        private readonly ECMAScript6Generator _ecmaScript6Generator;
+        private readonly V8TypeScriptTranspiler _tsTranspiler;
+        private readonly V8JavaScriptGenerator _javaScriptGenerator;
         private readonly IMemoryCache _cache;
 
-        public TypeScriptGenerator(TypeScriptTranspiler tsTranspiler, ECMAScript6Generator ecmaScript6Generator, IMemoryCache cache)
+        public TypeScriptGenerator(V8TypeScriptTranspiler tsTranspiler, V8JavaScriptGenerator javaScriptGenerator, IMemoryCache cache)
         {
             _tsTranspiler = tsTranspiler;
-            _ecmaScript6Generator = ecmaScript6Generator;
+            _javaScriptGenerator = javaScriptGenerator;
             _cache = cache;
         }
 
@@ -22,7 +22,7 @@ namespace Api.Generators.TypeScript
         {
             var transpiled = _tsTranspiler.Transpile(code);
 
-            return _ecmaScript6Generator.ValidateTemplate(transpiled);
+            return _javaScriptGenerator.ValidateTemplate(transpiled);
         }
 
         public Task<GenerateResult> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
@@ -33,7 +33,7 @@ namespace Api.Generators.TypeScript
                 return _tsTranspiler.Transpile(code);
             });
 
-            return _ecmaScript6Generator.GenerateDocumentAsync(script, model, resourceManager);
+            return _javaScriptGenerator.GenerateDocumentAsync(script, model, resourceManager);
         }
     }
 }

@@ -1,5 +1,5 @@
 using Api.Generators;
-using Api.Generators.ECMAScript6;
+using Api.Generators.JavaScript;
 using Api.Generators.TypeScript;
 using Api.Infrastructure;
 using AutoMapper;
@@ -46,8 +46,8 @@ namespace Api
 
             services.AddAutoMapper(typeof(Startup).Assembly);
             services.AddMemoryCache();
-            services.AddSingleton<ECMAScript6Generator>()
-                .AddSingleton<TypeScriptTranspiler>()
+            services.AddSingleton<V8JavaScriptGenerator>()
+                .AddSingleton<V8TypeScriptTranspiler>()
                 .AddSingleton<TypeScriptGenerator>()
                 .AddSingleton<GeneratorProvider>();
 

@@ -1,7 +1,7 @@
 ﻿using Api.DataModels;
 using Api.Features.Documents.Queries;
 using Api.Generators;
-using Api.Generators.ECMAScript6;
+using Api.Generators.JavaScript;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;

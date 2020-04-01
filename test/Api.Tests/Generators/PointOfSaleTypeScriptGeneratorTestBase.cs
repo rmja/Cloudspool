@@ -1,4 +1,4 @@
-﻿using Api.Generators.ECMAScript6;
+﻿using Api.Generators.JavaScript;
 using Api.Generators.TypeScript;
 using Api.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +17,8 @@ namespace Api.Tests.Generators
         {
             var services = new ServiceCollection()
                 .AddSingleton<TypeScriptGenerator>()
-                .AddSingleton<ECMAScript6Generator>()
-                .AddSingleton<TypeScriptTranspiler>()
+                .AddSingleton<V8JavaScriptGenerator>()
+                .AddSingleton<V8TypeScriptTranspiler>()
                 .AddLogging(logging => new XunitLoggerProvider(output))
                 .AddMemoryCache()
                 .BuildServiceProvider();

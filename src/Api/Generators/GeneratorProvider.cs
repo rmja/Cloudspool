@@ -1,4 +1,4 @@
-﻿using Api.Generators.ECMAScript6;
+﻿using Api.Generators.JavaScript;
 using Api.Generators.TypeScript;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -16,7 +16,7 @@ namespace Api.Generators
 
         public IGenerator GetGenerator(string mediaType) => mediaType switch
         {
-            "application/javascript" => _services.GetRequiredService<ECMAScript6Generator>(),
+            "application/javascript" => _services.GetRequiredService<V8JavaScriptGenerator>(),
             "application/typescript" => _services.GetRequiredService<TypeScriptGenerator>(),
             _ => throw new NotSupportedException(),
         };

@@ -1,4 +1,4 @@
-﻿using Api.Generators.ECMAScript6;
+﻿using Api.Generators.JavaScript;
 using Api.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using System.Drawing;
@@ -12,26 +12,26 @@ using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
-    public class ECMAScript6GeneratorTests
+    public class JavaScriptGeneratorTests
     {
-        private readonly ECMAScript6Generator _generator;
+        private readonly V8JavaScriptGenerator _generator;
 
-        public ECMAScript6GeneratorTests(ITestOutputHelper output)
+        public JavaScriptGeneratorTests(ITestOutputHelper output)
         {
             var services = new ServiceCollection()
-                .AddSingleton<ECMAScript6Generator>()
+                .AddSingleton<V8JavaScriptGenerator>()
                 .AddLogging(logging => new XunitLoggerProvider(output))
                 .AddMemoryCache()
                 .BuildServiceProvider();
 
-            _generator = services.GetRequiredService<ECMAScript6Generator>();
+            _generator = services.GetRequiredService<V8JavaScriptGenerator>();
         }
 
         [Fact]
         public async Task CanBuildString()
         {
             var script = @"
-export default class Builder {
+export class Builder {
     build(model) {
         return `The result ${model.name}`
     }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.ClearScript;
 using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript.V8;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Buffers;
@@ -17,16 +16,14 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Api.Generators.ECMAScript6
+namespace Api.Generators.JavaScript
 {
-    public class ECMAScript6Generator : IGenerator
+    public class V8JavaScriptGenerator : IGenerator
     {
-        private readonly IMemoryCache _cache;
         private readonly ILogger _consoleLogger;
 
-        public ECMAScript6Generator(IMemoryCache cache, ILoggerFactory loggerFactory)
+        public V8JavaScriptGenerator(ILoggerFactory loggerFactory)
         {
-            _cache = cache;
             _consoleLogger = loggerFactory.CreateLogger("ScriptConsole");
         }
 
@@ -61,18 +58,18 @@ namespace Api.Generators.ECMAScript6
             engine.DocumentSettings.AddSystemDocument("main", ModuleCategory.Standard, code);
 
             dynamic setModel = engine.Evaluate(@"
-let model;
-const setModel = m => model = JSON.parse(m);
-setModel");
+            let model;
+            const setModel = m => model = JSON.parse(m);
+            setModel");
 
             setModel(JsonSerializer.Serialize(model));
 
             dynamic contentTypePromise = engine.Evaluate(new DocumentInfo() { Category = ModuleCategory.Standard }, @"
-async function getContentType() {
-    const {ContentType} = await import('main');
-    return ContentType;
-}
-getContentType()");
+            async function getContentType() {
+                const {ContentType} = await import('main');
+                return ContentType;
+            }
+            getContentType()");
             var contentType = await ToTask(contentTypePromise);
 
             if (contentType is Undefined)
@@ -81,9 +78,9 @@ getContentType()");
             }
 
             dynamic resultPromise = engine.Evaluate(new DocumentInfo() { Category = ModuleCategory.Standard }, @"
-import Builder from 'main';
-let builder = new Builder();
-Promise.resolve(builder.build(model));");
+            import Builder from 'main';
+            let builder = new Builder();
+            Promise.resolve(builder.build(model));");
 
             var result = await ToTask(resultPromise);
 
@@ -92,7 +89,7 @@ Promise.resolve(builder.build(model));");
                 case string @string: return new GenerateResult() { Content = Encoding.UTF8.GetBytes(@string), ContentType = contentType ?? "text/plain" };
                 case ITypedArray<byte> typedArray: return new GenerateResult() { Content = typedArray.ToArray(), ContentType = contentType ?? "application/octet-stream" };
                 case IList list:
-                    { 
+                    {
                         var array = new byte[list.Count];
                         for (var i = 0; i < list.Count; i++)
                         {
@@ -102,6 +99,7 @@ Promise.resolve(builder.build(model));");
                     }
                 default: throw new GeneratorException("build did not produce a result");
             }
+            throw new NotImplementedException();
         }
 
         private static Task<dynamic> ToTask(dynamic promise)
