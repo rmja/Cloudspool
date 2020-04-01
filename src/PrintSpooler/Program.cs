@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using PrintSpooler.Proxy;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -126,11 +125,7 @@ namespace PrintSpooler
                 }
             }
 
-            EventLog.WriteEntry("PrintSpooler", "Invoking RunAsync", EventLogEntryType.Information);
-
             await host.RunAsync();
-
-            EventLog.WriteEntry("PrintSpooler", $"Returning exit code {Environment.ExitCode}", EventLogEntryType.Information);
         }
 
         private static string GetServiceDisplayName(string serviceName)
