@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace Api.Generators.JavaScript
 {
-    public class V8JavaScriptGenerator : IGenerator
+    public class V8JavaScriptGenerator : IJavaScriptGenerator
     {
         private readonly ILogger _consoleLogger;
 

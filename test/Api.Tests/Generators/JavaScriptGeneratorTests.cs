@@ -14,24 +14,24 @@ namespace Api.Tests.Generators
 {
     public class JavaScriptGeneratorTests
     {
-        private readonly V8JavaScriptGenerator _generator;
+        private readonly IJavaScriptGenerator _generator;
 
         public JavaScriptGeneratorTests(ITestOutputHelper output)
         {
             var services = new ServiceCollection()
-                .AddSingleton<V8JavaScriptGenerator>()
+                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
                 .AddLogging(logging => new XunitLoggerProvider(output))
                 .AddMemoryCache()
                 .BuildServiceProvider();
 
-            _generator = services.GetRequiredService<V8JavaScriptGenerator>();
+            _generator = services.GetRequiredService<IJavaScriptGenerator>();
         }
 
         [Fact]
         public async Task CanBuildString()
         {
             var script = @"
-export class Builder {
+export default class Builder {
     build(model) {
         return `The result ${model.name}`
     }

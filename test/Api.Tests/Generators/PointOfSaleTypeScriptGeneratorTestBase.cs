@@ -16,9 +16,9 @@ namespace Api.Tests.Generators
         public PointOfSaleTypeScriptGeneratorTestBase(ITestOutputHelper output, string scriptFileName)
         {
             var services = new ServiceCollection()
+                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
+                .AddSingleton<ITypeScriptTranspiler, V8TypeScriptTranspiler>()
                 .AddSingleton<TypeScriptGenerator>()
-                .AddSingleton<V8JavaScriptGenerator>()
-                .AddSingleton<V8TypeScriptTranspiler>()
                 .AddLogging(logging => new XunitLoggerProvider(output))
                 .AddMemoryCache()
                 .BuildServiceProvider();

@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Api.Generators.TypeScript
 {
-    public class V8TypeScriptTranspiler : IDisposable
+    public class V8TypeScriptTranspiler : ITypeScriptTranspiler, IDisposable
     {
         private readonly V8ScriptEngine _engine;
         private readonly dynamic _transpileModule;

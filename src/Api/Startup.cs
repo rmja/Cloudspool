@@ -46,8 +46,9 @@ namespace Api
 
             services.AddAutoMapper(typeof(Startup).Assembly);
             services.AddMemoryCache();
-            services.AddSingleton<V8JavaScriptGenerator>()
-                .AddSingleton<V8TypeScriptTranspiler>()
+            services
+                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
+                .AddSingleton<ITypeScriptTranspiler, V8TypeScriptTranspiler>()
                 .AddSingleton<TypeScriptGenerator>()
                 .AddSingleton<GeneratorProvider>();
 

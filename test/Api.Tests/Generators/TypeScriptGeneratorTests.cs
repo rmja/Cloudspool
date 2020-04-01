@@ -21,8 +21,8 @@ namespace Api.Tests.Generators
         {
             var services = new ServiceCollection()
                 .AddSingleton<TypeScriptGenerator>()
-                .AddSingleton<V8JavaScriptGenerator>()
-                .AddSingleton<V8TypeScriptTranspiler>()
+                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
+                .AddSingleton<ITypeScriptTranspiler, ChakraCoreTypeScriptTranspiler>()
                 .AddLogging(logging => new XunitLoggerProvider(output))
                 .AddMemoryCache()
                 .BuildServiceProvider();
