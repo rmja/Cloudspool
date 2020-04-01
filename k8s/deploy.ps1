@@ -3,6 +3,7 @@ param(
     [switch]$All=$False # Deploy all apps
    ,[string]$Context="docker-desktop"
    ,[string]$Environment="Local"
+   ,[string]$Configs
    ,[string]$Tag="latest"
    ,[Parameter(ValueFromRemainingArguments, Position = 0)][string[]]$Apps
 )
@@ -21,11 +22,21 @@ if ($All) {
     $Apps = Get-ChildItem .\Apps -Filter *.yaml | Where-Object {$_.Length -gt 0} | Foreach-Object {$_.BaseName}
 }
 
+if (!$Configs) {
+    $Configs = Join-Path "Configs" $Environment
+}
+
 kubectl apply --context $Context -f Namespace.yaml
-kubectl apply --context $Context -f Environments/$Environment
+kubectl apply --context $Context -f $Configs
 kubectl apply --context $Context -f Services
+kubectl apply --context $Context -f Network
 foreach ($yaml in Get-ChildItem .\Network -Filter *.yaml) {
-    (Get-Content $yaml.FullName) -Replace "cloudspool.dk", "cloudspool.localhost" | kubectl apply --context $Context -f -
+    if ($Environment -eq "Local") {
+        (Get-Content $yaml.FullName) -Replace "cloudspool.dk", "cloudspool.localhost" | kubectl apply --context $Context -f -
+    }
+    else {
+        kubectl apply --context $Context -f $yaml.FullName
+    }
 }
 
 if ($Apps.Length -eq 0) {
