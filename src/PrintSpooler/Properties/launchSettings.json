@@ -2,8 +2,11 @@
   "profiles": {
     "PrintSpooler (Development)": {
       "commandName": "Project",
+      "commandLineArgs": "--disableupdates=true",
       "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development"
+        "DOTNET_ENVIRONMENT": "Development",
+        "PrintingHubUrl": "https://localhost:51332/Printing",
+        "SpoolerKey": "93a12db2-7baf-4ca0-a45d-65d2804cbc4a"
       }
     },
     "PrintSpooler (Local k8s)": {
@@ -11,7 +14,16 @@
       "commandLineArgs": "--disableupdates=true",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
-        "PrintingHubUrl": "https://cloudspool.localhost/dispatcher/Printing"
+        "PrintingHubUrl": "https://cloudspool.localhost/dispatcher/Printing",
+        "SpoolerKey": "93a12db2-7baf-4ca0-a45d-65d2804cbc4a"
+      }
+    },
+    "PrintSpooler (Production)": {
+      "commandName": "Project",
+      "commandLineArgs": "--disableupdates=true",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Production",
+        "SpoolerKey": "93a12db2-7baf-4ca0-a45d-65d2804cbc4a"
       }
     }
   }

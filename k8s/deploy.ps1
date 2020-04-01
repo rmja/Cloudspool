@@ -3,6 +3,7 @@ param(
     [switch]$All=$False # Deploy all apps
    ,[string]$Context="docker-desktop"
    ,[string]$Environment="Local"
+   ,[string]$Tag="latest"
    ,[Parameter(ValueFromRemainingArguments, Position = 0)][string[]]$Apps
 )
 
@@ -27,14 +28,19 @@ foreach ($yaml in Get-ChildItem .\Network -Filter *.yaml) {
     (Get-Content $yaml.FullName) -Replace "cloudspool.dk", "cloudspool.localhost" | kubectl apply --context $Context -f -
 }
 
+if ($Apps.Length -eq 0) {
+    Write-Host -ForegroundColor Red "No apps specified, use -All to deploy all apps"
+    return
+}
+
 foreach ($App in $Apps) {
     $AppLower = $App.ToLower()
     $Deployment = $AppLower
     Write-Host "Deploying $Deployment"
 
-    $Images = Select-String -Path Apps/$App.yaml -Pattern "image: (rmjac/.*)" | ForEach-Object {$_.Matches.Groups[1].Value}
+    $Images = Select-String -Path Apps/$App.yaml -Pattern "image: (rmjac/.*):latest" | ForEach-Object {$_.Matches.Groups[1].Value}
     foreach ($Image in $Images) {
-        docker push $Image
+        docker push ${Image}:$Tag
         if (!$?) {
             exit $?;
         }
