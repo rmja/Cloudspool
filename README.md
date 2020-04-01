@@ -5,7 +5,15 @@ Cloudspool provides convenient printing capabilities to pos printers
 
 Build Instructions
 ==================
-Run `.\build.ps1 -all` from the `k8s` folders, and deploy the resulting images to the local dev kubernetes cluster with `.\deploy.ps1 -all`.
+Run `.\build.ps1 -All` from the `k8s` folders, and deploy the resulting images to the local dev kubernetes cluster with `.\deploy.ps1 -All`.
+
+Deploy Instructions
+===================
+The deploy script can be run with with multiple switches, for example:
+```
+.\deploy.ps1 -All -Environment Production -Configs C:\MyConfigs\Production -Context MyClusterContext
+```
+The production configs are here [rmja/Cloudspool-Environments] (private repo).
 
 Release Instructions
 ====================
