@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/rmja/Cloudspool/_apis/build/status/Build?branchName=master)](https://dev.azure.com/rmja/Cloudspool/_build/latest?definitionId=11&branchName=master)
+
 Cloudspool provides convenient printing capabilities to pos printers
 
 
