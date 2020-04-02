@@ -1,6 +1,7 @@
 ﻿using Api.Generators.JavaScript;
-using Api.Tests.Infrastructure;
+using ChakraCore.API;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -8,7 +9,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
@@ -16,11 +16,12 @@ namespace Api.Tests.Generators
     {
         private readonly IJavaScriptGenerator _generator;
 
-        public JavaScriptGeneratorTests(ITestOutputHelper output)
+        public JavaScriptGeneratorTests()
         {
             var services = new ServiceCollection()
-                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
-                .AddLogging(logging => new XunitLoggerProvider(output))
+                .AddSingleton<IJavaScriptGenerator, ChakraCoreJavaScriptGenerator>()
+                .AddSingleton<ResourceScriptFactory>()
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddMemoryCache()
                 .BuildServiceProvider();
 
@@ -33,10 +34,26 @@ namespace Api.Tests.Generators
             var script = @"
 export default class Builder {
     build(model) {
-        return `The result ${model.name}`
+        return `The result ${model.name}`;
     }
 }";
             
+            var result = await _generator.GenerateDocumentAsync(script, new { name = "Rasmus" });
+
+            Assert.Equal("The result Rasmus", Encoding.UTF8.GetString(result.Content));
+            Assert.Equal("text/plain", result.ContentType);
+        }
+
+        [Fact]
+        public async Task CanBuildPromiseString()
+        {
+            var script = @"
+export default class Builder {
+    build(model) {
+        return Promise.resolve(`The result ${model.name}`);
+    }
+}";
+
             var result = await _generator.GenerateDocumentAsync(script, new { name = "Rasmus" });
 
             Assert.Equal("The result Rasmus", Encoding.UTF8.GetString(result.Content));
@@ -48,11 +65,13 @@ export default class Builder {
         {
             var script = @"
 export default class Builder {
-    constructor() {
-        this.contentType = 'text/plain';
-    }
     build(model) {
-        return new Uint8Array([1,2,3]);
+        const buffer = new ArrayBuffer(16);
+        const array = new Uint8Array(buffer, 4, 3);
+        array[0] = 1;
+        array[1] = 2;
+        array[2] = 3;
+        return array;
     }
 }";
 
@@ -176,6 +195,29 @@ export default class Builder {
             var result = await _generator.GenerateDocumentAsync(script, null, resources);
 
             Assert.Equal("Rasmus", Encoding.UTF8.GetString(result.Content));
+        }
+
+        [Fact]
+        public async Task ThrowsIfDynamicImportOfInvalidResource()
+        {
+            var script = @"
+export default class Builder {
+    async build(model) {
+        const { default: obj } = await import('resources/invalid.json');
+        return obj.name;
+    }
+}";
+
+            var resources = new DictionaryResourceManager()
+            {
+            };
+
+            await Assert.ThrowsAsync<JavaScriptScriptException>(async () =>
+            {
+                var result = await _generator.GenerateDocumentAsync(script, null, resources);
+
+                Assert.Equal("Rasmus", Encoding.UTF8.GetString(result.Content));
+            });
         }
 
         [Fact]

@@ -1,1 +1,0 @@
-﻿These files are downloaded from here https://github.com/Microsoft/ChakraCore/wiki/Embedding-ChakraCore

@@ -3,13 +3,12 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
     public class ReceiptEpsonPointOfSaleTypeScriptGeneratorTests : PointOfSaleTypeScriptGeneratorTestBase
     {
-        public ReceiptEpsonPointOfSaleTypeScriptGeneratorTests(ITestOutputHelper output) : base(output, "receipt-epson.ts")
+        public ReceiptEpsonPointOfSaleTypeScriptGeneratorTests() : base("receipt-epson.ts")
         {
 
         }

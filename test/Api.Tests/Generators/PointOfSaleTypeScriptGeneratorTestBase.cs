@@ -1,7 +1,7 @@
 ﻿using Api.Generators.JavaScript;
 using Api.Generators.TypeScript;
-using Api.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using System.Collections.Generic;
 using System.IO;
 using Xunit.Abstractions;
@@ -13,13 +13,13 @@ namespace Api.Tests.Generators
         protected readonly TypeScriptGenerator _generator;
         protected readonly string _script;
 
-        public PointOfSaleTypeScriptGeneratorTestBase(ITestOutputHelper output, string scriptFileName)
+        public PointOfSaleTypeScriptGeneratorTestBase(string scriptFileName)
         {
             var services = new ServiceCollection()
                 .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
                 .AddSingleton<ITypeScriptTranspiler, V8TypeScriptTranspiler>()
                 .AddSingleton<TypeScriptGenerator>()
-                .AddLogging(logging => new XunitLoggerProvider(output))
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddMemoryCache()
                 .BuildServiceProvider();
 

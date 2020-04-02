@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
     public class KitchenStarLinePointOfSaleTypeScriptGeneratorTests : PointOfSaleTypeScriptGeneratorTestBase
     {
-        public KitchenStarLinePointOfSaleTypeScriptGeneratorTests(ITestOutputHelper output) : base(output, "kitchen-starline.ts")
+        public KitchenStarLinePointOfSaleTypeScriptGeneratorTests() : base("kitchen-starline.ts")
         {
         }
 

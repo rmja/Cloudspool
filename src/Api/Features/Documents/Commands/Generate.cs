@@ -97,12 +97,12 @@ namespace Api.Features.Documents.Commands
                     .SingleOrDefault();
             }
 
-            public Task<byte[]> GetResourceAsync(string alias, CancellationToken cancellationToken)
+            public Task<byte[]> GetResourceAsync(string alias, CancellationToken cancellationToken = default)
             {
                 return _db.Resources
                     .Where(x => x.ProjectId == _projectId && x.Alias == alias)
                     .Select(x => x.Content)
-                    .SingleOrDefaultAsync();
+                    .SingleOrDefaultAsync(cancellationToken);
             }
         }
     }

@@ -16,7 +16,7 @@ namespace Api.Generators
 
         public IGenerator GetGenerator(string mediaType) => mediaType switch
         {
-            "application/javascript" => _services.GetRequiredService<V8JavaScriptGenerator>(),
+            "application/javascript" => _services.GetRequiredService<IJavaScriptGenerator>(),
             "application/typescript" => _services.GetRequiredService<TypeScriptGenerator>(),
             _ => throw new NotSupportedException(),
         };

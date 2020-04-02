@@ -1,30 +1,24 @@
-﻿using Microsoft.ClearScript;
+﻿using Api.Generators.JavaScript.Polyfills;
+using Microsoft.ClearScript;
 using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript.V8;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Buffers;
 using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Api.Generators.JavaScript
 {
     public class V8JavaScriptGenerator : IJavaScriptGenerator
     {
-        private readonly ILogger _consoleLogger;
+        private readonly ResourceScriptFactory _resourceScriptFactory;
 
-        public V8JavaScriptGenerator(ILoggerFactory loggerFactory)
+        public V8JavaScriptGenerator(ResourceScriptFactory resourceScriptFactory)
         {
-            _consoleLogger = loggerFactory.CreateLogger("ScriptConsole");
+            _resourceScriptFactory = resourceScriptFactory;
         }
 
         public string[] ValidateTemplate(string code)
@@ -46,15 +40,9 @@ namespace Api.Generators.JavaScript
         public async Task<GenerateResult> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
         {
             using var engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports);
-            engine.DocumentSettings.Loader = new CustomLoader(engine.DocumentSettings.Loader, resourceManager);
-            engine.DocumentSettings.AccessFlags = DocumentAccessFlags.EnableFileLoading;
-            engine.DocumentSettings.SearchPath = string.Join(';',
-                Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Modules"));
+            engine.Execute(PolyfillScripts.Get("ImageData"));
 
-            engine.Execute(new DocumentInfo() { Category = ModuleCategory.Standard }, "import ImageData from 'ImageData'; globalThis.ImageData = ImageData");
-
-            engine.AddHostObject("console", new Console(_consoleLogger));
-
+            engine.DocumentSettings.Loader = new CustomLoader(engine.DocumentSettings.Loader, _resourceScriptFactory, resourceManager);
             engine.DocumentSettings.AddSystemDocument("main", ModuleCategory.Standard, code);
 
             dynamic setModel = engine.Evaluate(@"
@@ -95,11 +83,11 @@ namespace Api.Generators.JavaScript
                         {
                             array[i] = Convert.ToByte(list[i]);
                         }
+
                         return new GenerateResult() { Content = array, ContentType = contentType ?? "application/octet-stream" };
                     }
-                default: throw new GeneratorException("build did not produce a result");
+                default: throw new NotSupportedException("Build did not produce a supported result");
             }
-            throw new NotImplementedException();
         }
 
         private static Task<dynamic> ToTask(dynamic promise)
@@ -111,50 +99,35 @@ namespace Api.Generators.JavaScript
             return tcs.Task;
         }
 
-        public class Console
-        {
-            private readonly ILogger _logger;
-
-            public Console(ILogger logger)
-            {
-                _logger = logger;
-            }
-
-            public void log(string message)
-            {
-                _logger.LogInformation(message);
-            }
-        }
-
         class CustomLoader : DocumentLoader
         {
             private readonly DocumentLoader _defaultLoader;
             private readonly IResourceManager _resourceManager;
-            private static readonly Regex _regex = new Regex(@"^resources/([a-zA-Z0-9_-]+\.[a-z]+)$", RegexOptions.Compiled);
-            private static readonly Dictionary<string, Func<string, byte[], Document>> _documentFactories = new Dictionary<string, Func<string, byte[], Document>>()
-            {
-                [".json"] = CreateJson,
-                [".bin"] = CreateBin,
-                [".bmp"] = CreateBmp
-            };
+            private readonly ResourceScriptFactory _resourceScriptFactory;
 
-            public CustomLoader(DocumentLoader defaultLoader, IResourceManager resourceManager)
+            public CustomLoader(DocumentLoader defaultLoader, ResourceScriptFactory resourceScriptFactory, IResourceManager resourceManager)
             {
                 _defaultLoader = defaultLoader;
                 _resourceManager = resourceManager;
+                _resourceScriptFactory = resourceScriptFactory;
             }
 
             public override Document LoadDocument(DocumentSettings settings, DocumentInfo? sourceInfo, string specifier, DocumentCategory category, DocumentContextCallback contextCallback)
             {
-                var alias = GetResourceAlias(specifier);
+                var alias = ResourceModuleUtils.GetResourceAlias(specifier);
 
-                if (alias is object && _documentFactories.TryGetValue(Path.GetExtension(alias), out var factory))
+                if (alias is object)
                 {
                     var resource = _resourceManager.GetResource(alias);
 
                     if (resource is object)
                     {
-                        return factory(specifier, resource);
+                        var script = _resourceScriptFactory.CreateFromExtension(resource, Path.GetExtension(alias));
+
+                        if (script is object)
+                        {
+                            return new StringDocument(new DocumentInfo(specifier) { Category = ModuleCategory.Standard }, script);
+                        }
                     }
                 }
 
@@ -163,82 +136,24 @@ namespace Api.Generators.JavaScript
 
             public override async Task<Document> LoadDocumentAsync(DocumentSettings settings, DocumentInfo? sourceInfo, string specifier, DocumentCategory category, DocumentContextCallback contextCallback)
             {
-                var alias = GetResourceAlias(specifier);
+                var alias = ResourceModuleUtils.GetResourceAlias(specifier);
 
-                if (alias is object && _documentFactories.TryGetValue(Path.GetExtension(alias), out var factory))
+                if (alias is object)
                 {
-                    var resource = await _resourceManager.GetResourceAsync(alias, default);
+                    var resource = await _resourceManager.GetResourceAsync(alias);
 
                     if (resource is object)
                     {
-                        return factory(specifier, resource);
+                        var script = _resourceScriptFactory.CreateFromExtension(resource, Path.GetExtension(alias));
+
+                        if (script is object)
+                        {
+                            return new StringDocument(new DocumentInfo(specifier) { Category = ModuleCategory.Standard }, script);
+                        }
                     }
                 }
 
                 return await _defaultLoader.LoadDocumentAsync(settings, sourceInfo, specifier, category, contextCallback);
-            }
-
-            private static string GetResourceAlias(string modulePath)
-            {
-                var match = _regex.Match(modulePath);
-
-                return match.Success ? match.Groups[1].Value : null;
-            }
-
-            static Document CreateJson(string path, byte[] resource)
-            {
-                var json = Encoding.UTF8.GetString(resource);
-                var script = $"const resource = {json}; export default resource";
-                return new StringDocument(new DocumentInfo(path) { Category = ModuleCategory.Standard }, script);
-            }
-
-            static Document CreateBin(string path, byte[] resource)
-            {
-                var scriptBuilder = new StringBuilder(100 + 4 * resource.Length); // ',' and three digits per element
-                scriptBuilder.Append("const resource = new Uint8Array([");
-                scriptBuilder.AppendJoin(',', resource);
-                scriptBuilder.Append("]);export default resource;");
-                var script = scriptBuilder.ToString();
-                return new StringDocument(new DocumentInfo(path) { Category = ModuleCategory.Standard }, script);
-            }
-
-            static Document CreateBmp(string path, byte[] resource)
-            {
-                using var stream = new MemoryStream(resource);
-                using var bitmap = new Bitmap(stream);
-
-                var size = bitmap.Width * bitmap.Height * 4;
-                var RGBA = ArrayPool<byte>.Shared.Rent(size);
-                var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-
-                try
-                {
-                    Marshal.Copy(bitmapData.Scan0, RGBA, 0, size);
-
-                    var scriptBuilder = new StringBuilder(150 + 4 * size); // ',' and at most three digits per element
-                    scriptBuilder.Append("const data = new Uint8ClampedArray([");
-                    for (var offset = 0; offset < size; offset += 4)
-                    {
-                        var rgba = BitConverter.ToUInt32(RGBA, offset);
-
-                        scriptBuilder.Append((rgba >> 16) & 0xFF); // R
-                        scriptBuilder.Append(',');
-                        scriptBuilder.Append((rgba >> 08) & 0xFF); // G
-                        scriptBuilder.Append(',');
-                        scriptBuilder.Append((rgba >> 00) & 0xFF); // B
-                        scriptBuilder.Append(',');
-                        scriptBuilder.Append((rgba >> 24) & 0xFF); // A
-                        scriptBuilder.Append(',');
-                    }
-                    scriptBuilder.AppendFormat("]);const resource = new ImageData(data, {0});export default resource;", bitmap.Width);
-                    var script = scriptBuilder.ToString();
-                    return new StringDocument(new DocumentInfo(path) { Category = ModuleCategory.Standard }, script);
-                }
-                finally
-                {
-                    bitmap.UnlockBits(bitmapData);
-                    ArrayPool<byte>.Shared.Return(RGBA);
-                }
             }
         }
     }

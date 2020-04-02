@@ -12,10 +12,11 @@ namespace Api.Tests.Generators
             return TryGetValue(alias, out var resource) ? resource : null;
         }
 
-        public Task<byte[]> GetResourceAsync(string alias, CancellationToken cancellationToken)
+        public async Task<byte[]> GetResourceAsync(string alias, CancellationToken cancellationToken = default)
         {
+            await Task.Delay(100);
             var resource = GetResource(alias);
-            return Task.FromResult(resource);
+            return resource;
         }
     }
 }

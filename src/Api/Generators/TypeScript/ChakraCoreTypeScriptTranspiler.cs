@@ -1,7 +1,6 @@
-﻿using ChakraHost.Hosting;
+﻿using ChakraCore.API;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace Api.Generators.TypeScript
 {
@@ -9,7 +8,6 @@ namespace Api.Generators.TypeScript
     {
         private readonly JavaScriptRuntime _runtime;
         private readonly JavaScriptContext _context;
-        private JavaScriptSourceContext _currentSourceContext = JavaScriptSourceContext.FromIntPtr(IntPtr.Zero);
 
         public ChakraCoreTypeScriptTranspiler()
         {
@@ -17,26 +15,25 @@ namespace Api.Generators.TypeScript
             using var reader = new StreamReader(stream);
             var typescriptServicesSource = reader.ReadToEnd();
 
-            Native.JsCreateRuntime(JavaScriptRuntimeAttributes.None, null, out _runtime);
-
-            Native.JsCreateContext(_runtime, out _context);
-
-            Native.JsSetCurrentContext(_context);
+            _runtime = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.None);
+            _context = JavaScriptContext.CreateContext(_runtime);
 
             // Install the compiler in the context
-            Native.JsRunScript(typescriptServicesSource, _currentSourceContext++, string.Empty, out _);
-
-            Native.JsSetCurrentContext(JavaScriptContext.Invalid);
+            JavaScriptContext.Current = _context;
+            JavaScriptContext.RunScript(typescriptServicesSource);
+            JavaScriptContext.Current = JavaScriptContext.Invalid;
         }
 
         public string Transpile(string input)
         {
             lock (this)
             {
-                Native.JsSetCurrentContext(_context);
+                JavaScriptContext.Current = _context;
 
-                Native.JsRunScript(@"
-(input) => {
+                try
+                {
+                    var transpileFunction = JavaScriptContext.RunScript(@"
+input => {
     const result = ts.transpileModule(input, {
         compilerOptions: {
             target: ts.ScriptTarget.ES2015,
@@ -45,25 +42,22 @@ namespace Api.Generators.TypeScript
         }
     });
     return result.outputText;
-}", _currentSourceContext++, string.Empty, out var transpileFunction);
+}");
 
-                var resultValue = transpileFunction.CallFunction(JavaScriptValue.GlobalObject, JavaScriptValue.FromString(input));
+                    var outputText = transpileFunction.CallFunction(JavaScriptValue.GlobalObject, JavaScriptValue.FromString(input));
 
-                Native.JsStringToPointer(resultValue, out var resultPtr, out var stringLength);
-                var outputText = Marshal.PtrToStringUni(resultPtr);
-
-                Native.JsSetCurrentContext(JavaScriptContext.Invalid);
-
-                return outputText;
+                    return outputText.ToString();
+                }
+                finally
+                {
+                    JavaScriptContext.Current = JavaScriptContext.Invalid;
+                }
             }
         }
 
         public void Dispose()
         {
-            lock (this)
-            {
-                Native.JsDisposeRuntime(_runtime);
-            }
+            _runtime.Dispose();
         }
     }
 }

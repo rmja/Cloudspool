@@ -1,7 +1,7 @@
 ﻿using Api.Generators.JavaScript;
 using Api.Generators.TypeScript;
-using Api.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
@@ -17,13 +16,14 @@ namespace Api.Tests.Generators
     {
         private readonly TypeScriptGenerator _generator;
 
-        public TypeScriptGeneratorTests(ITestOutputHelper output)
+        public TypeScriptGeneratorTests()
         {
             var services = new ServiceCollection()
                 .AddSingleton<TypeScriptGenerator>()
-                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
                 .AddSingleton<ITypeScriptTranspiler, ChakraCoreTypeScriptTranspiler>()
-                .AddLogging(logging => new XunitLoggerProvider(output))
+                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
+                .AddSingleton<ResourceScriptFactory>()
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddMemoryCache()
                 .BuildServiceProvider();
 
@@ -36,7 +36,7 @@ namespace Api.Tests.Generators
             var script = @"
 export default class Builder {
     build(model) {
-        return `The result ${model.name}`
+        return `The result ${model.name}`;
     }
 }";
             var result = await _generator.GenerateDocumentAsync(script, new { name = "Rasmus" });
