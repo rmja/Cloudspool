@@ -11,80 +11,113 @@ using System.Threading.Tasks;
 
 namespace Api.Generators.JavaScript
 {
+    // https://github.com/microsoft/ChakraCore/wiki/JavaScript-Runtime-(JSRT)-Overview
     // https://github.com/Taritsyn/TestChakraCoreEsModules/blob/master/TestChakraCoreEsModules/EsModuleManager.cs
     // What’s needed to make dynamic import work? https://github.com/Microsoft/ChakraCore/issues/3793
     // Correct FetchImportedModuleFromScriptCallBack comments in header https://github.com/microsoft/ChakraCore/pull/4581/files
     // Steps needed for es6 modules embedding ChakraCore https://github.com/microsoft/ChakraCore/issues/4324
     // See https://blogs.windows.com/msedgedev/2015/05/18/using-chakra-for-scripting-applications-across-windows-10/
-    public class ChakraCoreJavaScriptGenerator : IJavaScriptGenerator, IDisposable
+    public class ChakraCoreJavaScriptGenerator : IJavaScriptGenerator
     {
-        private readonly JavaScriptRuntime _runtime;
         private readonly ResourceScriptFactory _resourceScriptFactory;
         private static readonly Action CompleteAdding = new Action(() => { });
 
         public ChakraCoreJavaScriptGenerator(ResourceScriptFactory resourceScriptFactory)
         {
             _resourceScriptFactory = resourceScriptFactory;
-
-            _runtime = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.EnableExperimentalFeatures);
         }
 
         public string[] ValidateTemplate(string code)
         {
-            var context = JavaScriptContext.CreateContext(_runtime);
+            using var runtime = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.EnableExperimentalFeatures);
+            var context = JavaScriptContext.CreateContext(runtime);
+            context.AddRef();
 
-            using (var scope = context.GetScope())
+            try
             {
-                try
+                using (var scope = context.GetScope())
                 {
-                    JavaScriptContext.RunScript("const globalThis = this;");
-                    JavaScriptContext.RunScript(PolyfillScripts.Get("ImageData"));
-
-                    var module = JavaScriptModuleRecord.Initialize();
-                    module.FetchImportedModuleCallBack = (JavaScriptModuleRecord referencingModule, JavaScriptValue specifier, out JavaScriptModuleRecord dependentModuleRecord) =>
+                    try
                     {
-                        dependentModuleRecord = JavaScriptModuleRecord.Invalid;
-                        return JavaScriptErrorCode.NoError;
-                    };
-                    module.NotifyModuleReadyCallback = (JavaScriptModuleRecord referencingModule, JavaScriptValue exceptionVar) => JavaScriptErrorCode.NoError;
-                    module.ParseSource(code);
+                        JavaScriptContext.RunScript("const globalThis = this;");
+                        JavaScriptContext.RunScript(PolyfillScripts.Get("ImageData"));
 
-                    return Array.Empty<string>();
+                        var module = JavaScriptModuleRecord.Initialize();
+                        module.FetchImportedModuleCallBack = (JavaScriptModuleRecord referencingModule, JavaScriptValue specifier, out JavaScriptModuleRecord dependentModuleRecord) =>
+                        {
+                            dependentModuleRecord = JavaScriptModuleRecord.Invalid;
+                            return JavaScriptErrorCode.NoError;
+                        };
+                        module.NotifyModuleReadyCallback = (JavaScriptModuleRecord referencingModule, JavaScriptValue exceptionVar) => JavaScriptErrorCode.NoError;
+                        module.ParseSource(code);
+
+                        return Array.Empty<string>();
+                    }
+                    catch (JavaScriptException e) when (e.ErrorCode == JavaScriptErrorCode.ScriptCompile)
+                    {
+                        return new[] { e.Message };
+                    }
                 }
-                catch (JavaScriptException e) when (e.ErrorCode == JavaScriptErrorCode.ScriptCompile)
-                {
-                    return new[] { e.Message };
-                }
+            }
+            finally
+            {
+                context.Release();
             }
         }
 
         public async Task<GenerateResult> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null, CancellationToken cancellationToken = default)
         {
-            var context = JavaScriptContext.CreateContext(_runtime);
-            using var taskQueue = new AsyncQueue<Action>();
-            using var loader = new CustomLoader(context, taskQueue, _resourceScriptFactory, resourceManager); ;
-            JavaScriptValue result = default;
-            Exception exception = null;
-            
-            using (var scope = context.GetScope())
+            using var runtime = JavaScriptRuntime.Create(JavaScriptRuntimeAttributes.EnableExperimentalFeatures);
+            var context = JavaScriptContext.CreateContext(runtime);
+
+            // Make sure that the JavaScript GC does not collect the context
+            // We need to do this, as we throughout the code sets
+            //   JavaScriptContext.Current = JavaScriptContext.Invalid
+            // implicitly everytime we dispose a scope. This action allows the JavaScript GC to dispose the context,
+            // and to hinder that, we increment the ref counter. The counter is decremented in the finally block.
+            context.AddRef();
+
+            try
             {
-                Native.ThrowIfError(Native.JsSetPromiseContinuationCallback((task, callbackState) =>
+                using var taskQueue = new AsyncQueue<Action>();
+                using var loader = new CustomLoader(context, taskQueue, _resourceScriptFactory, resourceManager);
+                JavaScriptValue result = default;
+                Exception exception = null;
+
+                // Start a scope on the current context
+                // A scope effectively ensures that JavaScriptContext.Current = context
+                // until the scope is disposed.
+                // We use multiple scopes, explicitly in the task queue below, as we cannot guarantee that
+                // the continuation after "await" is on the same thread. We therefore start a new scope after "await"'s.
+                using (var scope = context.GetScope())
                 {
-                    taskQueue.Enqueue(() => task.CallFunction(task));
-                }, IntPtr.Zero));
+                    Native.ThrowIfError(Native.JsSetPromiseContinuationCallback((task, callbackState) =>
+                    {
+                        // Make sure that the continuation task is not free'd by the JavaScript GC, see
+                        // https://github.com/microsoft/ChakraCore/wiki/JavaScript-Runtime-(JSRT)-Overview#promises
+                        task.AddRef();
 
-                JavaScriptContext.RunScript("const globalThis = this;");
-                JavaScriptContext.RunScript(PolyfillScripts.Get("ImageData"));
+                        taskQueue.Enqueue(() =>
+                        {
+                            task.CallFunction(task);
 
-                var rootModule = JavaScriptModuleRecord.Initialize();
-                loader.RootModule = rootModule;
-                rootModule.HostUrl = "<root>"; // Only for debugging
-                rootModule.FetchImportedModuleCallBack = loader.LoadModule;
-                rootModule.NotifyModuleReadyCallback = loader.ModuleLoaded;
+                            // The task is completed, allow the JavaScript GC to free it.
+                            task.Release();
+                        });
+                    }, IntPtr.Zero));
 
-                loader.AddPreload(rootModule, "main", code);
+                    // Load polyfill's
+                    JavaScriptContext.RunScript("const globalThis = this;");
+                    JavaScriptContext.RunScript(PolyfillScripts.Get("ImageData"));
 
-                rootModule.ParseSource(@"
+                    var rootModule = JavaScriptModuleRecord.Initialize();
+                    loader.RootModule = rootModule;
+                    rootModule.FetchImportedModuleCallBack = loader.LoadModule;
+                    rootModule.NotifyModuleReadyCallback = loader.ModuleLoaded;
+
+                    loader.AddPreload(referencingModule: rootModule, "main", code);
+
+                    rootModule.ParseSource(@"
 import Builder from 'main';
 
 const builder = new Builder();
@@ -102,109 +135,115 @@ const build = async (modelJson) => {
 export { build };
 ");
 
-                loader.RootModuleEvaluated = () => taskQueue.Enqueue(() =>
-                {
-                    result = JavaScriptValue.Undefined;
+                    // Add callback that will be run when the root module has been evaluated,
+                    // at which time its rootModule.Namespace becomes valid.
+                    loader.RootModuleEvaluated = () => taskQueue.Enqueue(() =>
+                    {
+                        result = JavaScriptValue.Undefined;
 
-                    var build = rootModule.Namespace.GetProperty("build");
-                    var resultPromise = build.CallFunction(JavaScriptValue.GlobalObject, JavaScriptValue.FromString(JsonSerializer.Serialize(model)));
-
-                    resultPromise
-                        .GetProperty("then").CallFunction(resultPromise, JavaScriptValue.CreateFunction((callee, isConstructCall, arguments, argumentCount, callbackState) =>
-                        {
-                            result = arguments[1];
-                            taskQueue.Enqueue(CompleteAdding);
-                            return callee;
-                        }))
-                        .GetProperty("catch").CallFunction(resultPromise, JavaScriptValue.CreateFunction((callee, isConstructCall, arguments, argumentCount, callbackState) =>
-                        {
-                            if (arguments.Length >= 2)
+                        var build = rootModule.Namespace.GetProperty("build");
+                        var modelJson = JavaScriptValue.FromString(JsonSerializer.Serialize(model));
+                        var resultPromise = build.CallFunction(JavaScriptValue.GlobalObject, modelJson);
+                        
+                        resultPromise
+                            .GetProperty("then").CallFunction(resultPromise, JavaScriptValue.CreateFunction((callee, isConstructCall, arguments, argumentCount, callbackState) =>
                             {
-                                var reason = arguments[1];
-                                if (reason.ValueType == JavaScriptValueType.Error)
+                                result = arguments[1];
+                                taskQueue.Enqueue(CompleteAdding);
+                                return callee;
+                            }))
+                            .GetProperty("catch").CallFunction(resultPromise, JavaScriptValue.CreateFunction((callee, isConstructCall, arguments, argumentCount, callbackState) =>
+                            {
+                                if (arguments.Length >= 2)
                                 {
-                                    exception = new JavaScriptException(JavaScriptErrorCode.ScriptException, reason.GetProperty("message").ToString());
+                                    var reason = arguments[1];
+                                    if (reason.ValueType == JavaScriptValueType.Error)
+                                    {
+                                        exception = new JavaScriptException(JavaScriptErrorCode.ScriptException, reason.GetProperty("message").ToString());
+                                    }
+                                    else
+                                    {
+                                        exception = new JavaScriptException(JavaScriptErrorCode.ScriptException, reason.ConvertToString().ToString());
+                                    }
                                 }
                                 else
                                 {
-                                    exception = new JavaScriptException(JavaScriptErrorCode.ScriptException, reason.ConvertToString().ToString());
+                                    exception = new JavaScriptException(JavaScriptErrorCode.ScriptException);
                                 }
-                            }
-                            else
-                            {
-                                exception = new JavaScriptException(JavaScriptErrorCode.ScriptException);
-                            }
-                            taskQueue.Enqueue(CompleteAdding);
-                            return callee;
-                        }));
-                });
-            }
-                
-            while (true)
-            {
-                var action = await taskQueue.DequeueAsync(cancellationToken);
-                    
-                if (action == CompleteAdding)
+                                taskQueue.Enqueue(CompleteAdding);
+                                return callee;
+                            }));
+                    });
+                }
+
+                // Run the task queue
+                while (true)
                 {
-                    break;
+                    var action = await taskQueue.DequeueAsync();
+
+                    if (action == CompleteAdding)
+                    {
+                        break;
+                    }
+
+                    // We cannot quarantee that we are on the same thread here as before we await'ed.
+                    // We therefore set the context to the current thread by starting a new scope.
+                    using (var scope = context.GetScope())
+                    {
+                        action();
+                    }
                 }
 
                 using (var scope = context.GetScope())
                 {
-                    action();
+                    loader.ThrowIfModulesFailedToLoad();
+
+                    if (exception is object)
+                    {
+                        throw exception;
+                    }
+
+                    var content = result.GetProperty("content");
+                    var contentTypeValue = result.GetProperty("contentType");
+                    var contentType = contentTypeValue.ValueType == JavaScriptValueType.String ? contentTypeValue.ToString() : null;
+
+                    switch (content.ValueType)
+                    {
+                        case JavaScriptValueType.String: return new GenerateResult() { Content = Encoding.UTF8.GetBytes(content.ToString()), ContentType = contentType ?? "text/plain" };
+                        case JavaScriptValueType.TypedArray:
+                            {
+                                content.GetTypedArrayInfo(out var arrayType, out var buffer, out var byteOffset, out var byteLength);
+
+                                if (arrayType != JavaScriptTypedArrayType.Uint8)
+                                {
+                                    throw new NotSupportedException("Typed array must be Uint8Array");
+                                }
+
+                                var bufferPointer = buffer.GetArrayBufferStorage(out var bufferLength);
+                                var array = new byte[byteLength];
+                                Marshal.Copy(IntPtr.Add(bufferPointer, (int)byteOffset), array, 0, (int)byteLength);
+
+                                return new GenerateResult() { Content = array, ContentType = contentType ?? "application/octet-stream" };
+                            }
+                        case JavaScriptValueType.Array:
+                            {
+                                var list = content.ToList();
+                                var array = new byte[list.Count];
+                                for (var i = 0; i < list.Count; i++)
+                                {
+                                    array[i] = (byte)list[i].ToInt32();
+                                }
+
+                                return new GenerateResult() { Content = array, ContentType = contentType ?? "application/octet-stream" };
+                            }
+                        default: throw new NotSupportedException("Build did not produce a supported result");
+                    }
                 }
             }
-
-            using (var scope = context.GetScope())
-            { 
-                loader.EnsureModulesLoaded();
-
-                if (exception is object)
-                {
-                    throw exception;
-                }
-
-                var content = result.GetProperty("content");
-                var contentTypeValue = result.GetProperty("contentType");
-                var contentType = contentTypeValue.ValueType == JavaScriptValueType.String ? contentTypeValue.ToString() : null;
-
-                switch (content.ValueType)
-                {
-                    case JavaScriptValueType.String: return new GenerateResult() { Content = Encoding.UTF8.GetBytes(content.ToString()), ContentType = contentType ?? "text/plain" };
-                    case JavaScriptValueType.TypedArray:
-                        {
-                            content.GetTypedArrayInfo(out var arrayType, out var buffer, out var byteOffset, out var byteLength);
-
-                            if (arrayType != JavaScriptTypedArrayType.Uint8)
-                            {
-                                throw new NotSupportedException("Typed array must be Uint8Array");
-                            }
-
-                            var bufferPointer = buffer.GetArrayBufferStorage(out var bufferLength);
-                            var array = new byte[byteLength];
-                            Marshal.Copy(IntPtr.Add(bufferPointer, (int)byteOffset), array, 0, (int)byteLength);
-
-                            return new GenerateResult() { Content = array, ContentType = contentType ?? "application/octet-stream" };
-                        }
-                    case JavaScriptValueType.Array:
-                        {
-                            var list = content.ToList();
-                            var array = new byte[list.Count];
-                            for (var i = 0; i < list.Count; i++)
-                            {
-                                array[i] = (byte)list[i].ToInt32();
-                            }
-                            
-                            return new GenerateResult() { Content = array, ContentType = contentType ?? "application/octet-stream" };
-                        }
-                    default: throw new NotSupportedException("Build did not produce a supported result");
-                }
+            finally
+            {
+                context.Release();
             }
-        }
-
-        public void Dispose()
-        {
-            _runtime.Dispose();
         }
 
         class CustomLoader : IDisposable
@@ -213,8 +252,10 @@ export { build };
             private readonly AsyncQueue<Action> _taskQueue;
             private readonly ResourceScriptFactory _resourceScriptFactory;
             private readonly IResourceManager _resourceManager;
-            private readonly Dictionary<string, JavaScriptModuleRecord> _modules = new Dictionary<string, JavaScriptModuleRecord>();
+            private readonly Dictionary<string, ModuleLease> _moduleLeases = new Dictionary<string, ModuleLease>();
 
+            public FetchImportedModuleCallBack LoadModule { get; }
+            public NotifyModuleReadyCallback ModuleLoaded { get; }
             public JavaScriptModuleRecord RootModule { get; set; }
             public Action RootModuleEvaluated { get; set; }
 
@@ -224,14 +265,17 @@ export { build };
                 _taskQueue = taskQueue;
                 _resourceScriptFactory = resourceScriptFactory;
                 _resourceManager = resourceManager;
+
+                // Store the callbacks as delegate to avoid that they are moved around
+                LoadModule = LoadModuleImpl;
+                ModuleLoaded = ModuleLoadedImpl;
             }
 
             public void AddPreload(JavaScriptModuleRecord referencingModule, string specifier, string code)
             {
                 var module = JavaScriptModuleRecord.Initialize(referencingModule, specifier);
                 module.HostUrl = specifier; // Only for debugging
-                module.AddRef();
-                _modules.Add(specifier, module);
+                _moduleLeases.Add(specifier, new ModuleLease(module));
 
                 _taskQueue.Enqueue(() => module.ParseSource(code));
             }
@@ -260,58 +304,61 @@ export { build };
             ///     Returns a <c>JsNoError</c> if the operation succeeded an error code otherwise.
             /// </returns>
             /// <see cref="JavaScriptFetchImportedModuleCallBack"/>
-            public JavaScriptErrorCode LoadModule(JavaScriptModuleRecord referencingModule, JavaScriptValue specifier, out JavaScriptModuleRecord dependentModuleRecord)
+            private JavaScriptErrorCode LoadModuleImpl(JavaScriptModuleRecord referencingModule, JavaScriptValue specifier, out JavaScriptModuleRecord dependentModuleRecord)
             {
                 var specifierString = specifier.ToString();
 
-                if (_modules.TryGetValue(specifierString, out dependentModuleRecord))
+                if (_moduleLeases.TryGetValue(specifierString, out var lease))
                 {
+                    dependentModuleRecord = lease.Module;
                     return JavaScriptErrorCode.NoError;
                 }
 
                 var alias = ResourceModuleUtils.GetResourceAlias(specifierString);
 
-                if (alias is object)
+                if (alias is null)
                 {
-                    var module = JavaScriptModuleRecord.Initialize(referencingModule, specifier);
-                    module.HostUrl = specifierString; // Only for debugging
-                    module.AddRef();
-                    _modules.Add(specifierString, module);
-                    dependentModuleRecord = module;
+                    dependentModuleRecord = JavaScriptModuleRecord.Invalid;
+                    return JavaScriptErrorCode.NoError;
+                }
 
-                    Task.Run(async () =>
+                var module = JavaScriptModuleRecord.Initialize(referencingModule, specifier);
+                _moduleLeases.Add(specifierString, new ModuleLease(module));
+                dependentModuleRecord = module;
+
+                // Fire off a task in the threadpool to and insert the result in the taskqueue when when done
+                Task.Run(async () =>
+                {
+                    try
                     {
-                        try
+                        var resource = await _resourceManager.GetResourceAsync(alias);
+
+                        if (resource is object)
                         {
-                            var resource = await _resourceManager.GetResourceAsync(alias);
+                            var script = _resourceScriptFactory.CreateFromExtension(resource, Path.GetExtension(specifierString));
 
-                            if (resource is object)
+                            _taskQueue.Enqueue(() =>
                             {
-                                var script = _resourceScriptFactory.CreateFromExtension(resource, Path.GetExtension(specifierString));
-
-                                _taskQueue.Enqueue(() =>
-                                {
-                                    module.ParseSource(script);
-                                });
-                            }
-                            else
-                            {
-                                _taskQueue.Enqueue(() =>
-                                {
-                                    module.Exception = JavaScriptValue.CreateError($"Could not find the resource '{specifierString}'");
-                                    _taskQueue.Enqueue(CompleteAdding);
-                                });
-                            }
+                                module.ParseSource(script);
+                            });
                         }
-                        catch (Exception e)
+                        else
                         {
                             _taskQueue.Enqueue(() =>
                             {
-                                module.Exception = JavaScriptValue.CreateError(e.Message);
+                                module.Exception = JavaScriptValue.CreateError($"Could not find the resource '{specifierString}'");
+                                _taskQueue.Enqueue(CompleteAdding);
                             });
                         }
-                    });
-                }
+                    }
+                    catch (Exception e)
+                    {
+                        _taskQueue.Enqueue(() =>
+                        {
+                            module.Exception = JavaScriptValue.CreateError(e.Message);
+                        });
+                    }
+                });
 
                 return JavaScriptErrorCode.NoError;
             }
@@ -330,7 +377,7 @@ export { build };
             ///     Returns a JsErrorCode - note, the return value is ignored.
             /// </returns>
             /// <see cref="NotifyModuleReadyCallback"></see>
-            public JavaScriptErrorCode ModuleLoaded(JavaScriptModuleRecord referencingModule, JavaScriptValue exceptionVar)
+            private JavaScriptErrorCode ModuleLoadedImpl(JavaScriptModuleRecord referencingModule, JavaScriptValue exceptionVar)
             {
                 if (!exceptionVar.IsValid)
                 {
@@ -348,15 +395,15 @@ export { build };
                 return JavaScriptErrorCode.NoError;
             }
 
-            public void EnsureModulesLoaded()
+            public void ThrowIfModulesFailedToLoad()
             {
-                foreach (var module in _modules.Values)
+                foreach (var module in _moduleLeases.Values)
                 {
-                    if (module.Exception.IsValid)
+                    if (module.Module.Exception.IsValid)
                     {
                         if (!JavaScriptContext.HasException)
                         {
-                            JavaScriptContext.SetException(module.Exception);
+                            JavaScriptContext.SetException(module.Module.Exception);
                         }
 
                         Native.ThrowIfError(JavaScriptErrorCode.ScriptException);
@@ -368,9 +415,34 @@ export { build };
             {
                 using (var scope = _context.GetScope())
                 {
-                    foreach (var module in _modules.Values)
+                    foreach (var module in _moduleLeases.Values)
                     {
-                        module.Release();
+                        module.Dispose();
+                    }
+                }
+            }
+
+            class ModuleLease : IDisposable
+            {
+                private bool _disposed = false;
+                public JavaScriptModuleRecord Module { get; }
+
+                public ModuleLease(JavaScriptModuleRecord module)
+                {
+                    Module = module;
+
+                    // Make sure that the JavaScript GC does not collect the module, see
+                    // https://github.com/microsoft/ChakraCore/wiki/JavaScript-Runtime-(JSRT)-Overview#memory-management
+                    // https://github.com/Taritsyn/TestChakraCoreEsModules/blob/master/TestChakraCoreEsModules/EsModuleManager.cs#L92
+                    Module.AddRef();
+                }
+
+                public void Dispose()
+                {
+                    if (!_disposed)
+                    {
+                        Module.Release();
+                        _disposed = true;
                     }
                 }
             }

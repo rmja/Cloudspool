@@ -29,6 +29,14 @@ namespace Api.Generators.JavaScript
             _count.Release(count);
         }
 
+        public T Dequeue()
+        {
+            _count.Wait();
+
+            Debug.Assert(_queue.TryDequeue(out var item) == true);
+            return item;
+        }
+
         public async Task<T> DequeueAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             await _count.WaitAsync(cancellationToken);
