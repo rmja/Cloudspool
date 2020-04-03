@@ -30,7 +30,7 @@ namespace Api.Generators.JavaScript
         {
             var json = Encoding.UTF8.GetString(resource);
 
-            return $"const resource = {json}; export default resource";
+            return $"export default {json};";
         }
 
         private string CreateBin(byte[] resource)
@@ -40,9 +40,9 @@ namespace Api.Generators.JavaScript
             try
             {
                 builder.EnsureCapacity(100 + 4 * resource.Length); // ',' and three digits per element
-                builder.Append("const resource = new Uint8Array([");
+                builder.Append("export default new Uint8Array([");
                 builder.AppendJoin(',', resource);
-                builder.Append("]);export default resource;");
+                builder.Append("]);");
                 return builder.ToString();
             }
             finally
@@ -67,21 +67,36 @@ namespace Api.Generators.JavaScript
                 Marshal.Copy(bitmapData.Scan0, ARGB, 0, size);
 
                 builder.EnsureCapacity(150 + 4 * size); // ',' and at most three digits per element
+                builder.AppendLine("const f = 255;");
                 builder.Append("const data = new Uint8ClampedArray([");
                 for (var offset = 0; offset < size; offset += 4)
                 {
                     var rgba = BitConverter.ToUInt32(ARGB, offset);
 
-                    builder.Append((rgba >> 16) & 0xFF); // R
-                    builder.Append(',');
-                    builder.Append((rgba >> 08) & 0xFF); // G
-                    builder.Append(',');
-                    builder.Append((rgba >> 00) & 0xFF); // B
-                    builder.Append(',');
-                    builder.Append((rgba >> 24) & 0xFF); // A
-                    builder.Append(',');
+                    var a = unchecked((byte)(rgba >> 24));
+                    var r = unchecked((byte)(rgba >> 16));
+                    var g = unchecked((byte)(rgba >> 08));
+                    var b = unchecked((byte)(rgba >> 00));
+                    AppendByteComma(builder, r);
+                    AppendByteComma(builder, g);
+                    AppendByteComma(builder, b);
+                    AppendByteComma(builder, a);
+
+                    static void AppendByteComma(StringBuilder sb, byte b)
+                    {
+                        if (b == 0xff)
+                        {
+                            sb.Append("f,");
+                        }
+                        else
+                        {
+                            sb.Append(b);
+                            sb.Append(',');
+                        }
+                    }
                 }
-                builder.AppendFormat("]);const resource = new ImageData(data, {0});export default resource;", bitmap.Width);
+                builder.AppendLine("]);");
+                builder.AppendFormat("export default new ImageData(data, {0});", bitmap.Width);
                 var script = builder.ToString();
                 return script;
             }

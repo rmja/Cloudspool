@@ -479,7 +479,7 @@ namespace ChakraCore.API {
     }
 
 
-    public Scope getScope() {
+    public Scope GetScope() {
       return new Scope(this);
     }
 

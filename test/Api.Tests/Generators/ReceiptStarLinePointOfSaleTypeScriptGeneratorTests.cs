@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Api.Generators.JavaScript;
+using Api.Generators.TypeScript;
+using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -6,11 +8,20 @@ using Xunit;
 
 namespace Api.Tests.Generators
 {
-    public class ReceiptStarLinePointOfSaleTypeScriptGeneratorTests : PointOfSaleTypeScriptGeneratorTestBase
+    public class ReceiptStarLinePointOfSaleTypeScriptGeneratorTests_ChakraCore : ReceiptStarLinePointOfSaleTypeScriptGeneratorTests<ChakraCoreJavaScriptGenerator, ChakraCoreTypeScriptTranspiler>
+    {
+    }
+
+    public class ReceiptStarLinePointOfSaleTypeScriptGeneratorTests_V8 : ReceiptStarLinePointOfSaleTypeScriptGeneratorTests<V8JavaScriptGenerator, V8TypeScriptTranspiler>
+    {
+    }
+
+    public abstract class ReceiptStarLinePointOfSaleTypeScriptGeneratorTests<TJavaScriptGenerator, TTypeScriptTranspiler> : PointOfSaleTypeScriptGeneratorTestBase<TJavaScriptGenerator, TTypeScriptTranspiler>
+        where TJavaScriptGenerator : class, IJavaScriptGenerator
+        where TTypeScriptTranspiler : class, ITypeScriptTranspiler
     {
         public ReceiptStarLinePointOfSaleTypeScriptGeneratorTests() : base("receipt-starline.ts")
         {
-
         }
 
         [Fact]
@@ -63,7 +74,7 @@ namespace Api.Tests.Generators
 
             var result = await _generator.GenerateDocumentAsync(_script, model, resources);
 
-            var expected = File.ReadAllBytes(Path.Combine("Expected", nameof(ReceiptStarLinePointOfSaleTypeScriptGeneratorTests) + "." + nameof(Receipt_New) + ".bin"));
+            var expected = File.ReadAllBytes(Path.Combine("Expected", "ReceiptStarLinePointOfSaleTypeScriptGeneratorTests.Receipt_New.bin"));
 
             Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
         }

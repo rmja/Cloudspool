@@ -2,6 +2,7 @@
 using ChakraCore.API;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -12,20 +13,31 @@ using Xunit;
 
 namespace Api.Tests.Generators
 {
-    public class JavaScriptGeneratorTests
+    public class JavaScriptGeneratorTests_ChakraCore : JavaScriptGeneratorTests<ChakraCoreJavaScriptGenerator>
+    {
+    }
+
+    public class JavaScriptGeneratorTests_V8 : JavaScriptGeneratorTests<V8JavaScriptGenerator>
+    {
+    }
+
+    public abstract class JavaScriptGeneratorTests<TJavaScriptGenerator>
+        where TJavaScriptGenerator : class, IJavaScriptGenerator
     {
         private readonly IJavaScriptGenerator _generator;
+        private readonly ResourceScriptFactory _resourceScriptFactory;
 
         public JavaScriptGeneratorTests()
         {
             var services = new ServiceCollection()
-                .AddSingleton<IJavaScriptGenerator, ChakraCoreJavaScriptGenerator>()
+                .AddSingleton<IJavaScriptGenerator, TJavaScriptGenerator>()
                 .AddSingleton<ResourceScriptFactory>()
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddMemoryCache()
                 .BuildServiceProvider();
 
             _generator = services.GetRequiredService<IJavaScriptGenerator>();
+            _resourceScriptFactory = services.GetRequiredService<ResourceScriptFactory>();
         }
 
         [Fact]
@@ -85,7 +97,7 @@ export default class Builder {
         public async Task CanOverrideContentType()
         {
             var script = @"
-export let ContentType = 'test/test';
+export const contentType = 'test/test';
 export default class Builder {
     build(model) {
         return `The result ${model.name}`
@@ -144,7 +156,7 @@ export default class Builder {
         }
 
         [Fact]
-        public async Task CanImportBitmapImageResource()
+        public async Task CanImportSmallBitmapImageResource()
         {
             var script = @"
 import imageData from 'resources/alias.bmp';
@@ -174,6 +186,34 @@ export default class Builder {
             Assert.Equal(2, result.Content[4]);
             Assert.Equal(3, result.Content[5]);
             Assert.Equal(255, result.Content[6]);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(100)]
+        public async Task CanImportLargeBitmapImageResource(int asyncLoadDelay)
+        {
+            var script = @"
+import imageData from 'resources/havnebakken.bmp';
+
+export default class Builder {
+    build(model) {
+        return JSON.stringify([imageData.width, imageData.height, imageData.data.length]);
+    }
+}";
+
+            var resources = new DictionaryResourceManager()
+            {
+                ["havnebakken.bmp"] = File.ReadAllBytes("havnebakken.bmp")
+            };
+            resources.AsyncLoadDelay = TimeSpan.FromMilliseconds(asyncLoadDelay);
+
+            var result = await _generator.GenerateDocumentAsync(script, null, resources);
+
+            var array = JsonSerializer.Deserialize<int[]>(Encoding.UTF8.GetString(result.Content));
+            Assert.Equal(350, array[0]);
+            Assert.Equal(260, array[1]);
+            Assert.Equal(350 * 260 * 4, array[2]);
         }
 
         [Fact]
@@ -218,6 +258,17 @@ export default class Builder {
 
                 Assert.Equal("Rasmus", Encoding.UTF8.GetString(result.Content));
             });
+        }
+
+        [Fact]
+        public void CanValidateLargeModule()
+        {
+            var bitmap = File.ReadAllBytes("havnebakken.bmp");
+            var script = _resourceScriptFactory.CreateFromExtension(bitmap, ".bmp");
+
+            var result = _generator.ValidateTemplate(script);
+
+            Assert.Empty(result);
         }
 
         [Fact]

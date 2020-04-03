@@ -367,6 +367,9 @@ namespace ChakraCore.API {
     [DllImport(DllName)]
     public static extern JavaScriptErrorCode JsRelease(JavaScriptContext reference, out uint count);
 
+    [DllImport(DllName)]
+    public static extern JavaScriptErrorCode JsRelease(JavaScriptModuleRecord reference, out uint count);
+
     /// <summary>
     ///     Sets a callback function that is called by the runtime before garbage collection of
     ///     an object.

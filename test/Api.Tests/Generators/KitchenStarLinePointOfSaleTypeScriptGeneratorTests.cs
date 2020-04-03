@@ -1,11 +1,25 @@
-﻿using System;
+﻿using Api.Generators.JavaScript;
+using Api.Generators.TypeScript;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Api.Tests.Generators
 {
-    public class KitchenStarLinePointOfSaleTypeScriptGeneratorTests : PointOfSaleTypeScriptGeneratorTestBase
+    public class KitchenStarLinePointOfSaleTypeScriptGeneratorTests_ChakraCore : KitchenStarLinePointOfSaleTypeScriptGeneratorTests<ChakraCoreJavaScriptGenerator, ChakraCoreTypeScriptTranspiler>
     {
+    }
+
+    public class KitchenStarLinePointOfSaleTypeScriptGeneratorTests_V8 : KitchenStarLinePointOfSaleTypeScriptGeneratorTests<V8JavaScriptGenerator, V8TypeScriptTranspiler>
+    {
+    }
+
+    public abstract class KitchenStarLinePointOfSaleTypeScriptGeneratorTests<TJavaScriptGenerator, TTypeScriptTranspiler> : PointOfSaleTypeScriptGeneratorTestBase<TJavaScriptGenerator, TTypeScriptTranspiler>
+        where TJavaScriptGenerator : class, IJavaScriptGenerator
+        where TTypeScriptTranspiler : class, ITypeScriptTranspiler
+    {
+        
+
         public KitchenStarLinePointOfSaleTypeScriptGeneratorTests() : base("kitchen-starline.ts")
         {
         }

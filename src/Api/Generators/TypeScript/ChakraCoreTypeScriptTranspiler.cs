@@ -19,19 +19,18 @@ namespace Api.Generators.TypeScript
             _context = JavaScriptContext.CreateContext(_runtime);
 
             // Install the compiler in the context
-            JavaScriptContext.Current = _context;
-            JavaScriptContext.RunScript(typescriptServicesSource);
-            JavaScriptContext.Current = JavaScriptContext.Invalid;
+            using (var scope = _context.GetScope())
+            {
+                JavaScriptContext.RunScript(typescriptServicesSource);
+            }
         }
 
         public string Transpile(string input)
         {
             lock (this)
             {
-                JavaScriptContext.Current = _context;
-
-                try
-                {
+                using (var scope = _context.GetScope())
+                { 
                     var transpileFunction = JavaScriptContext.RunScript(@"
 input => {
     const result = ts.transpileModule(input, {
@@ -47,10 +46,6 @@ input => {
                     var outputText = transpileFunction.CallFunction(JavaScriptValue.GlobalObject, JavaScriptValue.FromString(input));
 
                     return outputText.ToString();
-                }
-                finally
-                {
-                    JavaScriptContext.Current = JavaScriptContext.Invalid;
                 }
             }
         }

@@ -4,11 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using System.Collections.Generic;
 using System.IO;
-using Xunit.Abstractions;
 
 namespace Api.Tests.Generators
 {
-    public abstract class PointOfSaleTypeScriptGeneratorTestBase
+    public abstract class PointOfSaleTypeScriptGeneratorTestBase<TJavaScriptGenerator, TTypeScriptTranspiler>
+        where TJavaScriptGenerator: class, IJavaScriptGenerator
+        where TTypeScriptTranspiler: class, ITypeScriptTranspiler
     {
         protected readonly TypeScriptGenerator _generator;
         protected readonly string _script;
@@ -16,9 +17,10 @@ namespace Api.Tests.Generators
         public PointOfSaleTypeScriptGeneratorTestBase(string scriptFileName)
         {
             var services = new ServiceCollection()
-                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
-                .AddSingleton<ITypeScriptTranspiler, V8TypeScriptTranspiler>()
+                .AddSingleton<IJavaScriptGenerator, TJavaScriptGenerator>()
+                .AddSingleton<ITypeScriptTranspiler, TTypeScriptTranspiler>()
                 .AddSingleton<TypeScriptGenerator>()
+                .AddSingleton<ResourceScriptFactory>()
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddMemoryCache()
                 .BuildServiceProvider();

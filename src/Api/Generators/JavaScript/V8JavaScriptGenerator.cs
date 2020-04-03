@@ -8,6 +8,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Api.Generators.JavaScript
@@ -37,7 +38,7 @@ namespace Api.Generators.JavaScript
             }
         }
 
-        public async Task<GenerateResult> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
+        public async Task<GenerateResult> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null, CancellationToken cancellationToken = default)
         {
             using var engine = new V8ScriptEngine(V8ScriptEngineFlags.EnableDynamicModuleImports);
             engine.Execute(PolyfillScripts.Get("ImageData"));
@@ -46,18 +47,18 @@ namespace Api.Generators.JavaScript
             engine.DocumentSettings.AddSystemDocument("main", ModuleCategory.Standard, code);
 
             dynamic setModel = engine.Evaluate(@"
-            let model;
-            const setModel = m => model = JSON.parse(m);
-            setModel");
+let model;
+const setModel = m => model = JSON.parse(m);
+setModel");
 
             setModel(JsonSerializer.Serialize(model));
 
             dynamic contentTypePromise = engine.Evaluate(new DocumentInfo() { Category = ModuleCategory.Standard }, @"
-            async function getContentType() {
-                const {ContentType} = await import('main');
-                return ContentType;
-            }
-            getContentType()");
+async function getContentType() {
+    const { contentType } = await import('main');
+    return contentType;
+}
+getContentType()");
             var contentType = await ToTask(contentTypePromise);
 
             if (contentType is Undefined)
@@ -66,9 +67,9 @@ namespace Api.Generators.JavaScript
             }
 
             dynamic resultPromise = engine.Evaluate(new DocumentInfo() { Category = ModuleCategory.Standard }, @"
-            import Builder from 'main';
-            let builder = new Builder();
-            Promise.resolve(builder.build(model));");
+import Builder from 'main';
+let builder = new Builder();
+Promise.resolve(builder.build(model));");
 
             var result = await ToTask(resultPromise);
 

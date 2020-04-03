@@ -12,7 +12,17 @@ using Xunit;
 
 namespace Api.Tests.Generators
 {
-    public class TypeScriptGeneratorTests
+    public class TypeScriptGeneratorTests_ChakraCore : TypeScriptGeneratorTests<ChakraCoreTypeScriptTranspiler, ChakraCoreJavaScriptGenerator>
+    {
+    }
+
+    public class TypeScriptGeneratorTests_V8 : TypeScriptGeneratorTests<V8TypeScriptTranspiler, V8JavaScriptGenerator>
+    {
+    }
+
+    public abstract class TypeScriptGeneratorTests<TTypeScriptTranspiler, TJavaScriptGenerator>
+        where TTypeScriptTranspiler: class, ITypeScriptTranspiler
+        where TJavaScriptGenerator: class, IJavaScriptGenerator
     {
         private readonly TypeScriptGenerator _generator;
 
@@ -20,8 +30,8 @@ namespace Api.Tests.Generators
         {
             var services = new ServiceCollection()
                 .AddSingleton<TypeScriptGenerator>()
-                .AddSingleton<ITypeScriptTranspiler, ChakraCoreTypeScriptTranspiler>()
-                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
+                .AddSingleton<ITypeScriptTranspiler, TTypeScriptTranspiler>()
+                .AddSingleton<IJavaScriptGenerator, TJavaScriptGenerator>()
                 .AddSingleton<ResourceScriptFactory>()
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddMemoryCache()
@@ -65,7 +75,7 @@ export default class Builder {
         public async Task CanOverrideContentType()
         {
             var script = @"
-export let ContentType = 'test/test';
+export const contentType = 'test/test';
 export default class Builder {
     build(model) {
         return `The result ${model.name}`

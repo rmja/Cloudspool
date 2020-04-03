@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Api.Generators.JavaScript;
+using Api.Generators.TypeScript;
+using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -6,11 +8,20 @@ using Xunit;
 
 namespace Api.Tests.Generators
 {
-    public class ReceiptEpsonPointOfSaleTypeScriptGeneratorTests : PointOfSaleTypeScriptGeneratorTestBase
+    public class ReceiptEpsonPointOfSaleTypeScriptGeneratorTests_ChakraCore : ReceiptEpsonPointOfSaleTypeScriptGeneratorTests<ChakraCoreJavaScriptGenerator, ChakraCoreTypeScriptTranspiler>
+    {
+    }
+
+    public class ReceiptEpsonPointOfSaleTypeScriptGeneratorTests_V8 : ReceiptEpsonPointOfSaleTypeScriptGeneratorTests<V8JavaScriptGenerator, V8TypeScriptTranspiler>
+    {
+    }
+
+    public abstract class ReceiptEpsonPointOfSaleTypeScriptGeneratorTests<TJavaScriptGenerator, TTypeScriptTranspiler> : PointOfSaleTypeScriptGeneratorTestBase<TJavaScriptGenerator, TTypeScriptTranspiler>
+        where TJavaScriptGenerator : class, IJavaScriptGenerator
+        where TTypeScriptTranspiler : class, ITypeScriptTranspiler
     {
         public ReceiptEpsonPointOfSaleTypeScriptGeneratorTests() : base("receipt-epson.ts")
         {
-
         }
 
         [Fact]
@@ -66,7 +77,7 @@ namespace Api.Tests.Generators
 
             var result = await _generator.GenerateDocumentAsync(_script, model, resources);
 
-            var expected = File.ReadAllBytes(Path.Combine("Expected", nameof(ReceiptEpsonPointOfSaleTypeScriptGeneratorTests) + "." + nameof(Receipt_New) + ".bin"));
+            var expected = File.ReadAllBytes(Path.Combine("Expected", "ReceiptEpsonPointOfSaleTypeScriptGeneratorTests.Receipt_New.bin"));
 
             Assert.Equal(BitConverter.ToString(expected), BitConverter.ToString(result.Content));
         }

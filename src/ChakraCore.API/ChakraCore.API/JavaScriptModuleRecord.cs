@@ -98,6 +98,13 @@ namespace ChakraCore.API {
       return count;
     }
 
+    public uint Release() {
+      uint count;
+      Native.ThrowIfError(
+        Native.JsRelease(this, out count)
+      );
+      return count;
+    }
 
     /// <summary>
     ///     Parse the source for an ES module

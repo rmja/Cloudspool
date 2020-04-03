@@ -1,6 +1,7 @@
 ﻿using Api.Generators.JavaScript;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Api.Generators.TypeScript
@@ -25,7 +26,7 @@ namespace Api.Generators.TypeScript
             return _javaScriptGenerator.ValidateTemplate(transpiled);
         }
 
-        public Task<GenerateResult> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null)
+        public Task<GenerateResult> GenerateDocumentAsync(string code, object model, IResourceManager resourceManager = null, CancellationToken cancellationToken = default)
         {
             var script = _cache.GetOrCreate(code, entry =>
             {
@@ -33,7 +34,7 @@ namespace Api.Generators.TypeScript
                 return _transpiler.Transpile(code);
             });
 
-            return _javaScriptGenerator.GenerateDocumentAsync(script, model, resourceManager);
+            return _javaScriptGenerator.GenerateDocumentAsync(script, model, resourceManager, cancellationToken);
         }
     }
 }
