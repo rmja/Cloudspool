@@ -24,8 +24,10 @@ namespace Api.Tests.Generators
         {
         }
 
-        [Fact]
-        public async Task Receipt_New()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(100)]
+        public async Task Receipt_New(int asyncLoadDelay)
         {
             var model = new ReceiptModel()
             {
@@ -71,6 +73,7 @@ namespace Api.Tests.Generators
                 }),
                 ["pos_slip_havnebakken_logo_2.bmp"] = File.ReadAllBytes("havnebakken.bmp")
             };
+            resources.AsyncLoadDelay = TimeSpan.FromMilliseconds(asyncLoadDelay);
 
             var result = await _generator.GenerateDocumentAsync(_script, model, resources);
 
