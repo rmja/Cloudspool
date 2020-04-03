@@ -37,8 +37,16 @@ namespace Api.Generators.JavaScript
             {
                 try
                 {
-                    var module = JavaScriptModuleRecord.Initialize();
+                    JavaScriptContext.RunScript("const globalThis = this;");
+                    JavaScriptContext.RunScript(PolyfillScripts.Get("ImageData"));
 
+                    var module = JavaScriptModuleRecord.Initialize();
+                    module.FetchImportedModuleCallBack = (JavaScriptModuleRecord referencingModule, JavaScriptValue specifier, out JavaScriptModuleRecord dependentModuleRecord) =>
+                    {
+                        dependentModuleRecord = JavaScriptModuleRecord.Invalid;
+                        return JavaScriptErrorCode.NoError;
+                    };
+                    module.NotifyModuleReadyCallback = (JavaScriptModuleRecord referencingModule, JavaScriptValue exceptionVar) => JavaScriptErrorCode.NoError;
                     module.ParseSource(code);
 
                     return Array.Empty<string>();

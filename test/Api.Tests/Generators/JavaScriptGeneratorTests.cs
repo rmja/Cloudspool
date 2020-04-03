@@ -260,10 +260,12 @@ export default class Builder {
             });
         }
 
-        [Fact]
-        public void CanValidateLargeModule()
+        [Theory]
+        [InlineData("10x10.bmp")]
+        [InlineData("havnebakken.bmp")]
+        public void CanValidateResourceModule(string bmpFilename)
         {
-            var bitmap = File.ReadAllBytes("havnebakken.bmp");
+            var bitmap = File.ReadAllBytes(bmpFilename);
             var script = _resourceScriptFactory.CreateFromExtension(bitmap, ".bmp");
 
             var result = _generator.ValidateTemplate(script);
