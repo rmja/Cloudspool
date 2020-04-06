@@ -33,7 +33,7 @@ namespace Api.Tests.Generators
         {
             var model = new ReceiptModel()
             {
-                vendorDataResource = "pos_slip_receipt_havnebakken_data",
+                vendorDataResource = "havnebakken.json",
                 slipId = 317579,
                 @case = new CaseModel()
                 {
@@ -62,9 +62,9 @@ namespace Api.Tests.Generators
 
             var resources = new DictionaryResourceManager()
             {
-                ["pos_slip_receipt_havnebakken_data.json"] = JsonSerializer.SerializeToUtf8Bytes(new
+                ["havnebakken.json"] = JsonSerializer.SerializeToUtf8Bytes(new
                 {
-                    logoResource = "pos_slip_havnebakken_logo_2",
+                    logoResource = "havnebakken.bmp",
                     address = "Havnebakken 12",
                     postalCode = 9940,
                     city = "Læsø",
@@ -73,7 +73,7 @@ namespace Api.Tests.Generators
                     email = "post@havnebakken.dk",
                     logoOffsetLeft = 100
                 }),
-                ["pos_slip_havnebakken_logo_2.bmp"] = File.ReadAllBytes("havnebakken.bmp")
+                ["havnebakken.bmp"] = File.ReadAllBytes("havnebakken.bmp")
             };
             resources.AsyncLoadDelay = TimeSpan.FromMilliseconds(asyncLoadDelay);
 

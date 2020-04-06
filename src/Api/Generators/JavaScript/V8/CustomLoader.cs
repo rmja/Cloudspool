@@ -37,7 +37,9 @@ namespace Api.Generators.JavaScript.V8
                 }
             }
 
-            return _defaultLoader.LoadDocument(settings, sourceInfo, specifier, category, contextCallback);
+            throw new FileNotFoundException($"The resource {alias} was not found");
+
+            //return _defaultLoader.LoadDocument(settings, sourceInfo, specifier, category, contextCallback);
         }
 
         public override async Task<Document> LoadDocumentAsync(DocumentSettings settings, DocumentInfo? sourceInfo, string specifier, DocumentCategory category, DocumentContextCallback contextCallback)
@@ -59,7 +61,9 @@ namespace Api.Generators.JavaScript.V8
                 }
             }
 
-            return await _defaultLoader.LoadDocumentAsync(settings, sourceInfo, specifier, category, contextCallback);
+            throw new FileNotFoundException($"The resource {alias} was not found");
+
+            //return await _defaultLoader.LoadDocumentAsync(settings, sourceInfo, specifier, category, contextCallback);
         }
     }
 }

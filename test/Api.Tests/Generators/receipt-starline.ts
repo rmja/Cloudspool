@@ -43,7 +43,7 @@ export default class Builder {
     writer: StarLineWriter;
 
     async build(model: Model) {
-        const { default: vendorData } = await import(`resources/${model.vendorDataResource}.json`);
+        const { default: vendorData } = await import(`resources/${model.vendorDataResource}`);
 
         const buffer = new WriteBuffer();
         this.writer = new StarLineWriter(buffer);
@@ -67,7 +67,7 @@ export default class Builder {
 
     private async header(vendorData: VendorData) {
         if (vendorData.logoResource) {
-            const { default: imageData } = await import(`resources/${vendorData.logoResource}.bmp`);
+            const { default: imageData } = await import(`resources/${vendorData.logoResource}`);
 
             if (imageData) {
                 let offsetLeft = vendorData.logoOffsetLeft ?? 0;

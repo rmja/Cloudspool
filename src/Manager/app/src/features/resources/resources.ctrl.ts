@@ -9,7 +9,6 @@ export class ResourcesController {
 
 	constructor($scope: ng.IScope,
 		private ResourceResource: ResourceResource,
-		private apiBasePath: string,
 		private ProjectService: ProjectService) {
 		this.resources = ResourceResource.cache.getAll();
 
@@ -19,7 +18,7 @@ export class ResourcesController {
 	}
 
 	contentUrl(resource: Resource) {
-		return this.apiBasePath + resource.contentUrl + '?project_key=' + this.ProjectService.projectKey;
+		return resource.contentUrl + '?project_key=' + this.ProjectService.projectKey;
 	}
 
 	isObjectResource(resource: Resource) {

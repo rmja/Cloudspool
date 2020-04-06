@@ -90,7 +90,11 @@ namespace Api.Generators.JavaScript.ChakraCore
 
             if (alias is null)
             {
-                dependentModuleRecord = JavaScriptModuleRecord.Invalid;
+                dependentModuleRecord = JavaScriptModuleRecord.Initialize(referencingModule, specifier);
+                dependentModuleRecord.HostUrl = specifierString; // Only for debugging
+                dependentModuleRecord.Exception = JavaScriptValue.CreateTypeError($"Failed to resolve module for specifier '{specifierString}'");
+                _moduleLeases.Add(specifierString, new ModuleLease(dependentModuleRecord));
+                dependentModuleRecord = _moduleLeases[specifierString].Module;
                 return JavaScriptErrorCode.NoError;
             }
 

@@ -33,7 +33,7 @@ namespace Api.Tests.Generators
         {
             var model = new ReceiptModel()
             {
-                vendorDataResource = "pos_slip_receipt_laesoecamping_data",
+                vendorDataResource = "laesoecamping.json",
                 slipId = 60558,
                 @case = new CaseModel()
                 {
@@ -65,9 +65,9 @@ namespace Api.Tests.Generators
 
             var resources = new DictionaryResourceManager()
             {
-                ["pos_slip_receipt_laesoecamping_data.json"] = JsonSerializer.SerializeToUtf8Bytes(new
+                ["laesoecamping.json"] = JsonSerializer.SerializeToUtf8Bytes(new
                 {
-                    logoResource = "pos_slip_laesoecamping_logo",
+                    logoResource = "laesoecamping.bmp",
                     address = "Agersigen 18a",
                     postalCode = 9940,
                     city = "Læsø",
@@ -76,7 +76,7 @@ namespace Api.Tests.Generators
                     email = "ferie@laesoecamping.dk",
                     logoOffsetLeft = 100
                 }),
-                ["pos_slip_laesoecamping_logo.bmp"] = File.ReadAllBytes("laesoecamping.bmp")
+                ["laesoecamping.bmp"] = File.ReadAllBytes("laesoecamping.bmp")
             };
             resources.AsyncLoadDelay = TimeSpan.FromMilliseconds(asyncLoadDelay);
 

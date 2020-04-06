@@ -17,9 +17,12 @@ spec:
       - name: api
         image: rmjac/cloudspool-api:latest
         resources:
+          requests:
+            cpu: 100m
+            memory: 0.3Gi
           limits:
             cpu: 500m
-            memory: 0.1Gi
+            memory: 0.4Gi
         ports:
         - containerPort: 80
         envFrom:

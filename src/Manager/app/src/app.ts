@@ -28,8 +28,7 @@ Http.defaults.fetch = (input, init) => {
     return (<any>window).fetch(input, init);
 }
 
-angular.module('ManagerApplication', ['js-data', 'ngSanitize', 'xeditable', 'ui.bootstrap', 'ui.ace', 'ui.select', 'angularUtils.directives.dirPagination', 'ngRoute', 'file-model', index, directives, filters, dashboardFeature, zonesFeature, templatesFeature, resourcesFeature, resources, services])
-    .constant('apiBasePath', apiBaseBath)
+angular.module('ManagerApplication', ['ngSanitize', 'xeditable', 'ui.bootstrap', 'ui.ace', 'ui.select', 'angularUtils.directives.dirPagination', 'ngRoute', 'file-model', index, directives, filters, dashboardFeature, zonesFeature, templatesFeature, resourcesFeature, resources, services])
     .constant('contentTypes', ['application/pdf', 'application/x-escp', 'application/x-starlinemode'])
     .constant('jsonAceOptions', {
         useSoftTabs: true,
@@ -43,9 +42,6 @@ angular.module('ManagerApplication', ['js-data', 'ngSanitize', 'xeditable', 'ui.
             '<span class="fa fa-undo"></span>' +
             '</button>'
         editableOptions.theme = 'bs3'; // bootstrap3 theme. Can be also 'bs2', 'default'
-    })
-    .config((DSProvider, apiBasePath) => {
-        DSProvider.defaults.basePath = apiBasePath;
     })
     .config(($httpProvider: ng.IHttpProvider) => {
         $httpProvider.interceptors.push('AuthInterceptorService');

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,20 +37,7 @@ namespace Api.Features.Resources.Queries
                     return NotFound();
                 }
 
-                var filename = request.Alias + GetExtension(result.MediaType);
-
-                return File(result.Content, result.MediaType, filename);
-            }
-
-            private static string GetExtension(string mediaType)
-            {
-                switch (mediaType)
-                {
-                    case "application/json": return ".json";
-                    case "image/bmp": return ".bmp";
-                }
-
-                throw new NotSupportedException();
+                return File(result.Content, result.MediaType, fileDownloadName: request.Alias);
             }
         }
     }

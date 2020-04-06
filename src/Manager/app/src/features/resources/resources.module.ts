@@ -7,7 +7,6 @@ export default angular.module('app.resources', [])
 	.controller('ResourcesController', [
 		'$scope',
 		'ResourceResource',
-		'apiBasePath',
 		'ProjectService',
 		ResourcesController
 	])
