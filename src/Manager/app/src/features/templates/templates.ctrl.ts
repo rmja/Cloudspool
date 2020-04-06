@@ -28,14 +28,19 @@ export class TemplatesController {
 
 export class NewTemplateController {
 	name: string;
+	mediaTypes = ["application/javascript", "application/typescript"];
+	selectedMediaType = "application/javascript";
 
 	constructor($routeParams,
 		private TemplateResource: TemplateResource) {
 	}
 
 	submit() {
+		const defaultScript = "export default class Builder {\n    build(model) {\n    }\n}"
 		this.TemplateResource.create({
 			name: this.name,
+			script: defaultScript,
+			scriptContentType: this.selectedMediaType
 		});
 	}
 }

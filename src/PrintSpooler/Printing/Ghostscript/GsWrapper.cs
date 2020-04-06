@@ -48,7 +48,7 @@ namespace PrintSpooler.Printing.Ghostscript
                 return Path.Combine("Native", "win64", "gs.dll");
             }
 
-            throw new NotSupportedException("Unsupported platform");
+            throw new PlatformNotSupportedException();
         }
 
         [DllImport(DllName)]

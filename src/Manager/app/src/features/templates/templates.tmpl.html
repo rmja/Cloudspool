@@ -11,6 +11,17 @@
 					<label>Name</label>
 					<input type="text" class="form-control" ng-model="newCtrl.name" placeholder="Enter name" />
 				</div>
+				<div class="form-group">
+					<label>Type</label>
+					<ui-select ng-model="newCtrl.selectedMediaType" required>
+						<ui-select-match placeholder="Type">
+							{{$select.selected}}
+						</ui-select-match>
+						<ui-select-choices repeat="mediaType in newCtrl.mediaTypes">
+							<div ng-bind-html="mediaType | highlight: $select.search"></div>
+						</ui-select-choices>
+					</ui-select>
+				</div>
 				<button type="submit" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> Create Template</button>
 				<div class="clearfix"></div>
 			</form>
@@ -22,12 +33,14 @@
 	<thead>
 		<tr>
 			<th>Name</th>
+			<th>Type</th>
 			<th></th>
 		</tr>
 	</thead>
 	<tbody>
 		<tr ng-repeat="template in ctrl.templates">
 			<td><a href="#/templates/{{template.id}}" editable-text="template.name" e-form="nameForm" onaftersave="ctrl.saveTemplate(template)">{{template.name}}</a> <a href ng-click="nameForm.$show()" ng-hide="nameForm.$visible"><i class="fa fa-edit"></i></a></td>
+			<td>{{template.scriptContentType}}</td>
 			<td>
 				<a href="#/templates/{{template.id}}" class="btn btn-default"><i class="fa fa-pencil"></i></a>
 				<button ng-click="ctrl.destroy(template)" class="btn btn-danger"><i class="fa fa-trash"></i></button>

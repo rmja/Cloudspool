@@ -13,7 +13,7 @@ The deploy script can be run with with multiple switches, for example:
 ```
 .\deploy.ps1 -All -Environment Production -Configs C:\MyConfigs\Production -Context MyClusterContext
 ```
-The production configs are here [rmja/Cloudspool-Environments] (private repo).
+The production configs are [here](https://github.com/rmja/Cloudspool) (private repo).
 
 Release Instructions
 ====================

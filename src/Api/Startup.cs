@@ -68,11 +68,11 @@ namespace Api
             if (env.IsDevelopment())
             {
                 app
-                    .UseDeveloperExceptionPage()
                     .UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
             }
 
             app
+                .UseDeveloperExceptionPage()
                 .UsePathBase(Configuration["PathBase"])
                 .Use((context, next) =>
                 {

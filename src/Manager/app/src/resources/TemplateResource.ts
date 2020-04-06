@@ -23,17 +23,16 @@ export class TemplateResource {
 		return api.getScriptById(templateId).transfer();
 	}
 
-	public create(command: { name: string }) {
-		const defaultScript = "export default class Builder {\n    constructor() {\n        this.contentType = 'application/escp';\n    }\n    build(model) {\n    }\n}"
-		return api.create({ name: command.name, script: defaultScript, scriptContentType: "application/javascript" }).transfer().then(template => this.cache.add(template));
+	public create(command: { name: string, script: string, scriptContentType }) {
+		return api.create(command).transfer().then(template => this.cache.add(template));
 	}
 
 	public update(id: number, patch: Operation[]) {
 		return api.update(id, patch).transfer().then(updated => this.cache.ensure(updated));
 	}
 
-	public setScript(templateId: number, script: string) {
-		return api.setScript(templateId, script, "application/javascript").send();
+	public setScript(templateId: number, script: string, scriptContentType: string) {
+		return api.setScript(templateId, script, scriptContentType).send();
 	}
 
 	public destroy(templateId: number) {

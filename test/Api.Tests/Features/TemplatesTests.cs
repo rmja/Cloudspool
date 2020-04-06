@@ -21,19 +21,18 @@ namespace Api.Tests.Features
             _client.DefaultRequestHeaders.Add(HeaderNames.Authorization, $"Bearer project:{SeedData.TestProjectKey}");
         }
 
-        [Fact]
-        public async Task CanCreate()
+        [Theory]
+        [InlineData("application/javascript")]
+        [InlineData("application/typescript")]
+        public async Task CanCreate(string mediaType)
         {
             // Given
             var script = @"
 export default class Builder {
-    constructor() {
-        this.contentType = 'application/escpos';
-    }
     build(model) {
     }
 }";
-            var scriptContent = new StringContent(script, Encoding.UTF8, "application/javascript");
+            var scriptContent = new StringContent(script, Encoding.UTF8, mediaType);
 
             // When
             var response = await _client.PostAsync("/Templates?name=Test Template", scriptContent);
@@ -46,8 +45,8 @@ export default class Builder {
             // Then
             Assert.Equal("Test Template", result.Name);
             Assert.Equal(script, scriptResult);
-            Assert.Equal("application/javascript", scriptResponse.Content.Headers.ContentType.ToString());
-            Assert.Equal("application/javascript", result.ScriptContentType);
+            Assert.Equal(mediaType, scriptResponse.Content.Headers.ContentType.ToString());
+            Assert.Equal(mediaType, result.ScriptContentType);
         }
 
         [Fact]
@@ -63,21 +62,20 @@ export default class Builder {
             // Then
         }
 
-        [Fact]
-        public async Task CanSetScript()
+        [Theory]
+        [InlineData("application/javascript")]
+        [InlineData("application/typescript")]
+        public async Task CanSetScript(string mediaType)
         {
             // Given
             var script = @"
 export default class Builder {
-    constructor() {
-        this.contentType = 'application/escpos';
-    }
     build(model) {
         return 'This is the updated script'
     }
 }";
             var firstTemplate = SeedData.GetTemplates().First();
-            var scriptContent = new StringContent(script, Encoding.UTF8, "application/javascript");
+            var scriptContent = new StringContent(script, Encoding.UTF8, mediaType);
 
             // When
             var response = await _client.PutAsync($"/Templates/{firstTemplate.Id}/Script", scriptContent);
@@ -89,7 +87,7 @@ export default class Builder {
 
             // Then
             Assert.Equal(script, scriptResult);
-            Assert.Equal(scriptContent.Headers.ContentType.MediaType, scriptResponse.Content.Headers.ContentType.MediaType);
+            Assert.Equal(mediaType, scriptResponse.Content.Headers.ContentType.MediaType);
         }
 
         [Fact]

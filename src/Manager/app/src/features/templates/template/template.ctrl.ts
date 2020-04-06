@@ -28,7 +28,7 @@ export class TemplateController {
 		options.useSoftTabs = true;
 		options.tabSize = 4;
 		options.showInvisibles = true;
-		options.mode = 'javascript';
+		options.mode = this.template.scriptContentType.replace("application/", "");
 
 		return options;
 	}
@@ -49,7 +49,7 @@ export class TemplateController {
 
 		this.templateSuccess = null;
 		this.templateError = null;
-		this.TemplateResource.setScript(this.template.id, this.template.script).then(() => {
+		this.TemplateResource.setScript(this.template.id, this.template.script, this.template.scriptContentType).then(() => {
 			this.templateSuccess = 'Template saved successfully.';
 		}).catch((error) => {
 			debugger;

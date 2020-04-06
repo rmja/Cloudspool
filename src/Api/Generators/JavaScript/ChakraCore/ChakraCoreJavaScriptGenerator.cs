@@ -1,6 +1,8 @@
 ﻿using Api.Generators.JavaScript.Polyfills;
 using ChakraCore.API;
 using System;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -22,6 +24,29 @@ namespace Api.Generators.JavaScript.ChakraCore
         private readonly JavaScriptPromiseContinuationCallback _promiseContinuationCallback;
         private readonly ScriptDispatcher _dispatcher = new ScriptDispatcher();
         private JavaScriptRuntime _runtime;
+
+        static ChakraCoreJavaScriptGenerator()
+        {
+            var libPath = Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                GetNativeLibraryRelativePath());
+
+            NativeLibrary.Load(libPath);
+        }
+
+        private static string GetNativeLibraryRelativePath()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && RuntimeInformation.ProcessArchitecture == Architecture.X64)
+            {
+                return Path.Combine("runtimes", "win-x64", "native", "ChakraCore.dll");
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.ProcessArchitecture == Architecture.X64)
+            {
+                return Path.Combine("runtimes", "linux-x64", "native", "libChakraCore.so");
+            }
+
+            throw new PlatformNotSupportedException();
+        }
 
         public ChakraCoreJavaScriptGenerator(ResourceScriptFactory resourceScriptFactory)
         {

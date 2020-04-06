@@ -3,7 +3,8 @@ WORKDIR "/src"
 COPY ["Api/package*.json", "./"]
 RUN npm install
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine AS base
+# alpine cannot run ChakraCore as it requires glibc
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
