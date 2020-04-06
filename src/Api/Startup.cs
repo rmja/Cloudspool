@@ -51,6 +51,7 @@ namespace Api
                 .AddSingleton<IJavaScriptGenerator, ChakraCoreJavaScriptGenerator>()
                 .AddSingleton<ITypeScriptTranspiler, ChakraCoreTypeScriptTranspiler>()
                 .AddSingleton<TypeScriptGenerator>()
+                .AddSingleton<ResourceScriptFactory>()
                 .AddSingleton<GeneratorProvider>();
 
             services.AddAuthentication(options =>
