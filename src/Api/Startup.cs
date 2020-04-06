@@ -1,5 +1,6 @@
 using Api.Generators;
 using Api.Generators.JavaScript;
+using Api.Generators.JavaScript.ChakraCore;
 using Api.Generators.TypeScript;
 using Api.Infrastructure;
 using AutoMapper;
@@ -47,8 +48,8 @@ namespace Api
             services.AddAutoMapper(typeof(Startup).Assembly);
             services.AddMemoryCache();
             services
-                .AddSingleton<IJavaScriptGenerator, V8JavaScriptGenerator>()
-                .AddSingleton<ITypeScriptTranspiler, V8TypeScriptTranspiler>()
+                .AddSingleton<IJavaScriptGenerator, ChakraCoreJavaScriptGenerator>()
+                .AddSingleton<ITypeScriptTranspiler, ChakraCoreTypeScriptTranspiler>()
                 .AddSingleton<TypeScriptGenerator>()
                 .AddSingleton<GeneratorProvider>();
 

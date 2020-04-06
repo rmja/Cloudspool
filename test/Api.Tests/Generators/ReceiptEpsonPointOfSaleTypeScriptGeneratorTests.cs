@@ -1,4 +1,6 @@
 ﻿using Api.Generators.JavaScript;
+using Api.Generators.JavaScript.ChakraCore;
+using Api.Generators.JavaScript.V8;
 using Api.Generators.TypeScript;
 using System;
 using System.IO;
