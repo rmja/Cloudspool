@@ -6,7 +6,7 @@
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
         "PrintingHubUrl": "https://localhost:51332/Printing",
-        "SpoolerKey": "93a12db2-7baf-4ca0-a45d-65d2804cbc4a"
+        "SpoolerKey": "db71fa33-3b28-44e1-a8fc-53bd2bb56d20"
       }
     },
     "PrintSpooler (Local k8s)": {

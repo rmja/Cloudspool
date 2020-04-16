@@ -41,11 +41,16 @@ namespace Api.Features.Jobs.Commands
                     return NotFound();
                 }
 
-                var route = await GetPrinterByTerminal(projectId, request.Route);
+                PrinterRoute route = null;
 
-                if (route is null)
+                if (User.TryGetTerminalId(out var terminalId))
                 {
-                    route = await GetPrinterByZone(projectId, request.Route);
+                    route = await GetPrinterByTerminal(projectId, terminalId, request.Route);
+                }
+
+                if (route is null && User.TryGetZoneId(out var zoneId))
+                {
+                    route = await GetPrinterByZone(projectId, zoneId, request.Route);
                 }
 
                 if (route is null)
@@ -66,11 +71,11 @@ namespace Api.Features.Jobs.Commands
                 return Accepted();
             }
 
-            private async Task<PrinterRoute> GetPrinterByTerminal(int projectId, string routeAlias)
+            private async Task<PrinterRoute> GetPrinterByTerminal(int projectId, int terminalId, string routeAlias)
             {
                 var route = await _db.Terminals
                     .SelectMany(x => x.Routes)
-                    .Where(x => x.Terminal.Zone.ProjectId == projectId && x.Alias == routeAlias)
+                    .Where(x => x.Terminal.Zone.ProjectId == projectId && x.TerminalId == terminalId && x.Alias == routeAlias)
                     .SingleOrDefaultAsync();
 
                 if (route is null)
@@ -81,12 +86,12 @@ namespace Api.Features.Jobs.Commands
                 return new PrinterRoute() { SpoolerId = route.SpoolerId, PrinterName = route.PrinterName };
             }
 
-            private async Task<PrinterRoute> GetPrinterByZone(int projectId, string routeAlias)
+            private async Task<PrinterRoute> GetPrinterByZone(int projectId, int zoneId, string routeAlias)
             {
                 var route = await _db.Zones
-                        .SelectMany(x => x.Routes)
-                        .Where(x => x.Zone.ProjectId == projectId && x.Alias == routeAlias)
-                        .SingleOrDefaultAsync();
+                    .SelectMany(x => x.Routes)
+                    .Where(x => x.Zone.ProjectId == projectId && x.ZoneId == zoneId && x.Alias == routeAlias)
+                    .SingleOrDefaultAsync();
 
                 if (route is null)
                 {

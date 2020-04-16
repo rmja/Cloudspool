@@ -56,9 +56,10 @@ namespace Api.Infrastructure
                 }
 
                 return new ApiKey(key, new[] {
-                    new Claim(ClaimTypes.Role, "Spooler"),
+                    new Claim(ClaimTypes.Role, "Terminal"),
                     new Claim("ProjectId", terminal.Zone.ProjectId.ToString()),
-                    new Claim("ZoneId", terminal.ZoneId.ToString())
+                    new Claim("ZoneId", terminal.ZoneId.ToString()),
+                    new Claim("TerminalId", terminal.Id.ToString())
                 });
             }
 
