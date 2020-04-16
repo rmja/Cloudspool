@@ -72,18 +72,15 @@ steps:
     assetUploadMode: replace
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'build'
-    arguments: --configuration $(buildConfiguration)
-    projects: 'src/Cloudspool.Api.Client/Cloudspool.Api.Client.csproj'
-- task: NuGetCommand@2
-  inputs:
     command: 'pack'
-    packagesToPack: 'src/Cloudspool.Api.Client/Cloudspool.Api.Client.csproj'
+    packagesToPack: 'src/Cloudspool.Api.Client/Cloudspool.Api.Client.csproj.csproj'
+    includesymbols: true
+    includesource: true
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'version'
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
     nuGetFeedType: 'external'
     publishFeedCredentials: 'NuGet'
