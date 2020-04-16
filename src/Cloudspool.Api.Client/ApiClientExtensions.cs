@@ -1,6 +1,8 @@
 ﻿using Cloudspool.Api.Client;
 using Refit;
 using System;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -10,9 +12,15 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             return services
                 .Configure(configure)
-                .AddScoped<AuthorizationMessageHandler>()
-                .AddRefitClient<IApiClient>()
-                .AddHttpMessageHandler<AuthorizationMessageHandler>();
+                .AddTransient<AuthorizationMessageHandler>()
+                .AddTransient<RedirectMessageHandler>()
+                .AddRefitClient<IApiClient>(new RefitSettings(new SystemTextJsonContentSerializer(new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                })))
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler() { AllowAutoRedirect = false })
+                .AddHttpMessageHandler<AuthorizationMessageHandler>()
+                .AddHttpMessageHandler<RedirectMessageHandler>();
         }
     }
 }
