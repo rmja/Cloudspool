@@ -73,7 +73,7 @@ steps:
 - task: NuGetCommand@2
   inputs:
     command: 'pack'
-    packagesToPack: 'src/CloudspoolApiClient/CloudspoolApiClient.csproj'
+    packagesToPack: 'src/Cloudspool.Api.Client/Cloudspool.Api.Client.csproj'
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'version'
 - task: NuGetCommand@2
