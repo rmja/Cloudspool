@@ -73,7 +73,7 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
-    packagesToPack: 'src/Cloudspool.Api.Client/Cloudspool.Api.Client.csproj.csproj'
+    packagesToPack: 'src/Cloudspool.Api.Client/Cloudspool.Api.Client.csproj'
     includesymbols: true
     includesource: true
     versioningScheme: 'byEnvVar'
