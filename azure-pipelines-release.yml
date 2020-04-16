@@ -70,3 +70,9 @@ steps:
     tag: '$(githubTag)'
     addChangeLog: true
     assetUploadMode: replace
+- task: NuGetCommand@2
+  inputs:
+    command: 'pack'
+    packagesToPack: 'src/CloudspoolApiClient/CloudspoolApiClient.csproj'
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'version'
