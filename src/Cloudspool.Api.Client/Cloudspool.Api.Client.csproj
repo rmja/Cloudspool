@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Rasmus Melchior Jacobsen</Authors>
+    <Description>Client for the Cloudspool print spooling API</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/rmja/Cloudspool</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
