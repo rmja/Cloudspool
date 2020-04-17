@@ -76,6 +76,8 @@ namespace PrintSpooler.Tests
 
             RunCommand("stop");
 
+            Thread.Sleep(1_000);
+
             RunCommand("start");
             // The update will be performed during this start
             // The service will terminate with a non-zero exit code when the updater is launched
