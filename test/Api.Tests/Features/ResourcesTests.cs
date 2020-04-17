@@ -121,7 +121,7 @@ namespace Api.Tests.Features
             var result = await response.EnsureSuccessStatusCode().Content.ReadAsJsonAsync<string>();
 
             // Then
-            Assert.Equal($"{firstResource.Alias}.json", response.Content.Headers.ContentDisposition.FileName);
+            Assert.Equal(firstResource.Alias, response.Content.Headers.ContentDisposition.FileName);
             Assert.Equal(firstResource.MediaType, response.Content.Headers.ContentType.MediaType);
             Assert.Equal("a string", result);
         }
