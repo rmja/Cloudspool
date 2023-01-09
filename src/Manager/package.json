@@ -3,7 +3,7 @@
   "name": "cloudspool-manager",
   "private": true,
   "dependencies": {
-    "luxon": "^1.22.0",
+    "luxon": "^1.28.1",
     "ur-http": "^2.14.1",
     "ur-jsonpatch": "^1.1.3"
   },
